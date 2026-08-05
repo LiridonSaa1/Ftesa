@@ -12,6 +12,7 @@ import {
   useInView,
   useMotionValue,
   useTransform,
+  useSpring,
   animate,
 } from "framer-motion";
 import {
@@ -111,6 +112,275 @@ const plans = [
   { name: "Pro", price: "€50", period: "/muaj", tag: "Më i popullarizuar", events: "11 evente", perks: ["Mysafirë të pakufizuar", "Hall Designer", "RSVP automatik", "Priority support", "Eksport CSV/Excel"] },
   { name: "Enterprise", price: "—", period: "Marrëveshje", tag: null, events: "Pa limit", perks: ["Gjithçka nga Pro", "Branding personal", "API access", "Trajnim ekipi", "SLA i garantuar"] },
 ];
+
+// ─── Hero Section ─────────────────────────────────────────────────────────────
+
+const cyclingWords = ["Dasmës", "Eventit", "Festës", "Ditës suaj"];
+
+function HeroSection({ BASE }: { BASE: string }) {
+  const [wordIdx, setWordIdx] = useState(0);
+
+  // Cycle the headline word
+  useEffect(() => {
+    const id = setInterval(() => setWordIdx((i) => (i + 1) % cyclingWords.length), 2800);
+    return () => clearInterval(id);
+  }, []);
+
+  // Mouse-parallax for the card
+  const cardRef = useRef<HTMLDivElement>(null);
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const rotateX = useSpring(useTransform(rawY, [-0.5, 0.5], [10, -10]), { stiffness: 200, damping: 25 });
+  const rotateY = useSpring(useTransform(rawX, [-0.5, 0.5], [-12, 12]), { stiffness: 200, damping: 25 });
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    rawX.set((e.clientX - rect.left) / rect.width - 0.5);
+    rawY.set((e.clientY - rect.top) / rect.height - 0.5);
+  }, [rawX, rawY]);
+  const handleMouseLeave = useCallback(() => {
+    rawX.set(0); rawY.set(0);
+  }, [rawX, rawY]);
+
+  // Floating particles
+  const particles = useRef(
+    Array.from({ length: 18 }, (_, i) => ({
+      id: i,
+      left: `${8 + Math.random() * 84}%`,
+      size: 3 + Math.random() * 4,
+      dur: 4 + Math.random() * 6,
+      delay: Math.random() * 5,
+      opacity: 0.2 + Math.random() * 0.5,
+    }))
+  ).current;
+
+  return (
+    <section
+      className="relative overflow-hidden flex flex-col items-center justify-center"
+      style={{ minHeight: "100svh", background: C }}
+    >
+      {/* Animated mesh gradient background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <Orb cx="12%" cy="20%" r={320} color={`${G}16`} dur={9} />
+        <Orb cx="88%" cy="30%" r={280} color={`${R}20`} dur={11} />
+        <Orb cx="55%" cy="85%" r={260} color={`${"#8FA88A"}18`} dur={13} />
+        <Orb cx="30%" cy="70%" r={200} color={`${G}10`} dur={7} />
+      </div>
+
+      {/* Floating gold particles */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {particles.map((p) => (
+          <motion.div
+            key={p.id}
+            className="absolute rounded-full"
+            style={{ left: p.left, bottom: "-10px", width: p.size, height: p.size, background: G, opacity: p.opacity }}
+            animate={{ y: [0, -(420 + Math.random() * 200)], opacity: [p.opacity, p.opacity * 0.6, 0] }}
+            transition={{ duration: p.dur, repeat: Infinity, delay: p.delay, ease: "easeOut" }}
+          />
+        ))}
+      </div>
+
+      {/* Decorative corner rings */}
+      <svg className="absolute right-0 top-0 pointer-events-none opacity-[0.055]" width="380" height="380" viewBox="0 0 380 380">
+        <circle cx="380" cy="0" r="260" fill="none" stroke={G} strokeWidth="1.2" />
+        <circle cx="380" cy="0" r="170" fill="none" stroke={G} strokeWidth="0.8" />
+        <circle cx="380" cy="0" r="90"  fill="none" stroke={G} strokeWidth="0.6" />
+      </svg>
+      <svg className="absolute left-0 bottom-0 pointer-events-none opacity-[0.04]" width="300" height="300" viewBox="0 0 300 300">
+        <circle cx="0" cy="300" r="200" fill="none" stroke={G} strokeWidth="1" />
+        <circle cx="0" cy="300" r="110" fill="none" stroke={G} strokeWidth="0.7" />
+      </svg>
+
+      {/* Fine dot grid */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.045]"
+        style={{ backgroundImage: `radial-gradient(${D}80 1px, transparent 1px)`, backgroundSize: "32px 32px" }}
+      />
+
+      {/* Content */}
+      <div className="relative w-full max-w-6xl mx-auto px-6 py-24 md:py-0 grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+
+        {/* ── Left: text ── */}
+        <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-8 md:py-28">
+
+          {/* Badge */}
+          <motion.div variants={fadeUp} custom={0}>
+            <span className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium border" style={{ background: `${G}12`, borderColor: `${G}30`, color: G }}>
+              <Sparkles className="h-3.5 w-3.5" /> Platforma №1 për Ftesa Digjitale
+            </span>
+          </motion.div>
+
+          {/* Slot-machine headline */}
+          <motion.h1 variants={fadeUp} custom={1} className="font-serif font-bold leading-[1.06]" style={{ fontSize: "clamp(2.9rem,5.2vw,4.2rem)", color: D }}>
+            Organizoni ditën e<br />
+            <span className="relative inline-flex items-center h-[1.15em] overflow-hidden align-bottom">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={wordIdx}
+                  initial={{ y: "100%", opacity: 0 }}
+                  animate={{ y: "0%", opacity: 1 }}
+                  exit={{ y: "-100%", opacity: 0 }}
+                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                  className="inline-block"
+                  style={{ color: G }}
+                >
+                  {cyclingWords[wordIdx]}
+                </motion.span>
+              </AnimatePresence>
+            </span>
+          </motion.h1>
+
+          <motion.p variants={fadeUp} custom={2} className="text-lg leading-relaxed" style={{ color: "#7a6f64", maxWidth: 420 }}>
+            Ftesa digjitale, hall designer, RSVP automatik dhe QR check-in — gjithçka në një platformë moderne dhe elegante.
+          </motion.p>
+
+          <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-4">
+            <Button size="lg" asChild className="rounded-full px-9 text-base font-semibold text-white" style={{ background: `linear-gradient(135deg,${G},#b8934d)`, boxShadow: `0 8px 32px ${G}40` }}>
+              <Link href="/sign-up">Fillo Falas Sot <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild className="rounded-full px-9 text-base font-semibold" style={{ borderColor: "#d4c5a9", color: D }}>
+              <Link href="/sign-in">Hyr në llogari</Link>
+            </Button>
+          </motion.div>
+
+          {/* Trust row */}
+          <motion.div variants={fadeUp} custom={4} className="flex flex-wrap gap-5 pt-1">
+            {[
+              { icon: Shield, text: "E sigurt & e kriptuar" },
+              { icon: Zap, text: "Setup në 5 minuta" },
+              { icon: Check, text: "Pa kreditim fillestar" },
+            ].map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-center gap-2 text-sm" style={{ color: "#a09589" }}>
+                <Icon className="h-3.5 w-3.5" style={{ color: G }} /> {text}
+              </div>
+            ))}
+          </motion.div>
+        </motion.div>
+
+        {/* ── Right: 3-D tilt card ── */}
+        <motion.div
+          ref={cardRef}
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.9, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="relative flex justify-center items-center"
+          style={{ perspective: 900 }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
+          {/* Glow */}
+          <div className="absolute w-72 h-72 rounded-full blur-3xl opacity-25" style={{ background: `radial-gradient(circle, ${G}, transparent 70%)` }} />
+
+          {/* Tilt wrapper */}
+          <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative">
+
+            {/* Card */}
+            <div className="relative w-72 rounded-3xl shadow-2xl overflow-hidden border" style={{ background: "white", borderColor: "#e8dfcf" }}>
+              <div className="h-1.5" style={{ background: `linear-gradient(90deg, ${G}, #e8c98a, ${G})` }} />
+              <div className="p-7 space-y-5">
+                <div className="text-center space-y-1">
+                  <p className="text-[10px] tracking-[4px] uppercase font-semibold" style={{ color: G }}>Ftesë Zyrtare</p>
+                  <p className="font-serif text-2xl font-bold" style={{ color: D }}>Artion & Mirela</p>
+                  <p className="text-xs" style={{ color: "#a09589" }}>14 Shtator 2025 · Prishtinë</p>
+                </div>
+                <div className="h-px" style={{ background: `linear-gradient(90deg,transparent,#d4c5a9,transparent)` }} />
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  {[["28","Ditë"],["14","Orë"],["32","Min"]].map(([n,l]) => (
+                    <div key={l} className="rounded-xl py-3" style={{ background: D }}>
+                      <p className="text-xl font-bold font-mono" style={{ color: G }}>{n}</p>
+                      <p className="text-[9px] uppercase tracking-wider mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{l}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-center">
+                  <div className="w-20 h-20 rounded-xl p-2 border-2" style={{ borderColor: `${G}40` }}>
+                    <div className="w-full h-full grid grid-cols-5 gap-0.5">
+                      {Array.from({ length: 25 }).map((_, i) => (
+                        <div key={i} className="rounded-[1px]" style={{ background: [0,1,2,5,7,10,12,14,17,22,23,24,6,18].includes(i) ? D : "transparent" }} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button className="h-10 rounded-full text-xs font-semibold text-white" style={{ background: `linear-gradient(135deg,${G},#b8934d)` }}>✓ Po vij</button>
+                  <button className="h-10 rounded-full text-xs font-semibold border" style={{ borderColor: "#d4c5a9", color: "#7a6f64" }}>✗ Nuk vij</button>
+                </div>
+                <p className="text-center text-[9px]" style={{ color: "#c0b5a8" }}>
+                  Powered by <span style={{ color: G }} className="font-medium">NoaEvent</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Floating badges — translated in Z so they appear to pop out */}
+            <motion.div
+              animate={{ y: [0, -7, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+              className="absolute -top-5 -right-6 rounded-2xl px-4 py-3 shadow-xl border"
+              style={{ background: "white", borderColor: "#e8dfcf", transform: "translateZ(30px)" }}
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: "#4ade80" }} />
+                <div>
+                  <p className="text-xs font-bold" style={{ color: D }}>248 RSVP</p>
+                  <p className="text-[10px]" style={{ color: "#a09589" }}>Konfirmuar sot</p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
+              className="absolute -bottom-5 -left-6 rounded-2xl px-4 py-3 shadow-xl border"
+              style={{ background: "white", borderColor: "#e8dfcf", transform: "translateZ(30px)" }}
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: `${G}18` }}>
+                  <Users className="h-4 w-4" style={{ color: G }} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold" style={{ color: D }}>12,000+</p>
+                  <p className="text-[10px]" style={{ color: "#a09589" }}>Mysafirë</p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              animate={{ x: [0, -5, 0] }}
+              transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+              className="absolute top-1/2 -left-8 -translate-y-1/2 rounded-2xl px-3 py-2.5 shadow-xl border"
+              style={{ background: "white", borderColor: "#e8dfcf", transform: "translateZ(20px) translateY(-50%)" }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#dcfce7" }}>
+                  <Check className="h-3.5 w-3.5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold" style={{ color: D }}>Agim B.</p>
+                  <p className="text-[9px]" style={{ color: "#a09589" }}>Tryeza 1 · Vendi 3</p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      </div>
+
+      {/* Scroll hint */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2, duration: 1 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+      >
+        <span className="text-xs tracking-widest uppercase" style={{ color: `${D}50` }}>Zbulo</span>
+        <motion.div
+          animate={{ y: [0, 6, 0] }} transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+          className="w-5 h-8 rounded-full border-2 flex items-start justify-center pt-1.5"
+          style={{ borderColor: `${D}30` }}
+        >
+          <div className="w-1 h-2 rounded-full" style={{ background: G }} />
+        </motion.div>
+      </motion.div>
+    </section>
+  );
+}
 
 // ─── Floating orb ─────────────────────────────────────────────────────────────
 function Orb({ cx, cy, r, color, dur }: { cx: string; cy: string; r: number; color: string; dur: number }) {
@@ -315,148 +585,7 @@ export function Landing() {
       </motion.nav>
 
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden pt-20 pb-28 md:pt-28 md:pb-36">
-        {/* Ambient orbs */}
-        <Orb cx="15%" cy="25%" r={280} color={`${G}18`} dur={8} />
-        <Orb cx="80%" cy="60%" r={240} color={`${R}25`} dur={10} />
-        <Orb cx="50%" cy="90%" r={200} color={`${"#8FA88A"}20`} dur={12} />
-
-        {/* Decorative rings */}
-        <svg className="absolute right-0 top-0 w-72 h-72 opacity-[0.06] pointer-events-none" viewBox="0 0 300 300">
-          <circle cx="300" cy="0" r="200" fill="none" stroke={G} strokeWidth="1.5" />
-          <circle cx="300" cy="0" r="130" fill="none" stroke={G} strokeWidth="1" />
-        </svg>
-
-        <div className="relative max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
-          {/* Left text */}
-          <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-8">
-            <motion.div variants={fadeUp} custom={0}>
-              <span className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium border" style={{ background: `${G}12`, borderColor: `${G}30`, color: G }}>
-                <Sparkles className="h-3.5 w-3.5" /> Platforma №1 për Ftesa Digjitale
-              </span>
-            </motion.div>
-
-            <motion.h1 variants={fadeUp} custom={1} className="font-serif font-bold leading-[1.08]" style={{ fontSize: "clamp(2.8rem,5vw,4rem)", color: D }}>
-              Dasma e ëndrrave<br />
-              <span style={{ color: G }}>fillon këtu.</span>
-            </motion.h1>
-
-            <motion.p variants={fadeUp} custom={2} className="text-lg leading-relaxed" style={{ color: "#7a6f64", maxWidth: 420 }}>
-              Ftesa digjitale, menaxhim mysafirësh, hall designer dhe QR check-in — gjithçka në një platformë të vetme, moderne dhe elegante.
-            </motion.p>
-
-            <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" asChild className="rounded-full px-9 text-base font-semibold shadow-xl text-white transition-transform hover:scale-[1.03]" style={{ background: `linear-gradient(135deg, ${G}, #b8934d)`, boxShadow: `0 8px 32px ${G}40` }}>
-                <Link href="/sign-up">Fillo Falas Sot <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild className="rounded-full px-9 text-base font-semibold transition-all hover:scale-[1.02]" style={{ borderColor: "#d4c5a9", color: D }}>
-                <Link href="/sign-in">Hyr në llogari</Link>
-              </Button>
-            </motion.div>
-
-            <motion.div variants={fadeUp} custom={4} className="flex flex-wrap gap-5 pt-1">
-              {[
-                { icon: Shield, text: "E sigurt & e kriptuar" },
-                { icon: Zap, text: "Setup në 5 minuta" },
-                { icon: Check, text: "Pa kreditim fillestar" },
-              ].map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-center gap-2 text-sm" style={{ color: "#a09589" }}>
-                  <Icon className="h-3.5 w-3.5" style={{ color: G }} /> {text}
-                </div>
-              ))}
-            </motion.div>
-          </motion.div>
-
-          {/* Right: invitation card */}
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="relative flex justify-center"
-          >
-            {/* Glow behind card */}
-            <div className="absolute inset-0 rounded-full blur-3xl opacity-20" style={{ background: `radial-gradient(circle, ${G}, transparent 70%)` }} />
-
-            {/* Card */}
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="relative w-72 rounded-3xl shadow-2xl overflow-hidden border"
-              style={{ background: "white", borderColor: "#e8dfcf" }}
-            >
-              <div className="h-1.5" style={{ background: `linear-gradient(90deg, ${G}, #e8c98a, ${G})` }} />
-              <div className="p-7 space-y-5">
-                <div className="text-center space-y-1">
-                  <p className="text-[10px] tracking-[4px] uppercase font-semibold" style={{ color: G }}>Ftesë Zyrtare</p>
-                  <p className="font-serif text-2xl font-bold" style={{ color: D }}>Artion & Mirela</p>
-                  <p className="text-xs" style={{ color: "#a09589" }}>14 Shtator 2025 · Prishtinë</p>
-                </div>
-
-                <div className="h-px" style={{ background: `linear-gradient(90deg, transparent, #d4c5a9, transparent)` }} />
-
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  {[["28","Ditë"],["14","Orë"],["32","Min"]].map(([n,l]) => (
-                    <div key={l} className="rounded-xl py-3" style={{ background: D }}>
-                      <p className="text-xl font-bold font-mono" style={{ color: G }}>{n}</p>
-                      <p className="text-[9px] uppercase tracking-wider mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{l}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex justify-center">
-                  <div className="w-20 h-20 rounded-xl p-2 border-2" style={{ borderColor: `${G}40` }}>
-                    <div className="w-full h-full grid grid-cols-5 gap-0.5">
-                      {Array.from({length:25}).map((_,i)=>(
-                        <div key={i} className="rounded-[1px]" style={{ background: [0,1,2,5,7,10,12,14,17,22,23,24,6,18].includes(i) ? D : "transparent" }} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  <button className="h-10 rounded-full text-xs font-semibold text-white transition-opacity hover:opacity-90" style={{ background: `linear-gradient(135deg,${G},#b8934d)` }}>✓ Po vij</button>
-                  <button className="h-10 rounded-full text-xs font-semibold border transition-colors hover:border-[#C9A96E]" style={{ borderColor: "#d4c5a9", color: "#7a6f64" }}>✗ Nuk vij</button>
-                </div>
-
-                <p className="text-center text-[9px]" style={{ color: "#c0b5a8" }}>
-                  Powered by <span style={{ color: G }} className="font-medium">NoaEvent</span>
-                </p>
-              </div>
-            </motion.div>
-
-            {/* Floating badges */}
-            <motion.div
-              animate={{ y: [0, -6, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-              className="absolute -top-4 -right-2 rounded-2xl px-4 py-3 shadow-xl border"
-              style={{ background: "white", borderColor: "#e8dfcf" }}
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#4ade80" }} />
-                <div>
-                  <p className="text-xs font-bold" style={{ color: D }}>248 RSVP</p>
-                  <p className="text-[10px]" style={{ color: "#a09589" }}>Konfirmuar sot</p>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              animate={{ y: [0, 8, 0] }} transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute -bottom-4 -left-2 rounded-2xl px-4 py-3 shadow-xl border"
-              style={{ background: "white", borderColor: "#e8dfcf" }}
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: `${G}18` }}>
-                  <Users className="h-4 w-4" style={{ color: G }} />
-                </div>
-                <div>
-                  <p className="text-xs font-bold" style={{ color: D }}>12,000+</p>
-                  <p className="text-[10px]" style={{ color: "#a09589" }}>Mysafirë</p>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
+      <HeroSection BASE={BASE} />
 
       {/* ── Marquee strip ────────────────────────────────────────────────────── */}
       <div className="border-y py-4 overflow-hidden" style={{ background: D, borderColor: "#2e2926" }}>
