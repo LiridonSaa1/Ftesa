@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "wouter";
+import { HallDesigner } from "@/components/HallDesigner";
 import {
   useGetEvent,
   useGetDashboardStats,
@@ -39,7 +40,7 @@ import {
 import {
   ArrowLeft, Users, LayoutGrid, Mail, QrCode, BarChart3,
   Plus, Trash2, Pencil, Search, Loader2, CheckCircle2,
-  X, CircleDot, UserCheck, UserX, Clock, Send
+  X, CircleDot, UserCheck, UserX, Clock, Send, Map,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "@/hooks/use-toast";
@@ -481,6 +482,7 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
     coupleName: invitation?.coupleName || event?.name || "",
     message: invitation?.message || "Me kënaqësi ju ftojmë të ndani gëzimin me ne!",
     template: invitation?.template || "classic",
+    couplePhoto: (invitation as any)?.couplePhoto || "",
     showCountdown: true,
     showMap: true,
   });
@@ -492,6 +494,7 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
         coupleName: invitation.coupleName || event?.name || "",
         message: invitation.message || "",
         template: invitation.template || "classic",
+        couplePhoto: (invitation as any).couplePhoto || "",
         showCountdown: invitation.showCountdown ?? true,
         showMap: invitation.showMap ?? true,
       });
@@ -547,6 +550,27 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
               onChange={e => setForm(f => ({ ...f, coupleName: e.target.value }))}
               placeholder="Alban & Zana"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-widest text-muted-foreground">Foto e Çiftit (URL)</Label>
+            <Input
+              className="rounded-none border-border bg-muted/10"
+              value={form.couplePhoto}
+              onChange={e => setForm(f => ({ ...f, couplePhoto: e.target.value }))}
+              placeholder="https://... (link i fotos nga Google Drive, Dropbox, etj.)"
+            />
+            {form.couplePhoto && (
+              <div className="relative mt-2 overflow-hidden rounded-none border border-border/50" style={{ height: 160 }}>
+                <img
+                  src={form.couplePhoto}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                  onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              </div>
+            )}
+            <p className="text-[10px] text-muted-foreground">Kjo foto do të shfaqet si hero background në faqen e ftesës digjitale.</p>
           </div>
           <div className="space-y-2">
             <Label className="text-xs uppercase tracking-widest text-muted-foreground">Mesazhi</Label>
@@ -760,6 +784,9 @@ export function EventWorkspace() {
           <TabsTrigger value="invitation" className="flex items-center gap-1.5">
             <Mail className="h-4 w-4" /> Ftesa
           </TabsTrigger>
+          <TabsTrigger value="hall" className="flex items-center gap-1.5">
+            <Map className="h-4 w-4" /> Salla
+          </TabsTrigger>
           <TabsTrigger value="checkin" className="flex items-center gap-1.5">
             <QrCode className="h-4 w-4" /> Check-in
           </TabsTrigger>
@@ -769,6 +796,9 @@ export function EventWorkspace() {
         <TabsContent value="guests"><GuestsTab eventId={eventId} /></TabsContent>
         <TabsContent value="tables"><TablesTab eventId={eventId} /></TabsContent>
         <TabsContent value="invitation"><InvitationTab eventId={eventId} event={event} /></TabsContent>
+        <TabsContent value="hall" className="h-[75vh] min-h-[600px]">
+          <HallDesigner eventId={eventId} />
+        </TabsContent>
         <TabsContent value="checkin"><CheckInTab eventId={eventId} /></TabsContent>
       </Tabs>
     </div>
