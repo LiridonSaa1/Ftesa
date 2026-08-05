@@ -29,7 +29,7 @@ export function Dashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-serif font-bold tracking-tight text-foreground">Pasqyra e Llogarisë</h1>
-          <p className="text-muted-foreground mt-1">Mirësevini në Dasma Pro. Këtu është një përmbledhje e eventeve tuaja.</p>
+          <p className="text-muted-foreground mt-1">Mirësevini në NoaInvite. Këtu është një përmbledhje e eventeve tuaja.</p>
         </div>
         <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <Link href="/events/new">

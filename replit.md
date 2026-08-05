@@ -1,4 +1,4 @@
-# Dasma Pro
+# NoaInvite
 
 Wedding and event management platform — lets organizers create digital invitations, manage guest lists, and design the hall seating layout.
 

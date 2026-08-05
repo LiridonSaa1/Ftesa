@@ -1,0 +1,9 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "BWMiGP5esQ35mu2H7DVzd"
+uri = "file://attached_assets/NoaInvite_transparent.png"
+type = "image"
+title = "NoaInvite Logo (transparent)"
+description = "Logo me background transparent"
