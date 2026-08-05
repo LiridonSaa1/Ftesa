@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Dasma Pro"
+description = "A premium digital wedding and event management platform for Albanian market. Organizers create digital invitations, manage guests, design halls with drag-and-drop table placement, assign seats, handle RSVP, and check in guests via QR code. Supports subscription plans (Basic, Pro, Custom) with automatic event limit enforcement."
+version = "1.0.0"
+id = "artifacts/dasma-pro"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25317
+
+[services.development]
+run = "pnpm --filter @workspace/dasma-pro run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/dasma-pro", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/dasma-pro/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25317"
+BASE_PATH = "/"

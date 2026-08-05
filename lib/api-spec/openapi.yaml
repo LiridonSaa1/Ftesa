@@ -3,20 +3,44 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Dasma Pro - Digital Wedding & Event Management Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication & user profile
+  - name: events
+    description: Event management
+  - name: guests
+    description: Guest management
+  - name: tables
+    description: Table management
+  - name: seats
+    description: Seat assignment
+  - name: hall
+    description: Hall designer layout
+  - name: invitations
+    description: Digital invitation management
+  - name: rsvp
+    description: RSVP (public endpoints)
+  - name: checkins
+    description: QR code check-in
+  - name: subscription
+    description: Subscription plan management
+  - name: dashboard
+    description: Dashboard & analytics
+  - name: admin
+    description: Admin panel
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +48,793 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── AUTH ────────────────────────────────────────────────────────────────
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          description: Unauthorized
+
+  /auth/profile:
+    patch:
+      operationId: updateProfile
+      tags: [auth]
+      summary: Update user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  # ─── SUBSCRIPTION ─────────────────────────────────────────────────────────
+  /subscription:
+    get:
+      operationId: getSubscription
+      tags: [subscription]
+      summary: Get current subscription
+      responses:
+        "200":
+          description: Current subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+
+    patch:
+      operationId: updateSubscription
+      tags: [subscription]
+      summary: Update subscription plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscriptionUpdate"
+      responses:
+        "200":
+          description: Updated subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+
+  # ─── DASHBOARD ────────────────────────────────────────────────────────────
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard statistics for an event
+      parameters:
+        - name: eventId
+          in: query
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/overview:
+    get:
+      operationId: getDashboardOverview
+      tags: [dashboard]
+      summary: Get overview across all events
+      responses:
+        "200":
+          description: Overview stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardOverview"
+
+  # ─── EVENTS ───────────────────────────────────────────────────────────────
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: List all events for the current user
+      responses:
+        "200":
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+
+    post:
+      operationId: createEvent
+      tags: [events]
+      summary: Create a new event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventInput"
+      responses:
+        "201":
+          description: Created event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "403":
+          description: Subscription limit reached
+
+  /events/{id}:
+    get:
+      operationId: getEvent
+      tags: [events]
+      summary: Get a single event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          description: Not found
+
+    patch:
+      operationId: updateEvent
+      tags: [events]
+      summary: Update an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUpdate"
+      responses:
+        "200":
+          description: Updated event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+
+    delete:
+      operationId: deleteEvent
+      tags: [events]
+      summary: Delete an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── GUESTS ───────────────────────────────────────────────────────────────
+  /events/{eventId}/guests:
+    get:
+      operationId: listGuests
+      tags: [guests]
+      summary: List guests for an event
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of guests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Guest"
+
+    post:
+      operationId: createGuest
+      tags: [guests]
+      summary: Add a guest to an event
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuestInput"
+      responses:
+        "201":
+          description: Created guest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guest"
+
+  /events/{eventId}/guests/import:
+    post:
+      operationId: importGuests
+      tags: [guests]
+      summary: Bulk import guests from CSV data
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuestImport"
+      responses:
+        "201":
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportResult"
+
+  /events/{eventId}/guests/{guestId}:
+    get:
+      operationId: getGuest
+      tags: [guests]
+      summary: Get a single guest
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: guestId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Guest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guest"
+
+    patch:
+      operationId: updateGuest
+      tags: [guests]
+      summary: Update a guest
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: guestId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuestUpdate"
+      responses:
+        "200":
+          description: Updated guest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guest"
+
+    delete:
+      operationId: deleteGuest
+      tags: [guests]
+      summary: Delete a guest
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: guestId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── TABLES ───────────────────────────────────────────────────────────────
+  /events/{eventId}/tables:
+    get:
+      operationId: listTables
+      tags: [tables]
+      summary: List tables for an event
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of tables
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Table"
+
+    post:
+      operationId: createTable
+      tags: [tables]
+      summary: Create a table
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TableInput"
+      responses:
+        "201":
+          description: Created table
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Table"
+
+  /events/{eventId}/tables/{tableId}:
+    patch:
+      operationId: updateTable
+      tags: [tables]
+      summary: Update a table
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: tableId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TableUpdate"
+      responses:
+        "200":
+          description: Updated table
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Table"
+
+    delete:
+      operationId: deleteTable
+      tags: [tables]
+      summary: Delete a table
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: tableId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── SEATS ────────────────────────────────────────────────────────────────
+  /events/{eventId}/seats:
+    get:
+      operationId: listSeats
+      tags: [seats]
+      summary: List all seat assignments for an event
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Seat assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SeatAssignment"
+
+    post:
+      operationId: assignSeat
+      tags: [seats]
+      summary: Assign a guest to a table/seat
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeatInput"
+      responses:
+        "201":
+          description: Seat assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeatAssignment"
+        "409":
+          description: Capacity exceeded
+
+  /events/{eventId}/seats/{seatId}:
+    delete:
+      operationId: removeSeat
+      tags: [seats]
+      summary: Remove a seat assignment
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: seatId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Removed
+
+  # ─── HALL LAYOUT ──────────────────────────────────────────────────────────
+  /events/{eventId}/hall:
+    get:
+      operationId: getHallLayout
+      tags: [hall]
+      summary: Get hall layout for an event
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Hall layout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HallLayout"
+
+    put:
+      operationId: saveHallLayout
+      tags: [hall]
+      summary: Save hall layout
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HallLayoutInput"
+      responses:
+        "200":
+          description: Saved layout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HallLayout"
+
+  # ─── INVITATIONS ──────────────────────────────────────────────────────────
+  /events/{eventId}/invitation:
+    get:
+      operationId: getInvitation
+      tags: [invitations]
+      summary: Get invitation settings for an event
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Invitation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invitation"
+
+    put:
+      operationId: saveInvitation
+      tags: [invitations]
+      summary: Create or update invitation settings
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvitationInput"
+      responses:
+        "200":
+          description: Saved invitation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invitation"
+
+  /events/{eventId}/invitation/send:
+    post:
+      operationId: sendInvitations
+      tags: [invitations]
+      summary: Send invitations to selected guests
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendInvitationsInput"
+      responses:
+        "200":
+          description: Send result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendResult"
+
+  # ─── RSVP (PUBLIC) ────────────────────────────────────────────────────────
+  /rsvp/{token}:
+    get:
+      operationId: getRsvp
+      tags: [rsvp]
+      summary: Get RSVP details by token (public)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: RSVP details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RsvpDetails"
+        "404":
+          description: Not found
+
+    post:
+      operationId: submitRsvp
+      tags: [rsvp]
+      summary: Submit RSVP response (public)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RsvpResponse"
+      responses:
+        "200":
+          description: Updated guest status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RsvpConfirmation"
+
+  # ─── CHECK-IN ─────────────────────────────────────────────────────────────
+  /checkin:
+    post:
+      operationId: checkIn
+      tags: [checkins]
+      summary: Check in a guest via QR token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckInInput"
+      responses:
+        "200":
+          description: Check-in result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckInResult"
+        "404":
+          description: Token not found
+
+  /events/{eventId}/guests/lookup:
+    get:
+      operationId: lookupGuest
+      tags: [checkins]
+      summary: Find guest by name (table finder)
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Matching guests with table info
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GuestLocation"
+
+  # ─── ADMIN ────────────────────────────────────────────────────────────────
+  /admin/users:
+    get:
+      operationId: adminListUsers
+      tags: [admin]
+      summary: List all users (admin)
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserList"
+
+  /admin/stats:
+    get:
+      operationId: adminGetStats
+      tags: [admin]
+      summary: Get platform-wide statistics (admin)
+      responses:
+        "200":
+          description: Platform stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
+  /admin/users/{userId}/subscription:
+    patch:
+      operationId: adminUpdateUserSubscription
+      tags: [admin]
+      summary: Update a user's subscription (admin)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscriptionUpdate"
+      responses:
+        "200":
+          description: Updated subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +845,824 @@ components:
       required:
         - status
 
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: ["string", "null"]
+        lastName:
+          type: ["string", "null"]
+        role:
+          type: string
+          enum: [organizer, admin]
+        subscriptionPlan:
+          type: string
+          enum: [basic, pro, custom]
+        createdAt:
+          type: string
+      required:
+        - id
+        - email
+        - role
+        - subscriptionPlan
+        - createdAt
+
+    ProfileUpdate:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+
+    Subscription:
+      type: object
+      properties:
+        plan:
+          type: string
+          enum: [basic, pro, custom]
+        eventLimit:
+          type: ["number", "null"]
+        currentEventCount:
+          type: number
+        price:
+          type: ["number", "null"]
+        features:
+          type: array
+          items:
+            type: string
+      required:
+        - plan
+        - currentEventCount
+        - features
+
+    SubscriptionUpdate:
+      type: object
+      properties:
+        plan:
+          type: string
+          enum: [basic, pro, custom]
+      required:
+        - plan
+
+    DashboardStats:
+      type: object
+      properties:
+        totalGuests:
+          type: number
+        invitationsSent:
+          type: number
+        confirmed:
+          type: number
+        declined:
+          type: number
+        pending:
+          type: number
+        checkedIn:
+          type: number
+        totalTables:
+          type: number
+        totalCapacity:
+          type: number
+        seatedGuests:
+          type: number
+        unseatedConfirmed:
+          type: number
+      required:
+        - totalGuests
+        - invitationsSent
+        - confirmed
+        - declined
+        - pending
+        - checkedIn
+        - totalTables
+        - totalCapacity
+        - seatedGuests
+        - unseatedConfirmed
+
+    DashboardOverview:
+      type: object
+      properties:
+        totalEvents:
+          type: number
+        totalGuests:
+          type: number
+        upcomingEvents:
+          type: array
+          items:
+            $ref: "#/components/schemas/Event"
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityItem"
+      required:
+        - totalEvents
+        - totalGuests
+        - upcomingEvents
+        - recentActivity
+
+    ActivityItem:
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        timestamp:
+          type: string
+      required:
+        - type
+        - description
+        - timestamp
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: number
+        userId:
+          type: string
+        name:
+          type: string
+        date:
+          type: string
+        time:
+          type: ["string", "null"]
+        venue:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        dressCode:
+          type: ["string", "null"]
+        phoneContact:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [draft, active, completed, cancelled]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - userId
+        - name
+        - date
+        - status
+        - createdAt
+        - updatedAt
+
+    EventInput:
+      type: object
+      properties:
+        name:
+          type: string
+        date:
+          type: string
+        time:
+          type: string
+        venue:
+          type: string
+        address:
+          type: string
+        description:
+          type: string
+        dressCode:
+          type: string
+        phoneContact:
+          type: string
+      required:
+        - name
+        - date
+
+    EventUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        date:
+          type: string
+        time:
+          type: string
+        venue:
+          type: string
+        address:
+          type: string
+        description:
+          type: string
+        dressCode:
+          type: string
+        phoneContact:
+          type: string
+        status:
+          type: string
+          enum: [draft, active, completed, cancelled]
+
+    Guest:
+      type: object
+      properties:
+        id:
+          type: number
+        eventId:
+          type: number
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        partySize:
+          type: number
+        category:
+          type: string
+          enum: [family, friends, colleagues, other]
+        status:
+          type: string
+          enum: [pending, invited, confirmed, declined, checked_in]
+        tableId:
+          type: ["number", "null"]
+        seatNumber:
+          type: ["number", "null"]
+        rsvpToken:
+          type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - eventId
+        - firstName
+        - lastName
+        - partySize
+        - category
+        - status
+        - rsvpToken
+        - createdAt
+
+    GuestInput:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        partySize:
+          type: number
+        category:
+          type: string
+          enum: [family, friends, colleagues, other]
+        notes:
+          type: string
+      required:
+        - firstName
+        - lastName
+        - partySize
+        - category
+
+    GuestUpdate:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        partySize:
+          type: number
+        category:
+          type: string
+          enum: [family, friends, colleagues, other]
+        status:
+          type: string
+          enum: [pending, invited, confirmed, declined, checked_in]
+        notes:
+          type: string
+
+    GuestImport:
+      type: object
+      properties:
+        guests:
+          type: array
+          items:
+            $ref: "#/components/schemas/GuestInput"
+      required:
+        - guests
+
+    ImportResult:
+      type: object
+      properties:
+        imported:
+          type: number
+        failed:
+          type: number
+        errors:
+          type: array
+          items:
+            type: string
+      required:
+        - imported
+        - failed
+        - errors
+
+    Table:
+      type: object
+      properties:
+        id:
+          type: number
+        eventId:
+          type: number
+        name:
+          type: string
+        shape:
+          type: string
+          enum: [round, square, rectangle, oval]
+        capacity:
+          type: number
+        currentCount:
+          type: number
+        status:
+          type: string
+          enum: [empty, partial, full]
+        positionX:
+          type: ["number", "null"]
+        positionY:
+          type: ["number", "null"]
+        rotation:
+          type: ["number", "null"]
+        width:
+          type: ["number", "null"]
+        height:
+          type: ["number", "null"]
+      required:
+        - id
+        - eventId
+        - name
+        - shape
+        - capacity
+        - currentCount
+        - status
+
+    TableInput:
+      type: object
+      properties:
+        name:
+          type: string
+        shape:
+          type: string
+          enum: [round, square, rectangle, oval]
+        capacity:
+          type: number
+        positionX:
+          type: number
+        positionY:
+          type: number
+        rotation:
+          type: number
+        width:
+          type: number
+        height:
+          type: number
+      required:
+        - name
+        - shape
+        - capacity
+
+    TableUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        shape:
+          type: string
+          enum: [round, square, rectangle, oval]
+        capacity:
+          type: number
+        positionX:
+          type: number
+        positionY:
+          type: number
+        rotation:
+          type: number
+        width:
+          type: number
+        height:
+          type: number
+
+    SeatAssignment:
+      type: object
+      properties:
+        id:
+          type: number
+        eventId:
+          type: number
+        guestId:
+          type: number
+        tableId:
+          type: number
+        seatNumber:
+          type: ["number", "null"]
+        guestName:
+          type: string
+        tableName:
+          type: string
+        guestStatus:
+          type: string
+      required:
+        - id
+        - eventId
+        - guestId
+        - tableId
+        - guestName
+        - tableName
+        - guestStatus
+
+    SeatInput:
+      type: object
+      properties:
+        guestId:
+          type: number
+        tableId:
+          type: number
+        seatNumber:
+          type: number
+      required:
+        - guestId
+        - tableId
+
+    HallLayout:
+      type: object
+      properties:
+        id:
+          type: number
+        eventId:
+          type: number
+        width:
+          type: number
+        height:
+          type: number
+        elements:
+          type: array
+          items:
+            $ref: "#/components/schemas/HallElement"
+        updatedAt:
+          type: string
+      required:
+        - id
+        - eventId
+        - width
+        - height
+        - elements
+        - updatedAt
+
+    HallElement:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [table, stage, dance_floor, dj, band, buffet, emergency_exit, entrance]
+        x:
+          type: number
+        y:
+          type: number
+        width:
+          type: number
+        height:
+          type: number
+        rotation:
+          type: number
+        label:
+          type: ["string", "null"]
+        tableId:
+          type: ["number", "null"]
+        shape:
+          type: ["string", "null"]
+      required:
+        - id
+        - type
+        - x
+        - y
+        - width
+        - height
+        - rotation
+
+    HallLayoutInput:
+      type: object
+      properties:
+        width:
+          type: number
+        height:
+          type: number
+        elements:
+          type: array
+          items:
+            $ref: "#/components/schemas/HallElement"
+      required:
+        - width
+        - height
+        - elements
+
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: number
+        eventId:
+          type: number
+        template:
+          type: string
+          enum: [classic, modern, floral, minimalist, luxury]
+        couplePhoto:
+          type: ["string", "null"]
+        coupleName:
+          type: string
+        message:
+          type: ["string", "null"]
+        musicUrl:
+          type: ["string", "null"]
+        showCountdown:
+          type: boolean
+        showMap:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - eventId
+        - template
+        - coupleName
+        - showCountdown
+        - showMap
+        - createdAt
+
+    InvitationInput:
+      type: object
+      properties:
+        template:
+          type: string
+          enum: [classic, modern, floral, minimalist, luxury]
+        couplePhoto:
+          type: string
+        coupleName:
+          type: string
+        message:
+          type: string
+        musicUrl:
+          type: string
+        showCountdown:
+          type: boolean
+        showMap:
+          type: boolean
+      required:
+        - template
+        - coupleName
+
+    SendInvitationsInput:
+      type: object
+      properties:
+        guestIds:
+          type: array
+          items:
+            type: number
+        channels:
+          type: array
+          items:
+            type: string
+            enum: [email, sms, whatsapp, link]
+      required:
+        - guestIds
+        - channels
+
+    SendResult:
+      type: object
+      properties:
+        sent:
+          type: number
+        failed:
+          type: number
+        links:
+          type: array
+          items:
+            $ref: "#/components/schemas/GuestLink"
+      required:
+        - sent
+        - failed
+        - links
+
+    GuestLink:
+      type: object
+      properties:
+        guestId:
+          type: number
+        guestName:
+          type: string
+        rsvpUrl:
+          type: string
+        qrToken:
+          type: string
+      required:
+        - guestId
+        - guestName
+        - rsvpUrl
+        - qrToken
+
+    RsvpDetails:
+      type: object
+      properties:
+        guestName:
+          type: string
+        eventName:
+          type: string
+        eventDate:
+          type: string
+        eventTime:
+          type: ["string", "null"]
+        venue:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        dressCode:
+          type: ["string", "null"]
+        currentStatus:
+          type: string
+        invitation:
+          $ref: "#/components/schemas/Invitation"
+      required:
+        - guestName
+        - eventName
+        - eventDate
+        - currentStatus
+        - invitation
+
+    RsvpResponse:
+      type: object
+      properties:
+        attending:
+          type: boolean
+      required:
+        - attending
+
+    RsvpConfirmation:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+        guestName:
+          type: string
+        tableInfo:
+          type: ["string", "null"]
+      required:
+        - status
+        - message
+        - guestName
+
+    CheckInInput:
+      type: object
+      properties:
+        qrToken:
+          type: string
+        eventId:
+          type: number
+      required:
+        - qrToken
+        - eventId
+
+    CheckInResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        guestName:
+          type: string
+        tableName:
+          type: ["string", "null"]
+        seatNumber:
+          type: ["number", "null"]
+        status:
+          type: string
+        alreadyCheckedIn:
+          type: boolean
+      required:
+        - success
+        - guestName
+        - status
+        - alreadyCheckedIn
+
+    GuestLocation:
+      type: object
+      properties:
+        guestId:
+          type: number
+        firstName:
+          type: string
+        lastName:
+          type: string
+        tableName:
+          type: ["string", "null"]
+        tableId:
+          type: ["number", "null"]
+        seatNumber:
+          type: ["number", "null"]
+        status:
+          type: string
+      required:
+        - guestId
+        - firstName
+        - lastName
+        - status
+
+    AdminUserList:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminUser"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+      required:
+        - users
+        - total
+        - page
+        - limit
+
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: ["string", "null"]
+        lastName:
+          type: ["string", "null"]
+        role:
+          type: string
+        subscriptionPlan:
+          type: string
+        eventCount:
+          type: number
+        createdAt:
+          type: string
+      required:
+        - id
+        - email
+        - role
+        - subscriptionPlan
+        - eventCount
+        - createdAt
+
+    AdminStats:
+      type: object
+      properties:
+        totalUsers:
+          type: number
+        totalEvents:
+          type: number
+        totalGuests:
+          type: number
+        usersByPlan:
+          type: object
+          properties:
+            basic:
+              type: number
+            pro:
+              type: number
+            custom:
+              type: number
+          required:
+            - basic
+            - pro
+            - custom
+        revenueEstimate:
+          type: number
+      required:
+        - totalUsers
+        - totalEvents
+        - totalGuests
+        - usersByPlan
+        - revenueEstimate

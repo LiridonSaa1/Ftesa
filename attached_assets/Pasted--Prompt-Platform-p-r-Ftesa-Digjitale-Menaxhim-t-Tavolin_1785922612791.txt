@@ -1,0 +1,296 @@
+# Prompt – Platformë për Ftesa Digjitale & Menaxhim të Tavolinave për Dasma
+
+Krijo një aplikacion modern (Web + Mobile) për organizimin e dasmave dhe eventeve, ku organizatori mund të krijojë ftesa digjitale, të planifikojë sallën dhe të menaxhojë mysafirët.
+
+## 1. Dashboard
+
+Organizatori duhet të shohë:
+
+* Numrin total të mysafirëve
+* Numrin e ftesave të dërguara
+* Numrin e konfirmimeve (Po)
+* Numrin e refuzimeve (Jo)
+* Numrin e përgjigjeve në pritje
+* Numrin e tavolinave
+* Kapacitetin total të sallës
+
+---
+
+# 2. Menaxhimi i Mysafirëve
+
+Organizatori mund të:
+
+* Shtojë mysafirë
+* Importojë nga Excel/CSV
+* Ndajë mysafirët sipas familjeve
+* Shtojë:
+
+  * Emër
+  * Mbiemër
+  * Telefon
+  * Email
+  * Numrin e personave
+  * Kategori (Familje, Shoqëri, Kolegë, etj.)
+  * Statusin e ftesës
+
+Statuset:
+
+* Në pritje
+* Ftesa u dërgua
+* Konfirmoi pjesëmarrjen
+* Refuzoi
+* Check-in në sallë
+
+---
+
+# 3. Krijimi i Sallës (Hall Designer)
+
+Organizatori mund të krijojë një pamje vizuale të sallës.
+
+Mund të:
+
+* Vendosë madhësinë e sallës
+* Zgjedhë formën e tavolinave:
+
+  * Rrethore
+  * Katror
+  * Drejtkëndëshe
+  * Oval
+* Shtojë tavolina me drag & drop
+* Lëvizë tavolinat
+* Rrotullojë tavolinat
+* Fshijë tavolinat
+* Ndryshojë madhësinë e tyre
+* Shtojë skenën
+* Pistën e vallëzimit
+* DJ
+* Bandën muzikore
+* Bufenë
+* Daljet emergjente
+* Hyrjen kryesore
+
+---
+
+# 4. Tavolinat
+
+Për çdo tavolinë:
+
+* Emri (Tavolina 1)
+* Numri i karrigeve
+* Kapaciteti maksimal
+* Numri aktual i personave
+* Statusi:
+
+  * Plot
+  * Pjesërisht plot
+  * Bosh
+
+Kur klikohet tavolina:
+
+Shfaqet lista e mysafirëve të ulur aty.
+
+Organizatori mund të:
+
+* Tërheqë (drag) mysafirët
+* T'i zhvendosë në tavolina të tjera
+* Ndryshojë vendet
+* Heqë një mysafir nga tavolina
+
+Sistemi nuk lejon tejkalimin e kapacitetit.
+
+---
+
+# 5. Seat Planner
+
+Pamje vizuale me:
+
+* Tavolinat
+* Karriget
+* Emrin e çdo personi
+
+Drag & Drop:
+
+* Person → Karrige
+* Person → Tavolinë tjetër
+
+Ngjyra të ndryshme:
+
+* Jeshile = Konfirmuar
+* Portokalli = Në pritje
+* Kuqe = Refuzuar
+
+---
+
+# 6. Ftesa Digjitale
+
+Organizatori zgjedh një template.
+
+Template përmban:
+
+* Fotot e çiftit
+* Emrat
+* Datën
+* Orën
+* Lokacionin
+* Google Maps
+* Dress Code
+* Numër telefoni
+* Countdown
+* Muzikë opsionale
+* Animacione elegante
+
+---
+
+# 7. Dërgimi i Ftesave
+
+Dërgo:
+
+* SMS
+* WhatsApp
+* Email
+* Link privat
+
+Çdo mysafir merr një link unik.
+
+---
+
+# 8. RSVP
+
+Kur hap ftesën:
+
+Shfaqen:
+
+* Emri
+* Detajet e eventit
+* Lokacioni
+* Butoni "Do të vij"
+* Butoni "Nuk vij"
+
+Nëse zgjedh "Do të vij":
+
+* Konfirmohet automatikisht
+* Përditësohet dashboard-i
+
+---
+
+# 9. QR Code
+
+Çdo ftesë gjeneron:
+
+* QR Code unik
+
+Në hyrje:
+
+Stafi e skanon.
+
+Sistemi shfaq:
+
+* Emrin
+* Tavolinën
+* Numrin e karriges
+* Statusin
+
+Pastaj shënohet si "Check-in".
+
+---
+
+# 10. Gjetja e Tavolinës
+
+Mysafiri mund të kërkojë:
+
+* Emrin
+* Mbiemrin
+
+Sistemi tregon:
+
+* Tavolina
+* Numri i vendit
+* Një mini-hartë të sallës
+
+---
+
+# 11. Admin Panel
+
+Administratori mund të:
+
+* Menaxhojë përdoruesit
+* Menaxhojë abonimet
+* Menaxhojë template-t
+* Menaxhojë sallat
+* Menaxhojë eventet
+* Shikojë statistika
+* Shikojë pagesat
+* Menaxhojë njoftimet
+* Menaxhojë raportimet
+
+---
+
+# 12. Paneli i Organizatorit
+
+Organizatori mund të:
+
+* Krijojë evente
+* Krijojë sallën
+* Menaxhojë mysafirët
+* Dërgojë ftesa
+* Shikojë RSVP
+* Organizojë tavolinat
+* Gjenerojë QR Code
+* Eksportojë PDF
+* Eksportojë Excel
+* Printojë planin e sallës
+
+---
+
+# 13. Teknologjitë
+
+Frontend:
+
+* React Native (Expo)
+* React Web
+* TypeScript
+
+Backend:
+
+* Supabase
+
+Storage:
+
+* Supabase Storage
+
+Authentication:
+
+* Supabase Auth
+
+Realtime:
+
+* Supabase Realtime
+
+Maps:
+
+* Google Maps
+
+QR:
+
+* QR Code Generator
+
+Drag & Drop:
+
+* React DnD ose dnd-kit
+
+Canvas për sallën:
+
+* React Konva ose Fabric.js
+
+---
+
+# 14. Dizajni
+
+* Stil premium dhe elegant
+* Glassmorphism
+* Efekte të buta
+* Ngjyra bardhë, ari dhe bezhë
+* Animacione të lëmuara
+* Plotësisht responsive
+* Dark Mode dhe Light Mode
+* UI moderne me fokus në thjeshtësi dhe lehtësi përdorimi.
