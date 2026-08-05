@@ -694,31 +694,31 @@ export function Landing() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-[#111]">
+      <section className="relative overflow-hidden bg-[#FEFAF5]">
         {/* Background gradient blobs */}
         <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-[#C9A96E]/10 blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-[#C9A96E]/5 blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-[#C9A96E]/8 blur-3xl" />
 
         <div className="relative max-w-6xl mx-auto px-6 py-28 md:py-36 grid md:grid-cols-2 gap-16 items-center">
           {/* Left */}
           <div className="space-y-8">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#C9A96E]/15 border border-[#C9A96E]/25 px-4 py-1.5 text-sm text-[#C9A96E] font-medium">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-4 py-1.5 text-sm text-primary font-medium">
               <Sparkles className="h-3.5 w-3.5" /> Platforma №1 për Ftesa Digjitale
             </div>
-            <h1 className="font-serif text-5xl md:text-6xl font-bold text-white leading-[1.1]">
+            <h1 className="font-serif text-5xl md:text-6xl font-bold text-[#1a1a1a] leading-[1.1]">
               Dasma e ëndrrave<br />
               <span className="text-[#C9A96E]">fillon këtu.</span>
             </h1>
-            <p className="text-white/60 text-xl leading-relaxed max-w-md">
+            <p className="text-muted-foreground text-xl leading-relaxed max-w-md">
               Ftesa digjitale, menaxhim mysafirësh, hall designer dhe QR check-in — gjithçka në një platformë moderne.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" asChild className="bg-[#C9A96E] hover:bg-[#b8934d] text-white text-base px-8 rounded-full shadow-lg shadow-[#C9A96E]/25">
+              <Button size="lg" asChild className="bg-[#1a1a1a] hover:bg-[#333] text-white text-base px-8 rounded-full shadow-lg">
                 <Link href="/sign-up">
                   Fillo Falas Sot <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild className="text-base px-8 rounded-full border-white/20 text-white hover:bg-white/10 hover:border-white/40 bg-transparent">
+              <Button size="lg" variant="outline" asChild className="text-base px-8 rounded-full border-[#d4c5a9] text-[#1a1a1a] hover:border-[#C9A96E] hover:bg-[#C9A96E]/5">
                 <Link href="/sign-in">Hyr në llogari</Link>
               </Button>
             </div>
@@ -729,7 +729,7 @@ export function Landing() {
                 { icon: <Zap className="h-3.5 w-3.5" />, text: "Setup në 5 minuta" },
                 { icon: <Check className="h-3.5 w-3.5" />, text: "Pa kreditim fillestar" },
               ].map((b) => (
-                <div key={b.text} className="flex items-center gap-1.5 text-sm text-white/50">
+                <div key={b.text} className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   {b.icon} {b.text}
                 </div>
               ))}
