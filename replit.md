@@ -1,6 +1,6 @@
-# [Project name]
+# Dasma Pro
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Wedding and event management platform — lets organizers create digital invitations, manage guest lists, and design the hall seating layout.
 
 ## Run & Operate
 
