@@ -11,18 +11,23 @@ import { AppRouter } from "./AppRouter";
 
 const queryClient = new QueryClient();
 
-const clerkPubKey = publishableKeyFromHost(
-  window.location.hostname,
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
-);
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+// Only activate Clerk when an explicit publishable key is provided.
+// publishableKeyFromHost can derive a key from the Replit hostname even without
+// the env var, which causes Clerk to attempt — and fail — to load its JS bundle.
+const clerkMissing = !import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const clerkPubKey = clerkMissing
+  ? ""
+  : publishableKeyFromHost(
+      window.location.hostname,
+      import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+    );
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath) ? path.slice(basePath.length) || "/" : path;
 }
-
-const clerkMissing = !clerkPubKey;
 
 // Build appearance object matching the luxury gold/white/beige theme
 const clerkAppearance = {
