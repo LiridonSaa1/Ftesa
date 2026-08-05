@@ -4,6 +4,7 @@ import { ClerkProvider, SignIn, SignUp, Show, useClerk } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { shadcn } from '@clerk/themes';
 import { Switch, Route, useLocation, Router as WouterRouter } from 'wouter';
+
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -137,12 +138,41 @@ function ClerkProviderWithRoutes() {
   );
 }
 
+function DemoAuthPage({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <div className="flex min-h-[100dvh] items-center justify-center bg-gradient-to-br from-[#FEFAF5] to-[#F5EDD9] px-4">
+      <div className="w-full max-w-sm rounded-2xl border border-[#d4c5a9] bg-[#FEFAF5] p-8 shadow-2xl text-center space-y-4">
+        <div className="inline-flex rounded-xl bg-primary/10 p-3 mb-2">
+          <svg className="h-7 w-7 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h2 className="font-serif text-2xl font-bold text-foreground">{title}</h2>
+        <p className="text-muted-foreground text-sm leading-relaxed">{subtitle}</p>
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Autentifikimi kërkon konfigurimin e <strong>Clerk</strong>.<br />
+          Shtoni <code className="rounded bg-amber-100 px-1 font-mono text-xs">VITE_CLERK_PUBLISHABLE_KEY</code> në secrets.
+        </div>
+        <a href={basePath || "/"} className="block mt-2 text-sm text-primary hover:underline">← Kthehu në faqen kryesore</a>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   if (clerkMissing) {
-    // No Clerk key configured — show Landing page in preview/demo mode
+    // No Clerk key configured — show Landing + informational auth pages in demo mode
     return (
       <WouterRouter base={basePath}>
-        <Landing />
+        <Switch>
+          <Route path="/sign-in">
+            <DemoAuthPage title="Hyrja në llogari" subtitle="Kyçuni me emailin dhe fjalëkalimin tuaj." />
+          </Route>
+          <Route path="/sign-up">
+            <DemoAuthPage title="Krijoni llogarinë" subtitle="Filloni falas sot dhe menaxhoni eventin tuaj." />
+          </Route>
+          <Route>
+            <Landing />
+          </Route>
+        </Switch>
       </WouterRouter>
     );
   }
