@@ -89,21 +89,21 @@ function OverviewTab({ eventId }: { eventId: number }) {
     : [];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28 rounded-none" />)}
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {items.map((item) => (
-            <Card key={item.label} className="border-primary/20 bg-card/50 backdrop-blur">
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{item.label}</CardTitle>
-                <span className="text-primary">{item.icon}</span>
+            <Card key={item.label} className="border-border/50 bg-card/40 rounded-none shadow-none hover:border-primary/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0">
+                <CardTitle className="text-xs uppercase tracking-widest font-medium text-muted-foreground">{item.label}</CardTitle>
+                <span className="text-primary/70">{item.icon}</span>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold font-serif">{item.value}</p>
+                <p className="text-3xl font-serif">{item.value}</p>
               </CardContent>
             </Card>
           ))}
@@ -265,62 +265,62 @@ function GuestsTab({ eventId }: { eventId: number }) {
       </div>
 
       {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}
+        <div className="space-y-3 pt-6">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-none" />)}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed rounded-xl">
-          <Users className="h-10 w-10 text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">Nuk u gjet asnjë mysafir.</p>
+        <div className="flex flex-col items-center justify-center py-20 text-center border border-border/50 rounded-none bg-card/20 mt-6">
+          <Users className="h-8 w-8 text-primary/40 mb-4" />
+          <p className="text-muted-foreground font-light italic font-serif">Nuk u gjet asnjë mysafir.</p>
         </div>
       ) : (
-        <div className="rounded-xl border overflow-hidden">
+        <div className="rounded-none border border-border/50 overflow-hidden mt-6 bg-card/30">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50 border-b">
+            <thead className="bg-muted/20 border-b border-border/50">
               <tr>
-                <th className="text-left px-4 py-3 font-medium">Emri</th>
-                <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Telefon</th>
-                <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Kategoria</th>
-                <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Personat</th>
-                <th className="text-left px-4 py-3 font-medium">Statusi</th>
-                <th className="px-4 py-3" />
+                <th className="text-left px-6 py-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Emri</th>
+                <th className="text-left px-6 py-4 font-medium text-xs uppercase tracking-widest text-muted-foreground hidden md:table-cell">Telefon</th>
+                <th className="text-left px-6 py-4 font-medium text-xs uppercase tracking-widest text-muted-foreground hidden sm:table-cell">Kategoria</th>
+                <th className="text-left px-6 py-4 font-medium text-xs uppercase tracking-widest text-muted-foreground hidden sm:table-cell">Personat</th>
+                <th className="text-left px-6 py-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Statusi</th>
+                <th className="px-6 py-4" />
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-border/30">
               {filtered.map((guest) => (
-                <tr key={guest.id} className="bg-card hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 font-medium">
+                <tr key={guest.id} className="hover:bg-muted/10 transition-colors">
+                  <td className="px-6 py-4 font-serif text-base">
                     {guest.firstName} {guest.lastName}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{guest.phone || "—"}</td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className="text-xs bg-muted px-2 py-1 rounded-full">
+                  <td className="px-6 py-4 text-muted-foreground font-light hidden md:table-cell">{guest.phone || "—"}</td>
+                  <td className="px-6 py-4 hidden sm:table-cell">
+                    <span className="text-[10px] uppercase tracking-wider bg-muted/50 text-muted-foreground px-2 py-1 rounded-none border border-border/50">
                       {CATEGORY_LABELS[guest.category] || guest.category}
                     </span>
                   </td>
-                  <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground">{guest.partySize}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4 hidden sm:table-cell text-muted-foreground font-light">{guest.partySize}</td>
+                  <td className="px-6 py-4">
                     <Select
                       value={guest.status}
                       onValueChange={(val) => handleStatusChange(guest.id, val)}
                     >
-                      <SelectTrigger className="h-7 w-32 text-xs border-0 bg-transparent p-0">
-                        <span className={cn("text-xs px-2 py-1 rounded-full font-medium", STATUS_COLORS[guest.status])}>
+                      <SelectTrigger className="h-8 w-32 text-xs border-0 bg-transparent p-0">
+                        <span className={cn("text-[10px] uppercase tracking-wider px-2 py-1 rounded-none font-medium", STATUS_COLORS[guest.status])}>
                           {STATUS_LABELS[guest.status] || guest.status}
                         </span>
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="rounded-none border-border">
                         {Object.entries(STATUS_LABELS).map(([v, l]) => (
-                          <SelectItem key={v} value={v} className="text-xs">{l}</SelectItem>
+                          <SelectItem key={v} value={v} className="text-[10px] uppercase tracking-wider">{l}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4 text-right">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-none"
                       onClick={() => handleDelete(guest.id)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -332,7 +332,7 @@ function GuestsTab({ eventId }: { eventId: number }) {
           </table>
         </div>
       )}
-      <p className="text-xs text-muted-foreground">{filtered.length} mysafirë</p>
+      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-4">{filtered.length} mysafirë</p>
     </div>
   );
 }
@@ -371,44 +371,44 @@ function TablesTab({ eventId }: { eventId: number }) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-end">
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90 text-white">
+            <Button className="bg-primary hover:bg-primary/90 text-white rounded-none uppercase tracking-widest text-xs h-10 px-6">
               <Plus className="mr-2 h-4 w-4" /> Shto Tavolinë
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="rounded-none border-border">
             <DialogHeader>
               <DialogTitle className="font-serif">Shto Tavolinë</DialogTitle>
             </DialogHeader>
-            <div className="space-y-3 py-2">
-              <div className="space-y-1">
-                <Label>Emri *</Label>
-                <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Tavolina 1" />
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">Emri *</Label>
+                <Input className="rounded-none border-border bg-muted/10" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Tavolina 1" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label>Forma</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-widest text-muted-foreground">Forma</Label>
                   <Select value={form.shape} onValueChange={v => setForm(f => ({ ...f, shape: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="rounded-none border-border bg-muted/10"><SelectValue /></SelectTrigger>
+                    <SelectContent className="rounded-none border-border">
                       {Object.entries(SHAPE_LABELS).map(([v, l]) => (
                         <SelectItem key={v} value={v}>{l}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1">
-                  <Label>Kapaciteti</Label>
-                  <Input type="number" min="1" max="50" value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: e.target.value }))} />
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-widest text-muted-foreground">Kapaciteti</Label>
+                  <Input className="rounded-none border-border bg-muted/10" type="number" min="1" max="50" value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: e.target.value }))} />
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setAddOpen(false)}>Anulo</Button>
-              <Button onClick={handleAdd} disabled={!form.name || createTable.isPending} className="bg-primary hover:bg-primary/90 text-white">
+              <Button variant="outline" className="rounded-none text-xs uppercase tracking-widest" onClick={() => setAddOpen(false)}>Anulo</Button>
+              <Button onClick={handleAdd} disabled={!form.name || createTable.isPending} className="bg-primary hover:bg-primary/90 text-white rounded-none text-xs uppercase tracking-widest">
                 {createTable.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Shto
               </Button>
@@ -418,46 +418,46 @@ function TablesTab({ eventId }: { eventId: number }) {
       </div>
 
       {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 rounded-none" />)}
         </div>
       ) : tables.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed rounded-xl">
-          <LayoutGrid className="h-10 w-10 text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">Nuk ka tavolina. Shtoni tavolinën e parë.</p>
+        <div className="flex flex-col items-center justify-center py-20 text-center border border-border/50 rounded-none bg-card/20">
+          <LayoutGrid className="h-8 w-8 text-primary/40 mb-4" />
+          <p className="text-muted-foreground font-light italic font-serif">Nuk ka tavolina. Shtoni tavolinën e parë.</p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {tables.map((table) => {
             const s = getStatus(table);
             return (
-              <Card key={table.id} className="border-primary/20 bg-card/50">
-                <CardHeader className="pb-2">
+              <Card key={table.id} className="border-border/50 bg-card/40 rounded-none shadow-none hover:border-primary/30 transition-colors">
+                <CardHeader className="pb-4 border-b border-border/30">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="font-serif text-base">{table.name}</CardTitle>
+                    <CardTitle className="font-serif text-lg">{table.name}</CardTitle>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-red-500"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-none"
                       onClick={() => deleteTable.mutate({ eventId, tableId: table.id }, { onSuccess: invalidate })}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-4 pt-6">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{SHAPE_LABELS[table.shape]}</span>
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", s.color)}>{s.label}</span>
+                    <span className="text-muted-foreground font-light">{SHAPE_LABELS[table.shape]}</span>
+                    <span className={cn("text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-none font-medium", s.color)}>{s.label}</span>
                   </div>
-                  <div className="w-full bg-muted rounded-full h-2">
+                  <div className="w-full bg-muted/30 rounded-none h-1.5 overflow-hidden">
                     <div
-                      className="bg-primary h-2 rounded-full transition-all"
+                      className="bg-primary h-full transition-all"
                       style={{ width: `${Math.min(100, (table.currentGuests / table.capacity) * 100)}%` }}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground text-right">
-                    {table.currentGuests} / {table.capacity} vendë
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground text-right mt-2">
+                    {table.currentGuests} / {table.capacity} vende
                   </p>
                 </CardContent>
               </Card>
@@ -532,76 +532,77 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
   ];
 
   return (
-    <div className="space-y-6 max-w-xl">
-      <Card className="border-primary/20 bg-card/50">
-        <CardHeader>
-          <CardTitle className="font-serif">Konfiguro Ftesën</CardTitle>
-          <CardDescription>Personalizoni ftesën digjitale për mysafirët tuaj.</CardDescription>
+    <div className="space-y-8 max-w-xl">
+      <Card className="border-border/50 bg-card/40 rounded-none shadow-none">
+        <CardHeader className="border-b border-border/30 pb-4">
+          <CardTitle className="font-serif text-xl">Konfiguro Ftesën</CardTitle>
+          <CardDescription className="font-light mt-1">Personalizoni ftesën digjitale për mysafirët tuaj.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-1">
-            <Label>Emri i Çiftit</Label>
+        <CardContent className="space-y-6 pt-6">
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-widest text-muted-foreground">Emri i Çiftit</Label>
             <Input
+              className="rounded-none border-border bg-muted/10"
               value={form.coupleName}
               onChange={e => setForm(f => ({ ...f, coupleName: e.target.value }))}
               placeholder="Alban & Zana"
             />
           </div>
-          <div className="space-y-1">
-            <Label>Mesazhi</Label>
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-widest text-muted-foreground">Mesazhi</Label>
             <textarea
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none min-h-[80px]"
+              className="w-full rounded-none border border-border bg-muted/10 px-3 py-3 text-sm focus-visible:outline-none focus-visible:border-primary resize-none min-h-[120px] font-light leading-relaxed text-foreground"
               value={form.message}
               onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
               placeholder="Mesazhi i ftesës..."
             />
           </div>
-          <div className="space-y-1">
-            <Label>Template</Label>
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-widest text-muted-foreground">Template</Label>
             <Select value={form.template} onValueChange={v => setForm(f => ({ ...f, template: v }))}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
+              <SelectTrigger className="rounded-none border-border bg-muted/10"><SelectValue /></SelectTrigger>
+              <SelectContent className="rounded-none border-border">
                 {TEMPLATES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <div className="flex gap-6 pt-2">
+            <label className="flex items-center gap-2 text-xs uppercase tracking-widest cursor-pointer text-muted-foreground">
               <input
                 type="checkbox"
                 checked={form.showCountdown}
                 onChange={e => setForm(f => ({ ...f, showCountdown: e.target.checked }))}
-                className="rounded"
+                className="rounded-none bg-muted/10 border-border accent-primary"
               />
               Countdown
             </label>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <label className="flex items-center gap-2 text-xs uppercase tracking-widest cursor-pointer text-muted-foreground">
               <input
                 type="checkbox"
                 checked={form.showMap}
                 onChange={e => setForm(f => ({ ...f, showMap: e.target.checked }))}
-                className="rounded"
+                className="rounded-none bg-muted/10 border-border accent-primary"
               />
               Google Maps
             </label>
           </div>
-          <Button onClick={handleSave} disabled={saveInvitation.isPending} className="w-full bg-primary hover:bg-primary/90 text-white">
+          <Button onClick={handleSave} disabled={saveInvitation.isPending} className="w-full bg-primary hover:bg-primary/90 text-white rounded-none uppercase tracking-widest text-xs h-12 mt-4">
             {saveInvitation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Ruaj Ftesën
           </Button>
         </CardContent>
       </Card>
 
-      <Card className="border-primary/20 bg-card/50">
-        <CardHeader>
-          <CardTitle className="font-serif">Dërgo Ftesat</CardTitle>
-          <CardDescription>Dërgo link unik RSVP tek çdo mysafir me status "Në pritje".</CardDescription>
+      <Card className="border-border/50 bg-card/40 rounded-none shadow-none">
+        <CardHeader className="border-b border-border/30 pb-4">
+          <CardTitle className="font-serif text-xl">Dërgo Ftesat</CardTitle>
+          <CardDescription className="font-light mt-1">Dërgo link unik RSVP tek çdo mysafir me status "Në pritje".</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Button
             onClick={handleSend}
             disabled={sendInvitations.isPending}
-            className="w-full"
+            className="w-full rounded-none uppercase tracking-widest text-xs h-12 border-primary text-primary hover:bg-primary/10"
             variant="outline"
           >
             {sendInvitations.isPending
@@ -609,7 +610,7 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
               : <><Send className="mr-2 h-4 w-4" /> Dërgo Ftesat</>
             }
           </Button>
-          <p className="text-xs text-muted-foreground mt-2 text-center">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-4 text-center">
             Çdo mysafir do të marrë një link unik RSVP.
           </p>
         </CardContent>
@@ -637,23 +638,23 @@ function CheckInTab({ eventId }: { eventId: number }) {
 
   return (
     <div className="space-y-6 max-w-lg">
-      <Card className="border-primary/20 bg-card/50">
-        <CardHeader>
-          <CardTitle className="font-serif flex items-center gap-2">
-            <QrCode className="h-5 w-5 text-primary" />
+      <Card className="border-border/50 bg-card/40 rounded-none shadow-none">
+        <CardHeader className="border-b border-border/30 pb-4">
+          <CardTitle className="font-serif text-xl flex items-center gap-3">
+            <QrCode className="h-5 w-5 text-primary/70" />
             Gjetja e Tavolinës
           </CardTitle>
-          <CardDescription>Kërkoni mysafirin me emër ose mbiemër.</CardDescription>
+          <CardDescription className="font-light mt-1">Kërkoni mysafirin me emër ose mbiemër.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSearch} className="flex gap-2">
+        <CardContent className="pt-6">
+          <form onSubmit={handleSearch} className="flex gap-4">
             <Input
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Emri ose Mbiemri..."
-              className="flex-1"
+              className="flex-1 rounded-none border-border bg-muted/10 h-12"
             />
-            <Button type="submit" disabled={isLoading || query.trim().length < 2} className="bg-primary hover:bg-primary/90 text-white">
+            <Button type="submit" disabled={isLoading || query.trim().length < 2} className="bg-primary hover:bg-primary/90 text-white rounded-none h-12 px-6">
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             </Button>
           </form>
@@ -661,29 +662,29 @@ function CheckInTab({ eventId }: { eventId: number }) {
       </Card>
 
       {searched && !isLoading && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {(!guests || (guests as any[]).length === 0) ? (
-            <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-xl">
-              <UserX className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>Nuk u gjet asnjë mysafir.</p>
+            <div className="text-center py-12 text-muted-foreground border border-border/50 rounded-none bg-card/20">
+              <UserX className="h-8 w-8 mx-auto mb-4 text-primary/40" />
+              <p className="font-light italic font-serif">Nuk u gjet asnjë mysafir.</p>
             </div>
           ) : (
             (guests as any[]).map((g: any) => (
-              <Card key={g.id} className="border-primary/20 bg-card/50">
-                <CardContent className="pt-4 pb-4">
+              <Card key={g.id} className="border-border/50 bg-card/40 rounded-none shadow-none hover:border-primary/30 transition-colors">
+                <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-semibold text-lg font-serif">{g.firstName} {g.lastName}</p>
-                      <p className="text-sm text-muted-foreground mt-0.5">
+                      <p className="font-semibold text-lg font-serif text-foreground">{g.firstName} {g.lastName}</p>
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">
                         Personat: {g.partySize}
                       </p>
                       {g.tableName && (
-                        <p className="text-sm text-primary font-medium mt-1">
-                          🪑 {g.tableName}
+                        <p className="text-sm text-primary font-medium mt-3 flex items-center gap-2">
+                          <LayoutGrid className="h-4 w-4" /> {g.tableName}
                         </p>
                       )}
                     </div>
-                    <span className={cn("text-xs px-2 py-1 rounded-full font-medium", STATUS_COLORS[g.status])}>
+                    <span className={cn("text-[10px] uppercase tracking-wider px-2 py-1 rounded-none font-medium", STATUS_COLORS[g.status])}>
                       {STATUS_LABELS[g.status]}
                     </span>
                   </div>

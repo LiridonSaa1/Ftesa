@@ -27,13 +27,13 @@ export function EventList() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-bottom-4 duration-500">
-      <div className="flex justify-between items-center">
+    <div className="space-y-10 animate-in fade-in slide-in-bottom-4 duration-500">
+      <div className="flex justify-between items-end border-b border-border pb-6">
         <div>
-          <h1 className="text-3xl font-serif font-bold tracking-tight text-foreground">Eventet e mia</h1>
-          <p className="text-muted-foreground mt-1">Menaxhoni të gjitha eventet tuaja në një vend.</p>
+          <h1 className="text-3xl font-serif font-medium tracking-tight text-foreground">Eventet e mia</h1>
+          <p className="text-muted-foreground mt-2 font-light">Menaxhoni të gjitha eventet tuaja në një vend.</p>
         </div>
-        <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-none uppercase tracking-widest text-xs h-10 px-6">
           <Link href="/events/new">
             <Plus className="mr-2 h-4 w-4" /> Krijo Event
           </Link>
@@ -41,50 +41,50 @@ export function EventList() {
       </div>
 
       {!events || events.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed rounded-xl bg-card/30">
-          <div className="rounded-full bg-primary/10 p-4 mb-4">
-            <CalendarDays className="h-8 w-8 text-primary" />
+        <div className="flex flex-col items-center justify-center py-32 text-center border border-border/50 rounded-none bg-card/20">
+          <div className="rounded-full bg-primary/5 p-6 mb-6">
+            <CalendarDays className="h-10 w-10 text-primary/70" />
           </div>
-          <h2 className="text-xl font-serif font-semibold mb-2">Nuk ka evente</h2>
-          <p className="text-muted-foreground max-w-md mb-6">
+          <h2 className="text-2xl font-serif font-medium mb-3 text-foreground">Nuk ka evente</h2>
+          <p className="text-muted-foreground max-w-md mb-8 font-light leading-relaxed">
             Nuk keni krijuar asnjë event akoma. Filloni duke krijuar eventin tuaj të parë për të menaxhuar mysafirët dhe sallën.
           </p>
-          <Button asChild>
+          <Button asChild className="rounded-none uppercase tracking-widest text-xs px-8 h-12">
             <Link href="/events/new">Krijo Eventin e Parë</Link>
           </Button>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => (
-            <Card key={event.id} className="flex flex-col overflow-hidden transition-all hover:shadow-md border-primary/20 bg-card/50 backdrop-blur">
-              <CardHeader className="pb-4">
+            <Card key={event.id} className="flex flex-col overflow-hidden transition-all hover:border-primary/30 border-border/50 bg-card/40 rounded-none shadow-none">
+              <CardHeader className="pb-6 border-b border-border/30">
                 <div className="flex justify-between items-start">
                   <CardTitle className="font-serif text-xl line-clamp-1">{event.name}</CardTitle>
-                  <Badge variant={event.status === 'active' ? 'default' : 'secondary'} className="capitalize">
+                  <Badge variant={event.status === 'active' ? 'default' : 'secondary'} className="capitalize rounded-none text-[10px] uppercase tracking-wider px-2 font-medium">
                     {event.status}
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="flex-1 space-y-3">
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <CalendarDays className="mr-2 h-4 w-4 text-primary/70" />
+              <CardContent className="flex-1 space-y-4 pt-6">
+                <div className="flex items-center text-sm font-light text-muted-foreground">
+                  <CalendarDays className="mr-3 h-4 w-4 text-primary/70" />
                   {format(new Date(event.date), "dd MMM yyyy")}
                 </div>
                 {event.time && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Clock className="mr-2 h-4 w-4 text-primary/70" />
+                  <div className="flex items-center text-sm font-light text-muted-foreground">
+                    <Clock className="mr-3 h-4 w-4 text-primary/70" />
                     {event.time}
                   </div>
                 )}
                 {event.venue && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-2 h-4 w-4 text-primary/70" />
+                  <div className="flex items-center text-sm font-light text-muted-foreground">
+                    <MapPin className="mr-3 h-4 w-4 text-primary/70" />
                     <span className="line-clamp-1">{event.venue}</span>
                   </div>
                 )}
               </CardContent>
-              <CardFooter className="pt-4 border-t bg-muted/20">
-                <Button className="w-full" variant="outline" asChild>
+              <CardFooter className="pt-0 pb-6 px-6">
+                <Button className="w-full rounded-none uppercase tracking-widest text-xs border-border hover:bg-white/5 hover:text-foreground" variant="outline" asChild>
                   <Link href={`/events/${event.id}`}>Menaxho Eventin</Link>
                 </Button>
               </CardFooter>

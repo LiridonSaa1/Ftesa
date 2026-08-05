@@ -8,7 +8,8 @@ import {
   Settings as SettingsIcon, 
   ShieldCheck, 
   LogOut,
-  Menu
+  Menu,
+  Sparkles
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
@@ -28,8 +29,10 @@ function NavItem({ href, icon, label, active, onClick }: NavItemProps) {
     <Link href={href} onClick={onClick}>
       <span
         className={cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary",
-          active ? "bg-muted text-primary font-medium" : "text-muted-foreground"
+          "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-all duration-300",
+          active 
+            ? "text-primary font-medium bg-primary/10 relative after:absolute after:left-0 after:top-1/2 after:-translate-y-1/2 after:h-4 after:w-[2px] after:bg-primary after:rounded-r" 
+            : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
         )}
       >
         {icon}
@@ -45,7 +48,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const { signOut } = useClerk();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const isAdmin = user?.publicMetadata?.role === "admin"; // Check clerk public metadata or custom API hook.
+  const isAdmin = user?.publicMetadata?.role === "admin"; 
   
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
@@ -59,16 +62,19 @@ export function Layout({ children }: { children: ReactNode }) {
   }
 
   const SidebarContent = () => (
-    <div className="flex h-full max-h-screen flex-col gap-2">
-      <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          <span className="inline-flex items-center rounded-lg bg-[#111] px-2 py-1">
-            <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.png`} alt="NoaEvent" className="h-6 w-auto" />
-          </span>
+    <div className="flex h-full max-h-screen flex-col gap-2 relative overflow-hidden bg-background border-r border-border">
+      {/* Decorative gradient blur */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
+      
+      <div className="flex h-20 items-center px-6 relative z-10">
+        <Link href="/" className="flex items-center gap-2 font-serif font-medium text-xl tracking-wide">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <span>NoaEvent</span>
         </Link>
       </div>
-      <div className="flex-1 overflow-auto py-2">
-        <nav className="grid items-start px-2 text-sm font-medium lg:px-4 space-y-1">
+      
+      <div className="flex-1 overflow-auto py-6 relative z-10">
+        <nav className="grid items-start px-4 text-sm font-medium space-y-1">
           {navItems.map((item) => (
             <NavItem 
               key={item.href}
@@ -81,53 +87,58 @@ export function Layout({ children }: { children: ReactNode }) {
           ))}
         </nav>
       </div>
-      <div className="mt-auto p-4 border-t">
-        <div className="flex items-center gap-3 px-2 py-2">
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">{user?.fullName || user?.firstName}</span>
-            <span className="text-xs text-muted-foreground truncate max-w-[150px]">{user?.primaryEmailAddress?.emailAddress}</span>
+      
+      <div className="mt-auto p-4 border-t border-border relative z-10 bg-background/50 backdrop-blur-md">
+        <div className="flex items-center gap-3 px-2 py-2 mb-2">
+          <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-medium text-xs">
+            {user?.firstName?.charAt(0) || "U"}
+          </div>
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-sm font-medium truncate">{user?.fullName || user?.firstName}</span>
+            <span className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</span>
           </div>
         </div>
         <Button 
           variant="ghost" 
-          className="w-full justify-start text-muted-foreground mt-2" 
+          className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors rounded-md" 
           onClick={() => signOut({ redirectUrl: import.meta.env.BASE_URL.replace(/\/$/, "") || "/" })}
         >
           <LogOut className="mr-2 h-4 w-4" />
-          Dil
+          Dil nga llogaria
         </Button>
       </div>
     </div>
   );
 
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr] bg-background">
-      <div className="hidden border-r bg-muted/40 md:block">
+    <div className="grid min-h-screen w-full md:grid-cols-[260px_1fr] bg-background">
+      <div className="hidden md:block">
         <SidebarContent />
       </div>
-      <div className="flex flex-col">
-        <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6 md:hidden">
+      <div className="flex flex-col relative z-0">
+        <header className="flex h-16 items-center gap-4 border-b border-border bg-background/80 backdrop-blur-xl px-4 md:hidden sticky top-0 z-50">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+              <Button variant="ghost" size="icon" className="shrink-0 md:hidden hover:bg-white/5">
                 <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle navigation menu</span>
+                <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col p-0 w-72">
+            <SheetContent side="left" className="p-0 w-72 border-r border-border">
               <SidebarContent />
             </SheetContent>
           </Sheet>
-          <div className="w-full flex-1 flex justify-center">
-             <Link href="/">
-               <span className="inline-flex items-center rounded-lg bg-[#111] px-2 py-1">
-                 <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.png`} alt="NoaEvent" className="h-6 w-auto" />
-               </span>
+          <div className="w-full flex-1 flex justify-center pr-10">
+             <Link href="/" className="flex items-center gap-2 font-serif font-medium text-lg">
+               <Sparkles className="h-4 w-4 text-primary" />
+               <span>NoaEvent</span>
              </Link>
           </div>
         </header>
-        <main className="flex flex-1 flex-col p-4 lg:p-8 overflow-y-auto">
-          {children}
+        <main className="flex flex-1 flex-col p-4 md:p-8 lg:p-12 overflow-y-auto relative">
+          <div className="max-w-6xl w-full mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>
