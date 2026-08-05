@@ -62,8 +62,9 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="flex h-full max-h-screen flex-col gap-2">
       <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.svg`} alt="Dasma Pro" className="h-8 w-auto" />
-          <span className="font-serif text-xl tracking-wide text-foreground">Dasma Pro</span>
+          <span className="inline-flex items-center rounded-lg bg-[#111] px-2 py-1">
+            <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.png`} alt="NoaInvite" className="h-6 w-auto" />
+          </span>
         </Link>
       </div>
       <div className="flex-1 overflow-auto py-2">
@@ -119,7 +120,9 @@ export function Layout({ children }: { children: ReactNode }) {
           </Sheet>
           <div className="w-full flex-1 flex justify-center">
              <Link href="/">
-              <span className="font-serif text-xl tracking-wide font-semibold text-foreground">Dasma Pro</span>
+               <span className="inline-flex items-center rounded-lg bg-[#111] px-2 py-1">
+                 <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.png`} alt="NoaInvite" className="h-6 w-auto" />
+               </span>
              </Link>
           </div>
         </header>

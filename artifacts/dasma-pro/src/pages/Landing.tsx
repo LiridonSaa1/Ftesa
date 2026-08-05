@@ -520,14 +520,12 @@ export function Landing() {
       <nav className="sticky top-0 z-50 border-b border-[#d4c5a9]/40 bg-[#FEFAF5]/80 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img
-              src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.svg`}
-              alt="Dasma Pro"
-              className="h-8 w-auto"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-            />
-            <span className="font-serif text-xl font-semibold tracking-wide text-foreground">
-              Dasma Pro
+            <span className="inline-flex items-center rounded-lg bg-[#111] px-2 py-1">
+              <img
+                src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.png`}
+                alt="NoaInvite"
+                className="h-6 w-auto"
+              />
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -544,7 +542,7 @@ export function Landing() {
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-6 py-24 text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-4 py-1.5 text-sm text-primary font-medium mb-8">
-          ✦ Platforma №1 për Organizimin e Dasmave
+          ✦ Platforma №1 për Ftesa Digjitale
         </div>
         <h1 className="font-serif text-5xl md:text-6xl font-bold tracking-tight text-foreground leading-tight mb-6">
           Organizoni dasmat tuaja
@@ -632,7 +630,7 @@ export function Landing() {
 
       {/* Footer */}
       <footer className="border-t border-[#d4c5a9]/30 py-8 text-center text-sm text-muted-foreground bg-white/40">
-        <p>© {new Date().getFullYear()} Dasma Pro — Të gjitha të drejtat e rezervuara.</p>
+        <p>© {new Date().getFullYear()} NoaInvite — Të gjitha të drejtat e rezervuara.</p>
       </footer>
     </div>
   );
