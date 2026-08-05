@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Landing } from "./pages/Landing";
 import { ClerkProvider, SignIn, SignUp, Show, useClerk } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { shadcn } from '@clerk/themes';
@@ -21,9 +22,7 @@ function stripBase(path: string): string {
   return basePath && path.startsWith(basePath) ? path.slice(basePath.length) || "/" : path;
 }
 
-if (!clerkPubKey) {
-  throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY');
-}
+const clerkMissing = !clerkPubKey;
 
 // Build appearance object matching the luxury gold/white/beige theme
 const clerkAppearance = {
@@ -134,6 +133,14 @@ function ClerkProviderWithRoutes() {
 }
 
 function App() {
+  if (clerkMissing) {
+    // No Clerk key configured — show Landing page in preview/demo mode
+    return (
+      <WouterRouter base={basePath}>
+        <Landing />
+      </WouterRouter>
+    );
+  }
   return (
     <WouterRouter base={basePath}>
       <ClerkProviderWithRoutes />
