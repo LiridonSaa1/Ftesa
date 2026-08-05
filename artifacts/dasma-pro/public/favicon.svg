@@ -1,3 +1,16 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="180" height="180" rx="36" fill="#FF3C00"/>
+  <!-- Dark background with rounded corners -->
+  <rect width="180" height="180" rx="36" fill="#1a1a1a"/>
+  <!-- Gold circle ring -->
+  <circle cx="105" cy="90" r="52" stroke="url(#goldRing)" stroke-width="7" fill="none"/>
+  <!-- "N" letter in white -->
+  <text x="28" y="126" font-family="Georgia, serif" font-size="100" font-weight="700" fill="white" letter-spacing="-4">N</text>
+  <!-- Gradient definition for ring -->
+  <defs>
+    <linearGradient id="goldRing" x1="60" y1="40" x2="150" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#e8c98a"/>
+      <stop offset="50%" stop-color="#C9A96E"/>
+      <stop offset="100%" stop-color="#a07840"/>
+    </linearGradient>
+  </defs>
 </svg>
