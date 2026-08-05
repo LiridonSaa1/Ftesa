@@ -69,65 +69,100 @@ const TESTIMONIALS = [
 ];
 
 /* ═══════════════════════════════════════════════════════════
-   TOP BAR — small info bar above nav (Gademan style)
+   TOP BAR — very dark bar above nav (like Gademan's dark info bar)
 ═══════════════════════════════════════════════════════════ */
 function TopBar() {
   return (
-    <div className="hidden md:flex items-center justify-between px-10 py-2 text-xs" style={{ background: WINE, color: "rgba(255,255,255,0.75)" }}>
-      <div className="flex items-center gap-6">
-        <span className="flex items-center gap-1.5"><MapPin className="h-3 w-3" /> Prishtinë, Kosovë</span>
-        <span className="flex items-center gap-1.5"><Mail className="h-3 w-3" /> info@noa-event.com</span>
+    <div
+      className="hidden md:flex items-center justify-between px-8 py-1.5 text-[11px]"
+      style={{ background: "#1a0a10", color: "rgba(255,255,255,0.72)" }}
+    >
+      <div className="flex items-center gap-5">
+        <span className="flex items-center gap-1.5">
+          <MapPin className="h-3 w-3 shrink-0" />
+          Prishtinë 10000, Kosovë
+        </span>
+        <span className="flex items-center gap-1.5">
+          <Mail className="h-3 w-3 shrink-0" />
+          info@noa-event.com
+        </span>
       </div>
       <div className="flex items-center gap-5">
-        <Link href="/sign-in"><span className="cursor-pointer hover:text-white transition-colors">Hyr</span></Link>
-        <span className="flex items-center gap-2">
-          <Facebook className="h-3 w-3 cursor-pointer hover:text-white transition-colors" />
-          <Instagram className="h-3 w-3 cursor-pointer hover:text-white transition-colors" />
-        </span>
+        <Link href="/sign-in">
+          <span className="cursor-pointer hover:text-white transition-colors">Bëhu Klient?</span>
+        </Link>
+        <Link href="/sign-in">
+          <span className="cursor-pointer hover:text-white transition-colors flex items-center gap-1">
+            <Heart className="h-3 w-3" /> Llogaria
+          </span>
+        </Link>
+        <Facebook className="h-3 w-3 cursor-pointer hover:text-white transition-colors" />
       </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════
-   NAVBAR — exact Gademan header:
-   [circle logo] [HOME  FLAVOURS  HISTORY  PREPARATION  ORDER] [Become A Customer?]
-   solid wine/maroon background, white links, white rounded button
+   NAVBAR — pixel-perfect Gademan header:
+   • solid wine/maroon bg
+   • circular logo LEFT that protrudes above/below nav
+   • centered white links (first one underlined)
+   • white button "Bëhu Klient?" RIGHT with rounded corners
 ═══════════════════════════════════════════════════════════ */
 function Navbar() {
-  const [active, setActive] = useState("#welcome");
+  const [active, setActive] = useState(NAV_LINKS[0].href);
 
   return (
-    <motion.nav
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6 }}
-      className="sticky top-0 z-50"
-      style={{ background: WINE }}
-    >
-      <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between gap-6">
-
-        {/* ── Logo: circular badge (like Gademan's oval stamp) ── */}
-        <div className="shrink-0">
+    <div className="sticky top-0 z-50" style={{ background: WINE }}>
+      {/* Nav row — 72px tall so logo (90px) protrudes 9px top & bottom */}
+      <div
+        className="max-w-7xl mx-auto px-8"
+        style={{ height: 72, display: "flex", alignItems: "center", justifyContent: "space-between" }}
+      >
+        {/* ── Logo: oval/circular badge protruding out of nav bar ── */}
+        <div className="shrink-0" style={{ position: "relative", zIndex: 10 }}>
           <div
-            className="flex flex-col items-center justify-center text-center"
             style={{
-              width: 68, height: 68,
+              width: 90,
+              height: 90,
               borderRadius: "50%",
-              border: "2px solid rgba(255,255,255,0.7)",
-              background: "rgba(255,255,255,0.08)",
-              color: WHITE,
-              lineHeight: 1.1,
+              background: "#f5f0e8",       /* cream/white — like Gademan stamp */
+              border: "3px solid #e8dfc8",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.25)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 1,
+              /* protrude: offset upward by 9px so it sticks out top & bottom */
+              marginTop: -18,
+              marginBottom: -18,
             }}
           >
-            <Heart className="h-3.5 w-3.5 mb-0.5" style={{ color: WHITE, opacity: 0.85 }} />
-            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>NoaEvent</span>
-            <span style={{ fontSize: 6.5, opacity: 0.6, letterSpacing: "0.06em", textTransform: "uppercase" }}>Wedding Platform</span>
+            {/* Inner oval border — like the Gademan seal detail */}
+            <div
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                border: "1.5px solid #c8b99a",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1,
+              }}
+            >
+              <Heart className="h-4 w-4" style={{ color: WINE }} />
+              <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: "0.1em", color: WINE, textTransform: "uppercase" }}>NoaEvent</span>
+              <span style={{ fontSize: 6, color: "#888", letterSpacing: "0.05em", textTransform: "uppercase" }}>Wedding</span>
+              <span style={{ fontSize: 6, color: "#888", letterSpacing: "0.05em", textTransform: "uppercase" }}>Platform</span>
+            </div>
           </div>
         </div>
 
-        {/* ── Nav links: centered, white, bold, uppercase ── */}
-        <div className="flex-1 flex items-center justify-center gap-8 md:gap-10">
+        {/* ── Nav links: centered ── */}
+        <div className="flex-1 flex items-center justify-center gap-10">
           {NAV_LINKS.map(({ href, label }) => {
             const isActive = active === href;
             return (
@@ -135,16 +170,20 @@ function Navbar() {
                 key={href}
                 href={href}
                 onClick={() => setActive(href)}
-                className="text-xs font-bold tracking-[0.15em] transition-colors"
                 style={{
                   color: WHITE,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  letterSpacing: "0.12em",
                   textDecoration: isActive ? "underline" : "none",
-                  textUnderlineOffset: "4px",
-                  textDecorationThickness: "2px",
-                  opacity: isActive ? 1 : 0.85,
+                  textUnderlineOffset: 5,
+                  textDecorationThickness: 2,
+                  opacity: isActive ? 1 : 0.88,
+                  transition: "opacity 0.15s",
+                  cursor: "pointer",
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = isActive ? "1" : "0.85"; }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = isActive ? "1" : "0.88")}
               >
                 {label}
               </a>
@@ -152,25 +191,33 @@ function Navbar() {
           })}
         </div>
 
-        {/* ── CTA button: white bg, rounded, wine text ── */}
+        {/* ── "Bëhu Klient?" button: white bg, rounded, wine text ── */}
         <div className="shrink-0">
           <Link href="/sign-up">
             <span
-              className="inline-block px-5 py-2 text-xs font-bold cursor-pointer transition-all hover:bg-white/90"
               style={{
+                display: "inline-block",
                 background: WHITE,
                 color: WINE,
-                borderRadius: 4,
-                letterSpacing: "0.04em",
+                padding: "9px 22px",
+                borderRadius: 6,
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: "0.02em",
+                cursor: "pointer",
+                border: `2px solid ${WHITE}`,
+                transition: "opacity 0.15s",
                 whiteSpace: "nowrap",
               }}
+              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "0.88")}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
             >
               Bëhu Klient?
             </span>
           </Link>
         </div>
       </div>
-    </motion.nav>
+    </div>
   );
 }
 
