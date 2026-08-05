@@ -1,189 +1,123 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Link } from "wouter";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import {
-  Check, CalendarDays, Users, QrCode, LayoutDashboard,
-  Mail, Map, ChevronLeft, ChevronRight, Heart, Sparkles,
-  Facebook, Instagram, Phone, MapPin,
-} from "lucide-react";
+import { Check, Users, LayoutDashboard, Mail, Map, QrCode, CalendarDays, Heart, MapPin, Facebook, Instagram, Phone } from "lucide-react";
 
-/* ─── Palette (Gademan-style: wine/maroon + white + cream) ─ */
-const WINE   = "#7B1F3A";   // primary dark wine/maroon
-const WINE2  = "#9B2A4A";   // slightly lighter
+/* ─── Exact Gademan palette ─────────────────────────────── */
+const WINE   = "#7B1F3A";   // wine/maroon — buttons, hero bg, footer
 const WHITE  = "#FFFFFF";
-const CREAM  = "#FAF8F5";   // off-white cream bg
-const DARK   = "#1a1a1a";   // near-black text
-const MUTED  = "#666666";   // muted text
+const CREAM  = "#FAF8F5";   // off-white sections
+const DARK   = "#2d1a1f";   // dark text (not pure black — Gademan uses dark-maroon text)
+const MUTED  = "#6b6b6b";
+const TOPBAR_BG = "#1a0a10"; // very dark top bar
 
-/* ─── Reveal animation ──────────────────────────────────── */
+/* ─── Reveal ────────────────────────────────────────────── */
 function Reveal({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 28 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.75, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={className}
-    >
+    <motion.div ref={ref} initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }} className={className}>
       {children}
     </motion.div>
   );
 }
 
-/* ─── Data ──────────────────────────────────────────────── */
-const NAV_LINKS = [
-  { href: "#welcome",    label: "BALLINA"    },
-  { href: "#features",   label: "SHËRBIMET"  },
-  { href: "#hall",       label: "SALLA"      },
-  { href: "#pricing",    label: "ÇMIMET"     },
-];
-
-const FEATURES = [
-  { icon: Users,         label: "Menaxhim Mysafirësh", desc: "Shtoni, importoni dhe organizoni mysafirët sipas familjes, kategorisë dhe statusit RSVP — gjithçka në një vend." },
-  { icon: LayoutDashboard,label: "Hall Designer",      desc: "Krijoni planin vizual të sallës me drag & drop — tavolina, karriger, skenë dhe çdo detaj tjetër." },
-  { icon: Mail,          label: "Ftesa Digjitale",     desc: "Dërgoni ftesa elegante me link unik dhe QR code. Çdo mysafir merr faqe personale me countdown live." },
-  { icon: QrCode,        label: "QR Check-in",         desc: "Stafi skanon QR-in me telefon dhe sistemi tregon menjëherë emrin, tavolinën dhe vendin e mysafirit." },
-  { icon: CalendarDays,  label: "RSVP Automatik",      desc: "Mysafirët konfirmojnë ose refuzojnë me një klik. Dashboardi përditësohet në kohë reale automatikisht." },
-  { icon: Map,           label: "Seat Planner",         desc: "Pamje e plotë me tavolina, karriger dhe emrat e mysafirëve. Gjithçka vizuale dhe intuitive." },
-];
-
-const PLANS = [
-  {
-    name: "Starter", price: "€19", period: "/muaj", featured: false,
-    events: "1 event aktiv",
-    perks: ["Deri 150 mysafirë", "Ftesa digjitale", "QR Check-in bazik", "Support me email"],
-  },
-  {
-    name: "Pro", price: "€49", period: "/muaj", featured: true,
-    events: "Evente të pakufizuara",
-    perks: ["Mysafirë të pakufizuar", "Hall Designer Premium", "RSVP automatik", "Priority support 24/7", "Eksport CSV/Excel"],
-  },
-];
-
-const TESTIMONIALS = [
-  { name: "Arta & Besniku", role: "Prishtinë, 2024", quote: "NoaEvent e bëri organizimin e dasmës tonë gjë kënaqësi. QR check-in funksionoi pa asnjë problem dhe mysafirët ishin të mahnitur me ftesën digjitale!" },
-  { name: "Blerim Osmani", role: "Wedding Planner", quote: "Kam organizuar mbi 40 dasma dhe NoaEvent është mjeti më i mirë që kam përdorur. Hall designer-i kursen orë pune dhe ndihmon të gjithë ekipin." },
-  { name: "Drita Hoxha", role: "Menaxhere Sale", quote: "Klientët tanë janë jashtëzakonisht të kënaqur me ftesat digjitale. Platforma është intuitive dhe mbështetja teknike është fantastike." },
-];
-
 /* ═══════════════════════════════════════════════════════════
-   TOP BAR — very dark bar above nav (like Gademan's dark info bar)
+   TOP BAR — dark, small, exact Gademan style
+   "Edisonstraat 19..." left | "Klant Worden? Account FB" right
 ═══════════════════════════════════════════════════════════ */
 function TopBar() {
   return (
-    <div
-      className="hidden md:flex items-center justify-between px-8 py-1.5 text-[11px]"
-      style={{ background: "#1a0a10", color: "rgba(255,255,255,0.72)" }}
-    >
-      <div className="flex items-center gap-5">
-        <span className="flex items-center gap-1.5">
-          <MapPin className="h-3 w-3 shrink-0" />
-          Prishtinë 10000, Kosovë
+    <div style={{ background: TOPBAR_BG, color: "rgba(255,255,255,0.70)", fontSize: 12, padding: "7px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <MapPin size={12} /> Prishtinë 10000, Kosovë
         </span>
-        <span className="flex items-center gap-1.5">
-          <Mail className="h-3 w-3 shrink-0" />
-          info@noa-event.com
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <Mail size={12} /> info@noa-event.com
         </span>
       </div>
-      <div className="flex items-center gap-5">
-        <Link href="/sign-in">
-          <span className="cursor-pointer hover:text-white transition-colors">Bëhu Klient?</span>
-        </Link>
-        <Link href="/sign-in">
-          <span className="cursor-pointer hover:text-white transition-colors flex items-center gap-1">
-            <Heart className="h-3 w-3" /> Llogaria
-          </span>
-        </Link>
-        <Facebook className="h-3 w-3 cursor-pointer hover:text-white transition-colors" />
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        <Link href="/sign-in"><span style={{ cursor: "pointer" }}>Bëhu Klient?</span></Link>
+        <Link href="/sign-in"><span style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+          <Heart size={12} /> Llogaria
+        </span></Link>
+        <Facebook size={12} style={{ cursor: "pointer" }} />
       </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════
-   NAVBAR — pixel-perfect Gademan header:
-   • solid wine/maroon bg
-   • circular logo LEFT that protrudes above/below nav
-   • centered white links (first one underlined)
-   • white button "Bëhu Klient?" RIGHT with rounded corners
+   NAVBAR — WHITE background, logo protrudes, dark links,
+             wine "Become A Customer?" button — EXACT Gademan
 ═══════════════════════════════════════════════════════════ */
-function Navbar() {
-  const [active, setActive] = useState(NAV_LINKS[0].href);
+const NAV_LINKS = [
+  { href: "#home",     label: "HOME"       },
+  { href: "#services", label: "SHËRBIMET"  },
+  { href: "#history",  label: "HISTORIA"   },
+  { href: "#hall",     label: "SALLA"      },
+  { href: "#order",    label: "ÇMIMET"     },
+];
 
+function Navbar() {
+  const [active, setActive] = useState("#home");
   return (
-    <div className="sticky top-0 z-50" style={{ background: WINE }}>
-      {/* Nav row — 72px tall so logo (90px) protrudes 9px top & bottom */}
-      <div
-        className="max-w-7xl mx-auto px-8"
-        style={{ height: 72, display: "flex", alignItems: "center", justifyContent: "space-between" }}
-      >
-        {/* ── Logo: oval/circular badge protruding out of nav bar ── */}
-        <div className="shrink-0" style={{ position: "relative", zIndex: 10 }}>
-          <div
-            style={{
-              width: 90,
-              height: 90,
-              borderRadius: "50%",
-              background: "#f5f0e8",       /* cream/white — like Gademan stamp */
-              border: "3px solid #e8dfc8",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.25)",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 1,
-              /* protrude: offset upward by 9px so it sticks out top & bottom */
-              marginTop: -18,
-              marginBottom: -18,
-            }}
-          >
-            {/* Inner oval border — like the Gademan seal detail */}
-            <div
-              style={{
-                width: 72,
-                height: 72,
-                borderRadius: "50%",
-                border: "1.5px solid #c8b99a",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 1,
-              }}
-            >
-              <Heart className="h-4 w-4" style={{ color: WINE }} />
-              <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: "0.1em", color: WINE, textTransform: "uppercase" }}>NoaEvent</span>
-              <span style={{ fontSize: 6, color: "#888", letterSpacing: "0.05em", textTransform: "uppercase" }}>Wedding</span>
-              <span style={{ fontSize: 6, color: "#888", letterSpacing: "0.05em", textTransform: "uppercase" }}>Platform</span>
+    /* sticky wrapper */
+    <div style={{ position: "sticky", top: 0, zIndex: 50, background: WHITE, borderBottom: "1px solid #ece8e4" }}>
+      <div style={{
+        maxWidth: 1280, margin: "0 auto", padding: "0 32px",
+        height: 80,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        position: "relative",
+      }}>
+
+        {/* ── Circular logo — protrudes top & bottom exactly like Gademan ── */}
+        <div style={{ position: "relative", flexShrink: 0, zIndex: 10 }}>
+          <div style={{
+            width: 100, height: 100,
+            borderRadius: "50%",
+            background: WHITE,
+            border: "2px solid #d4c9b8",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            /* protrude: nav is 80px, logo 100px → 10px top + 10px bottom */
+            marginTop: -20, marginBottom: -20,
+            position: "relative", zIndex: 10,
+          }}>
+            {/* Inner decorative ring — like Gademan stamp */}
+            <div style={{
+              width: 80, height: 80, borderRadius: "50%",
+              border: "1.5px solid #c8b99a",
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              gap: 2, textAlign: "center",
+            }}>
+              <Heart size={14} color={WINE} />
+              <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: "0.12em", color: WINE, textTransform: "uppercase", lineHeight: 1 }}>NoaEvent</span>
+              <span style={{ fontSize: 6, color: "#999", letterSpacing: "0.08em", textTransform: "uppercase", lineHeight: 1 }}>Ambachtelijke</span>
+              <span style={{ fontSize: 6, color: "#999", letterSpacing: "0.08em", textTransform: "uppercase", lineHeight: 1 }}>Evente</span>
             </div>
           </div>
         </div>
 
-        {/* ── Nav links: centered ── */}
-        <div className="flex-1 flex items-center justify-center gap-10">
+        {/* ── Links centered — dark text, active underlined ── */}
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 40 }}>
           {NAV_LINKS.map(({ href, label }) => {
             const isActive = active === href;
             return (
-              <a
-                key={href}
-                href={href}
-                onClick={() => setActive(href)}
+              <a key={href} href={href} onClick={() => setActive(href)}
                 style={{
-                  color: WHITE,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  letterSpacing: "0.12em",
+                  fontSize: 13, fontWeight: 700, letterSpacing: "0.1em",
+                  color: DARK,
                   textDecoration: isActive ? "underline" : "none",
-                  textUnderlineOffset: 5,
-                  textDecorationThickness: 2,
-                  opacity: isActive ? 1 : 0.88,
-                  transition: "opacity 0.15s",
-                  cursor: "pointer",
+                  textUnderlineOffset: 4, textDecorationThickness: 2,
+                  textDecorationColor: DARK,
+                  opacity: isActive ? 1 : 0.8,
+                  cursor: "pointer", transition: "opacity 0.15s",
                 }}
                 onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = isActive ? "1" : "0.88")}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = isActive ? "1" : "0.8")}
               >
                 {label}
               </a>
@@ -191,25 +125,22 @@ function Navbar() {
           })}
         </div>
 
-        {/* ── "Bëhu Klient?" button: white bg, rounded, wine text ── */}
-        <div className="shrink-0">
+        {/* ── "Become A Customer?" — wine bg, white text, rounded — exact Gademan ── */}
+        <div style={{ flexShrink: 0 }}>
           <Link href="/sign-up">
-            <span
-              style={{
-                display: "inline-block",
-                background: WHITE,
-                color: WINE,
-                padding: "9px 22px",
-                borderRadius: 6,
-                fontSize: 13,
-                fontWeight: 700,
-                letterSpacing: "0.02em",
-                cursor: "pointer",
-                border: `2px solid ${WHITE}`,
-                transition: "opacity 0.15s",
-                whiteSpace: "nowrap",
-              }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "0.88")}
+            <span style={{
+              display: "inline-block",
+              background: WINE,
+              color: WHITE,
+              padding: "10px 24px",
+              borderRadius: 6,
+              fontSize: 13, fontWeight: 700,
+              letterSpacing: "0.04em",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              transition: "opacity 0.15s",
+            }}
+              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "0.85")}
               onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
             >
               Bëhu Klient?
@@ -222,45 +153,37 @@ function Navbar() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   HERO — full-width photo with dark wine overlay + bold text
-   (saktësisht si Gademan hero)
+   HERO — full-width wine/maroon bg with photo + title + CTA
+   (same as Gademan hero: bold white text, wine bg overlay)
 ═══════════════════════════════════════════════════════════ */
 function Hero() {
   return (
-    <section
-      id="welcome"
-      className="relative w-full flex items-end overflow-hidden"
-      style={{ minHeight: "80vh" }}
-    >
+    <section id="home" style={{ position: "relative", minHeight: "72vh", background: WINE, display: "flex", alignItems: "flex-end", overflow: "hidden" }}>
       {/* Background photo */}
-      <img
-        src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80"
-        alt="Wedding"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      {/* Wine/maroon overlay — exactly like Gademan */}
-      <div className="absolute inset-0" style={{ background: `${WINE}CC` }} />
+      <img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80"
+        alt="Wedding" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+      {/* Wine overlay */}
+      <div style={{ position: "absolute", inset: 0, background: `${WINE}CC` }} />
 
-      {/* Hero text — bottom-left aligned, like Gademan */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
+      {/* Text — bottom-left, bold white uppercase like Gademan */}
+      <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 px-8 md:px-20 pb-16 pt-32 w-full"
-      >
-        <h1
-          className="font-black text-white leading-tight mb-6 uppercase"
-          style={{ fontSize: "clamp(2rem, 5vw, 4rem)", letterSpacing: "0.02em" }}
-        >
+        style={{ position: "relative", zIndex: 10, padding: "0 80px 64px" }}>
+        <h1 style={{
+          color: WHITE, fontWeight: 900, fontSize: "clamp(2rem, 4.5vw, 3.8rem)",
+          letterSpacing: "0.04em", lineHeight: 1.2, marginBottom: 28, textTransform: "uppercase",
+        }}>
           MIRË ERDHËT NË<br />
           NOAEVENT
         </h1>
         <Link href="/sign-up">
-          <span
-            className="inline-block px-8 py-3 font-bold text-sm uppercase tracking-widest cursor-pointer border-2 border-white text-white hover:bg-white transition-all"
-            style={{ color: WHITE }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = WINE; (e.currentTarget as HTMLElement).style.background = WHITE; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = WHITE; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+          <span style={{
+            display: "inline-block", background: WHITE, color: WINE,
+            padding: "12px 28px", borderRadius: 6, fontWeight: 700, fontSize: 14,
+            letterSpacing: "0.04em", cursor: "pointer", transition: "opacity 0.15s",
+          }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "0.88")}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
           >
             Bëhu Klient?
           </span>
@@ -271,156 +194,170 @@ function Hero() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   WELCOME SECTION — white bg, photo LEFT + bold text RIGHT
-   (si seksioni "Welkom bij" i Gademan)
+   WELCOME — white bg, image LEFT, text + CTA RIGHT
+   (Gademan "Welkom bij" section)
 ═══════════════════════════════════════════════════════════ */
 function WelcomeSection() {
   return (
-    <section className="py-20" style={{ background: WHITE }}>
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
-          {/* Image left */}
-          <Reveal>
-            <img
-              src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80"
-              alt="Wedding planning"
-              className="w-full object-cover"
-              style={{ maxHeight: 500 }}
-            />
-          </Reveal>
+    <section style={{ background: WHITE, padding: "80px 0" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center" }}>
+        <Reveal>
+          <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80"
+            alt="Wedding planning" style={{ width: "100%", maxHeight: 500, objectFit: "cover" }} />
+        </Reveal>
+        <Reveal delay={0.1}>
+          <h2 style={{ fontWeight: 900, fontSize: "clamp(1.6rem, 3vw, 2.5rem)", color: DARK, textTransform: "uppercase", letterSpacing: "0.04em", lineHeight: 1.25, marginBottom: 24 }}>
+            MIRË ERDHËT NË<br />NOAEVENT
+          </h2>
+          <p style={{ color: MUTED, lineHeight: 1.8, marginBottom: 16 }}>
+            Ne punojmë me shumë dashuri, pasion dhe kujdes për të krijuar eventin e ëndrrave tuaja. Platforma jonë është ndërtuar posaçërisht për dasmat dhe ngjarjet shqiptare — nga ftesa e parë digjitale deri tek check-in i fundit.
+          </p>
+          <p style={{ color: MUTED, lineHeight: 1.8, marginBottom: 32 }}>
+            Teknologjia jonë garanton higjenë dhe profesionalizëm të lartë. Jemi krenarë për transparencën, bashkëpunimin dhe marrëdhënien e personalizuar me çdo klient. Jemi krenarë për platformën tonë dhe dasmën tuaj!
+          </p>
+          <Link href="/sign-up">
+            <span style={{ display: "inline-block", background: WINE, color: WHITE, padding: "12px 28px", borderRadius: 6, fontWeight: 700, fontSize: 14, letterSpacing: "0.04em", cursor: "pointer" }}>
+              Bëhu Klient?
+            </span>
+          </Link>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
 
-          {/* Text right */}
-          <Reveal delay={0.1}>
-            <h2
-              className="font-black uppercase leading-tight mb-6"
-              style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", color: DARK, letterSpacing: "0.02em" }}
-            >
-              MIRË ERDHËT NË<br />
-              NOAEVENT
+/* ═══════════════════════════════════════════════════════════
+   HISTORY — b&w-style photo RIGHT, dark card LEFT with white text
+   (Gademan "Historie" section: dark maroon card + photo)
+═══════════════════════════════════════════════════════════ */
+function HistorySection() {
+  return (
+    <section id="history" style={{ background: CREAM, padding: "80px 0" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, alignItems: "stretch" }}>
+        {/* Dark card left */}
+        <Reveal>
+          <div style={{ background: WINE, padding: "64px 56px", display: "flex", flexDirection: "column", justifyContent: "center", minHeight: 460 }}>
+            <h2 style={{ color: WHITE, fontWeight: 900, fontSize: "clamp(1.5rem, 2.5vw, 2.2rem)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 24 }}>
+              HISTORIA
             </h2>
-            <p className="leading-relaxed mb-4" style={{ color: MUTED }}>
-              Ne punojmë me shumë dashuri, pasion dhe kujdes për të krijuar eventin tuaj të ëndrrave. Platforma jonë është krijuar posaçërisht për dasmave shqiptare — nga ftesa e parë digjitale deri tek check-in i fundit.
+            <p style={{ color: "rgba(255,255,255,0.82)", lineHeight: 1.8, marginBottom: 16, fontSize: 15 }}>
+              NoaEvent u themelua nga pasioni për organizimin e eventeve të veçanta. Filloi si një ide e thjeshtë — si mund t'i ndihmojmë çiftet të organizojnë dasmën e tyre pa stres dhe me elegancë të pashoqe.
             </p>
-            <p className="leading-relaxed mb-8" style={{ color: MUTED }}>
-              Ekipi ynë ka ndihmuar mbi 200 çifte të organizojnë ditën e tyre të veçantë me elegancë dhe precizion. Jemi krenarë për platformën tonë dhe shërbimin premium ndaj çdo klienti.
+            <p style={{ color: "rgba(255,255,255,0.82)", lineHeight: 1.8, marginBottom: 36, fontSize: 15 }}>
+              Sot, me mbi 200 dasma të organizuara dhe mijëra mysafirë të menaxhuar, NoaEvent ka u bërë platforma kryesore e eventeve premium në Kosovë dhe rajon.
             </p>
             <Link href="/sign-up">
-              <span
-                className="inline-block px-8 py-3 font-bold text-sm uppercase tracking-widest cursor-pointer text-white transition-all hover:opacity-85"
-                style={{ background: WINE }}
-              >
-                Bëhu Klient?
+              <span style={{ display: "inline-block", border: "1.5px solid rgba(255,255,255,0.55)", color: WHITE, padding: "10px 24px", fontWeight: 700, fontSize: 13, letterSpacing: "0.08em", cursor: "pointer", borderRadius: 4, textTransform: "uppercase" }}>
+                Lexo Më Shumë...
               </span>
             </Link>
-          </Reveal>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════
-   HISTORY / STORY SECTION — photo RIGHT + dark card LEFT
-   (si seksioni "Historie" i Gademan me kard bordo + foto b&w)
-═══════════════════════════════════════════════════════════ */
-function StorySection() {
-  return (
-    <section className="py-20 overflow-hidden" style={{ background: CREAM }}>
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
-        <div className="grid md:grid-cols-2 gap-0 items-stretch">
-          {/* Dark card left */}
-          <Reveal>
-            <div
-              className="flex flex-col justify-center p-12 md:p-16"
-              style={{ background: WINE, color: WHITE, minHeight: 460 }}
-            >
-              <h2 className="font-black text-3xl md:text-4xl uppercase mb-6" style={{ letterSpacing: "0.02em" }}>
-                HISTORIA JONË
-              </h2>
-              <p className="leading-relaxed mb-4 text-white/80">
-                NoaEvent u themelua nga pasioni për organizimin e eventeve të veçanta. Filloi si një ide e thjeshtë — si mund t'i ndihmojmë çiftet të organizojnë dasmën e tyre pa stres dhe me elegancë.
-              </p>
-              <p className="leading-relaxed mb-8 text-white/80">
-                Sot, me mbi 200 dasma të organizuara dhe mijëra mysafirë të menaxhuar, NoaEvent ka u bërë platforma kryesore e eventeve në Kosovë dhe rajon.
-              </p>
-              <Link href="/sign-up">
-                <span
-                  className="inline-block border border-white/60 px-7 py-2.5 text-xs font-bold uppercase tracking-widest cursor-pointer text-white transition-all hover:bg-white hover:text-[#7B1F3A]"
-                >
-                  Lexo Më Shumë...
-                </span>
-              </Link>
-            </div>
-          </Reveal>
-
-          {/* Photo right (slightly desaturated effect) */}
-          <Reveal delay={0.1}>
-            <img
-              src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80"
-              alt="Wedding story"
-              className="w-full h-full object-cover"
-              style={{ minHeight: 460, filter: "grayscale(20%)" }}
-            />
-          </Reveal>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURES / SERVICES — white bg, centered title + 6 cards
-   (si seksioni "Smaken" i Gademan me kartat e produkteve)
-═══════════════════════════════════════════════════════════ */
-function FeaturesSection() {
-  const SERVICE_IMAGES = [
-    "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80",
-    "https://images.unsplash.com/photo-1481833761820-0509d3217039?w=600&q=80",
-    "https://images.unsplash.com/photo-1429514513361-8a632ff5e384?w=600&q=80",
-    "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=600&q=80",
-    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=80",
-    "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=600&q=80",
-  ];
-
-  return (
-    <section id="features" className="py-20" style={{ background: WHITE }}>
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
-        <Reveal className="text-center mb-16">
-          <h2
-            className="font-black uppercase mb-4"
-            style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: DARK, letterSpacing: "0.05em" }}
-          >
-            Shërbimet
-          </h2>
-          <p className="max-w-2xl mx-auto leading-relaxed" style={{ color: MUTED }}>
-            Zbuloni gamën tonë të shërbimeve dhe lini tingujt e zemrës tuaj të flasin. Ndërtojmë eventin tuaj të ëndrrave me precizion dhe kujdes.
-            <br />Nuk gjeni atë që kërkoni? Kontaktoni ekipin tonë dhe do të gjejmë zgjidhjen e duhur.
-          </p>
+          </div>
         </Reveal>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {FEATURES.map((f, i) => (
-            <Reveal key={f.label} delay={i * 0.07}>
-              <div className="group border overflow-hidden transition-all hover:-translate-y-1 hover:shadow-lg" style={{ borderColor: "#e5e5e5" }}>
-                {/* Card image */}
-                <div className="relative overflow-hidden" style={{ height: 200 }}>
-                  <img
-                    src={SERVICE_IMAGES[i % SERVICE_IMAGES.length]}
-                    alt={f.label}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        {/* Photo right — slight desaturation like Gademan b&w */}
+        <Reveal delay={0.1}>
+          <img src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80"
+            alt="History" style={{ width: "100%", height: "100%", objectFit: "cover", minHeight: 460, filter: "grayscale(30%) contrast(1.05)" }} />
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SMAKEN / SERVICES — centered title + description,
+   then 2 large cards with photo bg + centered title + CTA button
+   (Exact Gademan "Smaken" section: Sorbetijs + Melkijs layout)
+═══════════════════════════════════════════════════════════ */
+const SERVICE_CARDS = [
+  {
+    label: "Ftesa Digjitale",
+    img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80",
+    href: "/sign-up",
+  },
+  {
+    label: "Hall Designer",
+    img: "https://images.unsplash.com/photo-1481833761820-0509d3217039?w=800&q=80",
+    href: "/sign-up",
+  },
+];
+
+function ServicesSection() {
+  return (
+    <section id="services" style={{ background: WHITE, padding: "80px 0" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
+        {/* Centered text block — like Gademan "Smaken" description */}
+        <Reveal>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <h2 style={{ fontWeight: 900, fontSize: "clamp(2rem, 3.5vw, 3rem)", color: DARK, textTransform: "none", letterSpacing: "0.02em", marginBottom: 20 }}>
+              Shërbimet
+            </h2>
+            <p style={{ color: MUTED, lineHeight: 1.8, maxWidth: 680, margin: "0 auto", fontSize: 15 }}>
+              Lërini zemrën tuaj të flasë dhe ne do të kujdesemi për çdo detaj të ditës suaj të veçantë.
+              Nga ftesat digjitale tek plani i sallës — gjithçka në një platformë elegante dhe intuitive.
+              Nuk gjeni atë që kërkoni? Kontaktoni ekipin tonë dhe do të gjejmë zgjidhjen e duhur.
+            </p>
+          </div>
+        </Reveal>
+
+        {/* Two large photo cards side by side — exact Gademan layout */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+          {SERVICE_CARDS.map((card, i) => (
+            <Reveal key={card.label} delay={i * 0.1}>
+              <div style={{
+                position: "relative", overflow: "hidden",
+                border: "1px solid #e8e0d8",
+                display: "flex", flexDirection: "column",
+              }}>
+                {/* Photo */}
+                <div style={{ height: 280, overflow: "hidden" }}>
+                  <img src={card.img} alt={card.label}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s ease" }}
+                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = "scale(1.04)")}
+                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.transform = "scale(1)")}
                   />
                 </div>
-                {/* Card body */}
-                <div className="p-6 text-center" style={{ background: WHITE }}>
-                  <h3 className="font-bold text-lg mb-2 uppercase tracking-wide" style={{ color: DARK, letterSpacing: "0.05em" }}>
-                    {f.label}
+                {/* Card body: title + button */}
+                <div style={{ textAlign: "center", padding: "32px 24px", background: WHITE }}>
+                  <h3 style={{ fontWeight: 800, fontSize: 22, color: DARK, marginBottom: 20, letterSpacing: "0.03em" }}>
+                    {card.label}
                   </h3>
-                  <p className="text-sm leading-relaxed mb-4" style={{ color: MUTED }}>{f.desc}</p>
-                  <Link href="/sign-up">
-                    <span
-                      className="inline-block border px-5 py-2 text-xs font-bold uppercase tracking-widest cursor-pointer transition-all hover:bg-[#7B1F3A] hover:text-white hover:border-[#7B1F3A]"
-                      style={{ borderColor: WINE, color: WINE }}
+                  <Link href={card.href}>
+                    <span style={{
+                      display: "inline-block", border: `2px solid ${WINE}`,
+                      color: WINE, padding: "9px 28px", fontWeight: 700,
+                      fontSize: 13, letterSpacing: "0.08em", cursor: "pointer", borderRadius: 4,
+                      transition: "all 0.18s",
+                    }}
+                      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = WINE; el.style.color = WHITE; }}
+                      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = "transparent"; el.style.color = WINE; }}
                     >
+                      Shiko Shërbimin
+                    </span>
+                  </Link>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        {/* Second row: 4 smaller feature cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 20, marginTop: 24 }}>
+          {[
+            { label: "QR Check-in",     img: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=400&q=70" },
+            { label: "RSVP Automatik",  img: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&q=70" },
+            { label: "Mysafirët",        img: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=400&q=70" },
+            { label: "Seat Planner",    img: "https://images.unsplash.com/photo-1429514513361-8a632ff5e384?w=400&q=70" },
+          ].map((card, i) => (
+            <Reveal key={card.label} delay={i * 0.07}>
+              <div style={{ border: "1px solid #e8e0d8", overflow: "hidden" }}>
+                <div style={{ height: 160, overflow: "hidden" }}>
+                  <img src={card.img} alt={card.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+                <div style={{ textAlign: "center", padding: "20px 12px", background: WHITE }}>
+                  <h3 style={{ fontWeight: 800, fontSize: 15, color: DARK, marginBottom: 12, letterSpacing: "0.03em" }}>{card.label}</h3>
+                  <Link href="/sign-up">
+                    <span style={{ display: "inline-block", border: `1.5px solid ${WINE}`, color: WINE, padding: "6px 16px", fontWeight: 700, fontSize: 11, letterSpacing: "0.08em", cursor: "pointer", borderRadius: 4 }}>
                       Shiko →
                     </span>
                   </Link>
@@ -435,113 +372,78 @@ function FeaturesSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   HALL SECTION — dark photo + text (like Gademan preparation)
+   HALL SECTION — text left + photo right (Gademan "Preparation")
 ═══════════════════════════════════════════════════════════ */
 function HallSection() {
   return (
-    <section id="hall" className="py-20 overflow-hidden" style={{ background: CREAM }}>
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
-          {/* Text left */}
-          <Reveal>
-            <p className="text-xs font-bold uppercase tracking-[0.25em] mb-4" style={{ color: WINE }}>HALL DESIGNER</p>
-            <h2
-              className="font-black uppercase leading-tight mb-6"
-              style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", color: DARK, letterSpacing: "0.02em" }}
-            >
-              KRIJONI PLANIN<br />E SALLËS
-            </h2>
-            <p className="leading-relaxed mb-4" style={{ color: MUTED }}>
-              Salla e dasmës suaj është kanavaca juaj. Ndërtoni planimetrinë vizuale, vendosni tavolinat, dhe ulni mysafirët tuaj me ndërfaqe drag-and-drop.
-            </p>
-            <ul className="space-y-3 mb-8">
-              {["Vizualizim 2D i sallës në kohë reale", "Menaxhim i kapacitetit dhe vendosjeve", "Kategorizim VIP, Familje dhe Shoqëri"].map(item => (
-                <li key={item} className="flex items-center gap-3 text-sm" style={{ color: DARK }}>
-                  <div
-                    className="w-5 h-5 flex items-center justify-center border rounded-full shrink-0"
-                    style={{ borderColor: WINE, color: WINE }}
-                  >
-                    <Check className="h-3 w-3" />
-                  </div>
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <Link href="/sign-up">
-              <span
-                className="inline-block px-8 py-3 font-bold text-sm uppercase tracking-widest cursor-pointer border-2 transition-all hover:opacity-80"
-                style={{ borderColor: WINE, color: WHITE, background: WINE }}
-              >
-                Zbuloni Mundësitë
-              </span>
-            </Link>
-          </Reveal>
-
-          {/* Image right */}
-          <Reveal delay={0.1}>
-            <div className="relative">
-              <div className="absolute -bottom-4 -right-4 w-full h-full" style={{ background: `${WINE}20` }} />
-              <img
-                src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80"
-                alt="Hall layout"
-                className="relative w-full object-cover"
-                style={{ maxHeight: 480 }}
-              />
-            </div>
-          </Reveal>
-        </div>
+    <section id="hall" style={{ background: CREAM, padding: "80px 0" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center" }}>
+        <Reveal>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.2em", color: WINE, textTransform: "uppercase", marginBottom: 12 }}>
+            HALL DESIGNER
+          </p>
+          <h2 style={{ fontWeight: 900, fontSize: "clamp(1.6rem, 3vw, 2.5rem)", color: DARK, textTransform: "uppercase", letterSpacing: "0.04em", lineHeight: 1.25, marginBottom: 24 }}>
+            KRIJONI PLANIN<br />E SALLËS
+          </h2>
+          <p style={{ color: MUTED, lineHeight: 1.8, marginBottom: 16 }}>
+            Salla e dasmës suaj është kanavaca juaj. Ndërtoni planimetrinë vizuale, vendosni tavolinat me drag & drop dhe ulni çdo mysafir me saktësi dhe elegancë.
+          </p>
+          <ul style={{ listStyle: "none", padding: 0, marginBottom: 32 }}>
+            {["Vizualizim 2D i sallës në kohë reale", "Menaxhim i kapacitetit dhe vendosjeve", "Kategorizim VIP, Familje & Shoqëri"].map(item => (
+              <li key={item} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, fontSize: 14, color: DARK }}>
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: "50%", border: `1.5px solid ${WINE}` }}>
+                  <Check size={11} color={WINE} />
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
+          <Link href="/sign-up">
+            <span style={{ display: "inline-block", background: WINE, color: WHITE, padding: "12px 28px", borderRadius: 6, fontWeight: 700, fontSize: 14, letterSpacing: "0.04em", cursor: "pointer" }}>
+              Zbuloni Mundësitë
+            </span>
+          </Link>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <div style={{ position: "relative" }}>
+            <div style={{ position: "absolute", bottom: -8, right: -8, width: "100%", height: "100%", background: `${WINE}18` }} />
+            <img src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80"
+              alt="Hall" style={{ width: "100%", maxHeight: 480, objectFit: "cover", position: "relative" }} />
+          </div>
+        </Reveal>
       </div>
     </section>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════
-   TESTIMONIAL — centered quote (like Gademan inline quote)
+   TESTIMONIALS — centered quote slider (Gademan "Ervaringen")
 ═══════════════════════════════════════════════════════════ */
-function TestimonialSection() {
+const TESTIMONIALS = [
+  { name: "Arta & Besniku", role: "Prishtinë, 2024", q: "NoaEvent e bëri organizimin e dasmës tonë gjë kënaqësi. QR check-in funksionoi pa asnjë problem dhe mysafirët ishin të mahnitur me ftesën digjitale!" },
+  { name: "Blerim Osmani",  role: "Wedding Planner",  q: "Kam organizuar mbi 40 dasma dhe NoaEvent është mjeti më i mirë që kam përdorur. Hall designer-i kursen orë pune dhe ndihmon të gjithë ekipin." },
+  { name: "Drita Hoxha",   role: "Menaxhere Sale",   q: "Klientët tanë janë jashtëzakonisht të kënaqur me ftesat digjitale. Platforma është intuitive dhe mbështetja teknike është fantastike." },
+];
+
+function Testimonials() {
   const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setIdx(i => (i + 1) % TESTIMONIALS.length), 5000);
-    return () => clearInterval(id);
-  }, []);
-  const t = TESTIMONIALS[idx];
   return (
-    <section className="py-24 text-center px-6" style={{ background: WHITE }}>
-      <div className="max-w-3xl mx-auto">
+    <section style={{ background: WHITE, padding: "80px 0", textAlign: "center" }}>
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 32px" }}>
+        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.2em", color: WINE, textTransform: "uppercase", marginBottom: 16 }}>ERVARINGEN</p>
+        <h2 style={{ fontWeight: 900, fontSize: "clamp(1.4rem, 2.5vw, 2rem)", color: DARK, marginBottom: 40 }}>Ij që tregon histori. Klientët tanë e ndajnë me kënaqësi.</h2>
         <AnimatePresence mode="wait">
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.5 }}
-          >
-            <p
-              className="font-bold italic leading-relaxed mb-8"
-              style={{ fontSize: "clamp(1.1rem, 2.5vw, 1.5rem)", color: DARK, fontFamily: "Georgia, serif" }}
-            >
-              "{t.quote}"
-            </p>
-            <div className="flex items-center justify-center gap-4">
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-xs text-white"
-                style={{ background: WINE }}
-              >
-                {t.name.slice(0, 2).toUpperCase()}
-              </div>
-              <div className="text-left">
-                <p className="font-bold text-sm uppercase tracking-wide" style={{ color: DARK }}>{t.name}</p>
-                <p className="text-xs" style={{ color: MUTED }}>{t.role}</p>
-              </div>
-            </div>
+          <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.45 }}>
+            <p style={{ fontSize: 16, color: MUTED, lineHeight: 1.85, marginBottom: 24, fontStyle: "italic" }}>"{TESTIMONIALS[idx].q}"</p>
+            <p style={{ fontWeight: 700, fontSize: 13, color: DARK, letterSpacing: "0.06em", textTransform: "uppercase" }}>{TESTIMONIALS[idx].name}</p>
+            <p style={{ fontSize: 12, color: MUTED }}>{TESTIMONIALS[idx].role}</p>
           </motion.div>
         </AnimatePresence>
-        <div className="flex justify-center gap-2 mt-8">
+        {/* Dot nav */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 32 }}>
           {TESTIMONIALS.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setIdx(i)}
-              className="w-2 h-2 rounded-full transition-all"
-              style={{ background: i === idx ? WINE : "#ddd" }}
-            />
+            <button key={i} onClick={() => setIdx(i)}
+              style={{ width: 8, height: 8, borderRadius: "50%", background: i === idx ? WINE : "#ddd", border: "none", cursor: "pointer", padding: 0, transition: "background 0.2s" }} />
           ))}
         </div>
       </div>
@@ -550,66 +452,64 @@ function TestimonialSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PRICING — 2 cards (like Gademan's order/plan section)
+   PRICING — 2 cards with photo strip on top (Gademan order)
 ═══════════════════════════════════════════════════════════ */
+const PLANS = [
+  { name: "Starter", price: "€19", period: "/muaj", featured: false, events: "1 event aktiv",
+    perks: ["Deri 150 mysafirë", "Ftesa digjitale", "QR Check-in bazik", "Support me email"],
+    img: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=70" },
+  { name: "Pro",     price: "€49", period: "/muaj", featured: true,  events: "Evente të pakufizuara",
+    perks: ["Mysafirë të pakufizuar", "Hall Designer Premium", "RSVP automatik", "Priority support 24/7", "Eksport CSV/Excel"],
+    img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=70" },
+];
+
 function PricingSection() {
   return (
-    <section id="pricing" className="py-20" style={{ background: CREAM }}>
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
-        <Reveal className="text-center mb-16">
-          <h2 className="font-black uppercase mb-4" style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: DARK, letterSpacing: "0.05em" }}>
-            Çmimet
-          </h2>
-          <p className="max-w-xl mx-auto" style={{ color: MUTED }}>
-            Një investim i vogël për qetësi mendore në ditën tuaj më të madhe.
-          </p>
+    <section id="order" style={{ background: CREAM, padding: "80px 0" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
+        <Reveal>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <h2 style={{ fontWeight: 900, fontSize: "clamp(2rem, 3.5vw, 3rem)", color: DARK, marginBottom: 16 }}>Çmimet</h2>
+            <p style={{ color: MUTED, maxWidth: 520, margin: "0 auto" }}>Një investim i vogël për qetësi mendore në ditën tuaj më të madhe.</p>
+          </div>
         </Reveal>
-
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, maxWidth: 900, margin: "0 auto" }}>
           {PLANS.map((p, i) => (
             <Reveal key={p.name} delay={i * 0.1}>
-              <div
-                className="relative overflow-hidden border-2 transition-all hover:-translate-y-1"
-                style={{ borderColor: p.featured ? WINE : "#e5e5e5", background: WHITE }}
+              <div style={{ position: "relative", background: WHITE, border: `2px solid ${p.featured ? WINE : "#e5e0d8"}`, overflow: "hidden", transition: "transform 0.2s" }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = "translateY(-4px)")}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.transform = "translateY(0)")}
               >
                 {p.featured && (
-                  <div className="absolute top-0 right-8 -translate-y-1/2 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white" style={{ background: WINE }}>
+                  <div style={{ position: "absolute", top: 0, right: 24, background: WINE, color: WHITE, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", padding: "4px 12px", textTransform: "uppercase", transform: "translateY(-50%)" }}>
                     Më i Popullarizuar
                   </div>
                 )}
-                {/* Card image strip */}
-                <div className="overflow-hidden" style={{ height: 140 }}>
-                  <img
-                    src={p.featured
-                      ? "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80"
-                      : "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=80"}
-                    alt={p.name}
-                    className="w-full h-full object-cover"
-                    style={{ filter: `saturate(0.8)` }}
-                  />
+                <div style={{ height: 140, overflow: "hidden" }}>
+                  <img src={p.img} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
-                <div className="p-8">
-                  <h3 className="font-black text-2xl uppercase mb-1" style={{ color: DARK, letterSpacing: "0.05em" }}>{p.name}</h3>
-                  <p className="text-xs uppercase tracking-widest mb-6" style={{ color: MUTED }}>{p.events}</p>
-                  <div className="mb-6 flex items-baseline gap-1">
-                    <span className="font-black text-4xl" style={{ color: DARK }}>{p.price}</span>
-                    <span className="text-sm" style={{ color: MUTED }}>{p.period}</span>
+                <div style={{ padding: 32 }}>
+                  <h3 style={{ fontWeight: 900, fontSize: 22, color: DARK, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>{p.name}</h3>
+                  <p style={{ fontSize: 12, color: MUTED, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 20 }}>{p.events}</p>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 24 }}>
+                    <span style={{ fontSize: 40, fontWeight: 900, color: DARK }}>{p.price}</span>
+                    <span style={{ fontSize: 14, color: MUTED }}>{p.period}</span>
                   </div>
-                  <ul className="space-y-3 mb-8">
+                  <ul style={{ listStyle: "none", padding: 0, marginBottom: 28 }}>
                     {p.perks.map(perk => (
-                      <li key={perk} className="flex items-center gap-3 text-sm" style={{ color: DARK }}>
-                        <Check className="h-4 w-4 shrink-0" style={{ color: WINE }} />
-                        {perk}
+                      <li key={perk} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, fontSize: 14, color: DARK }}>
+                        <Check size={14} color={WINE} /> {perk}
                       </li>
                     ))}
                   </ul>
                   <Link href="/sign-up">
-                    <span
-                      className="block w-full py-3 text-center text-xs font-bold uppercase tracking-widest cursor-pointer border-2 transition-all hover:opacity-80"
-                      style={p.featured
-                        ? { background: WINE, color: WHITE, borderColor: WINE }
-                        : { background: WHITE, color: WINE, borderColor: WINE }}
-                    >
+                    <span style={{
+                      display: "block", textAlign: "center", padding: "12px", fontWeight: 700, fontSize: 13, letterSpacing: "0.08em", cursor: "pointer", borderRadius: 4,
+                      background: p.featured ? WINE : "transparent",
+                      color: p.featured ? WHITE : WINE,
+                      border: `2px solid ${WINE}`,
+                      transition: "all 0.18s",
+                    }}>
                       {p.featured ? "Fillo Me Pro" : "Zgjidh Starter"}
                     </span>
                   </Link>
@@ -624,106 +524,100 @@ function PricingSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   FOOTER — photo strip + dark maroon subscribe box + info grid
-   (si Gademan footer saktësisht)
+   FOOTER — photo strip + wine subscribe box + white info grid
+   (Exact Gademan footer layout)
 ═══════════════════════════════════════════════════════════ */
 function Footer() {
   const [email, setEmail] = useState("");
   return (
-    <footer style={{ background: WHITE }}>
-      {/* Photo strip at top — like Gademan's ice cream row */}
-      <div className="w-full overflow-hidden" style={{ height: 100 }}>
-        <img
-          src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=60"
-          alt=""
-          className="w-full h-full object-cover object-top"
-        />
+    <footer>
+      {/* Photo strip — like Gademan ice cream row */}
+      <div style={{ height: 90, overflow: "hidden" }}>
+        <img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=60"
+          alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }} />
       </div>
 
-      {/* Subscribe box — dark maroon like Gademan */}
-      <div className="py-12 px-6" style={{ background: WINE }}>
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8 items-center">
-          <div>
-            <h3 className="font-black text-2xl uppercase text-white mb-2" style={{ letterSpacing: "0.02em" }}>
-              Regjistrohuni Sot<br />
-              dhe Kurseni 20% Në<br />
-              Abonimin e Parë
-            </h3>
+      {/* Wine subscribe box — exact Gademan layout */}
+      <div style={{ background: WINE, padding: "48px 0" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center" }}>
+          {/* Left: image + text */}
+          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=200&q=60"
+              alt="" style={{ width: 100, height: 100, objectFit: "cover", borderRadius: "50%", opacity: 0.7 }} />
+            <div>
+              <h3 style={{ color: WHITE, fontWeight: 900, fontSize: "clamp(1.2rem, 2vw, 1.6rem)", lineHeight: 1.35 }}>
+                Regjistrohu Sot<br />dhe Kurseni 20%<br />Në Planin e Parë
+              </h3>
+            </div>
           </div>
-          <div className="space-y-3">
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="Adresa Email"
-              className="w-full px-4 py-3 text-sm bg-white/20 border border-white/30 text-white placeholder-white/50 outline-none focus:bg-white/25"
+          {/* Right: input + button */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              placeholder="Shkruani Adresën Email"
+              style={{ width: "100%", padding: "13px 16px", fontSize: 14, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", color: WHITE, outline: "none", boxSizing: "border-box" }}
             />
-            <button
-              className="w-full py-3 font-bold text-sm uppercase tracking-widest text-[#7B1F3A] bg-white hover:bg-white/90 transition-all"
-            >
+            <button style={{ width: "100%", padding: "13px 0", background: WHITE, color: WINE, fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", letterSpacing: "0.04em" }}>
               Regjistrohu Tani
             </button>
           </div>
         </div>
       </div>
 
-      {/* Footer info grid */}
-      <div className="py-12 px-6 border-t" style={{ borderColor: "#e5e5e5" }}>
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+      {/* White info grid — exact Gademan 4-column footer */}
+      <div style={{ background: WHITE, padding: "48px 0 32px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px", display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr", gap: 32 }}>
+          {/* Col 1: Company */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-full border-2 flex items-center justify-center" style={{ borderColor: WINE }}>
-                <Heart className="h-4 w-4" style={{ color: WINE }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 60, height: 60, borderRadius: "50%", border: "1.5px solid #c8b99a", display: "flex", alignItems: "center", justifyContent: "center", background: CREAM }}>
+                <Heart size={18} color={WINE} />
               </div>
             </div>
-            <p className="font-bold text-sm" style={{ color: DARK }}>NoaEvent</p>
-            <p className="text-xs mt-1" style={{ color: MUTED }}>Wedding Platform</p>
-            <p className="text-xs mt-1" style={{ color: MUTED }}>Adresa: Prishtinë, Kosovë</p>
-            <p className="text-xs mt-1" style={{ color: MUTED }}>Tel: +383 44 000 000</p>
-            <p className="text-xs mt-1" style={{ color: MUTED }}>Email: info@noa-event.com</p>
+            <p style={{ fontWeight: 700, fontSize: 14, color: DARK, marginBottom: 6 }}>NoaEvent</p>
+            <p style={{ fontSize: 13, color: MUTED, marginBottom: 4 }}>Adresa: Prishtinë 10000, Kosovë</p>
+            <p style={{ fontSize: 13, color: MUTED, marginBottom: 4 }}>Tel: +383 44 000 000</p>
+            <p style={{ fontSize: 13, color: MUTED }}>Email: info@noa-event.com</p>
           </div>
+          {/* Col 2: Bank info (like Gademan) */}
           <div>
-            <p className="font-bold text-xs uppercase tracking-widest mb-4" style={{ color: DARK }}>Shërbimet</p>
-            {["Ftesa Digjitale", "Hall Designer", "RSVP Automatik", "QR Check-in"].map(l => (
-              <p key={l} className="text-xs mb-2 cursor-pointer hover:underline" style={{ color: MUTED }}>{l}</p>
-            ))}
+            <p style={{ fontWeight: 700, fontSize: 13, color: DARK, marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.08em" }}>Banka</p>
+            <p style={{ fontSize: 13, color: MUTED, marginBottom: 6 }}><strong style={{ color: DARK }}>Bank:</strong> Raiffeisen</p>
+            <p style={{ fontSize: 13, color: MUTED, marginBottom: 6 }}><strong style={{ color: DARK }}>IBAN:</strong> XK05 1234 0000 0000 0000</p>
+            <p style={{ fontSize: 13, color: MUTED, marginBottom: 6 }}><strong style={{ color: DARK }}>NUI:</strong> 811234567</p>
+            <p style={{ fontSize: 13, color: MUTED }}><strong style={{ color: DARK }}>TVSH:</strong> 123456789</p>
           </div>
+          {/* Col 3: empty or services */}
+          <div />
+          {/* Col 4: Legal links — bold like Gademan */}
           <div>
-            <p className="font-bold text-xs uppercase tracking-widest mb-4" style={{ color: DARK }}>Kompania</p>
-            {["Rreth Nesh", "Historia", "Blog", "Partnerë"].map(l => (
-              <p key={l} className="text-xs mb-2 cursor-pointer hover:underline" style={{ color: MUTED }}>{l}</p>
-            ))}
-          </div>
-          <div>
-            <p className="font-bold text-xs uppercase tracking-widest mb-4" style={{ color: DARK }}>Ligjore</p>
-            {["Kushtet e Shërbimit", "Politika e Privatësisë", "Cookie Policy", "Disclaimer"].map(l => (
-              <p key={l} className="text-xs mb-2 font-bold cursor-pointer hover:underline" style={{ color: DARK }}>{l}</p>
+            {["Dokumentet", "Politika Cookie", "Privatësia", "Disclaimer"].map(l => (
+              <p key={l} style={{ fontWeight: 700, fontSize: 13, color: DARK, marginBottom: 8, cursor: "pointer" }}>{l}</p>
             ))}
           </div>
         </div>
-      </div>
-
-      <div className="py-4 px-6 border-t text-center text-xs" style={{ borderColor: "#e5e5e5", color: MUTED }}>
-        © {new Date().getFullYear()} NoaEvent. Të gjitha të drejtat e rezervuara.
+        {/* Bottom line */}
+        <div style={{ maxWidth: 1280, margin: "24px auto 0", padding: "16px 48px 0", borderTop: "1px solid #e8e0d8", fontSize: 12, color: MUTED, textAlign: "center" }}>
+          © {new Date().getFullYear()} NoaEvent. Të gjitha të drejtat e rezervuara.
+        </div>
       </div>
     </footer>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MAIN PAGE
+   MAIN EXPORT
 ═══════════════════════════════════════════════════════════ */
 export function Landing() {
   return (
-    <div className="min-h-screen" style={{ background: WHITE, color: DARK }}>
+    <div style={{ background: WHITE, color: DARK, fontFamily: "system-ui, -apple-system, sans-serif" }}>
       <TopBar />
       <Navbar />
       <Hero />
       <WelcomeSection />
-      <StorySection />
-      <FeaturesSection />
+      <HistorySection />
+      <ServicesSection />
       <HallSection />
-      <TestimonialSection />
+      <Testimonials />
       <PricingSection />
       <Footer />
     </div>
