@@ -1,365 +1,471 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "wouter";
 import { useGetRsvp, useSubmitRsvp } from "@workspace/api-client-react";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  CheckCircle2, X, MapPin, CalendarDays, Clock,
-  Loader2, Heart, Shirt, Phone,
-} from "lucide-react";
-import { format, differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from "date-fns";
-import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle2, X, MapPin, CalendarDays, Clock, Loader2, Shirt, Phone, Heart } from "lucide-react";
+import { format } from "date-fns";
+import { motion, useInView } from "framer-motion";
 
 /* ─── Countdown ─────────────────────────────────────────── */
 function useCountdown(dateStr?: string) {
-  const [diff, setDiff] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [d, setD] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   useEffect(() => {
     if (!dateStr) return;
     const target = new Date(dateStr + "T00:00:00");
     const tick = () => {
       const now = new Date();
-      if (target <= now) { setDiff({ days: 0, hours: 0, minutes: 0, seconds: 0 }); return; }
-      const totalSec = Math.floor((target.getTime() - now.getTime()) / 1000);
-      const days = Math.floor(totalSec / 86400);
-      const hours = Math.floor((totalSec % 86400) / 3600);
-      const minutes = Math.floor((totalSec % 3600) / 60);
-      const seconds = totalSec % 60;
-      setDiff({ days, hours, minutes, seconds });
+      if (target <= now) return;
+      const s = Math.floor((target.getTime() - now.getTime()) / 1000);
+      setD({ days: Math.floor(s / 86400), hours: Math.floor((s % 86400) / 3600), minutes: Math.floor((s % 3600) / 60), seconds: s % 60 });
     };
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [dateStr]);
-  return diff;
+  return d;
 }
 
-function CountdownUnit({ value, label }: { value: number; label: string }) {
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
   return (
-    <div className="flex flex-col items-center">
-      <span className="text-3xl md:text-4xl font-serif font-bold text-white leading-none tabular-nums">
-        {String(value).padStart(2, "0")}
-      </span>
-      <span className="text-[10px] uppercase tracking-[0.2em] text-white/60 mt-1">{label}</span>
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 28 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* ─── Loading / Error screens ───────────────────────────── */
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen bg-white flex flex-col">
+      <Skeleton className="h-[60vh] w-full rounded-none" />
+      <div className="max-w-4xl mx-auto w-full px-6 py-16 space-y-8">
+        <Skeleton className="h-8 w-64 mx-auto" />
+        <Skeleton className="h-4 w-96 mx-auto" />
+        <Skeleton className="h-48 w-full" />
+      </div>
     </div>
   );
 }
 
-/* ─── Templates ─────────────────────────────────────────── */
-const TEMPLATE_STYLES: Record<string, { accent: string; bg: string; overlay: string }> = {
-  classic:    { accent: "#C9A96E", bg: "#FEFAF5", overlay: "rgba(20,10,5,0.55)"  },
-  modern:     { accent: "#C94B6E", bg: "#171215", overlay: "rgba(23,18,21,0.60)" },
-  floral:     { accent: "#A855B5", bg: "#FDF4FF", overlay: "rgba(40,15,50,0.55)" },
-  minimalist: { accent: "#64748b", bg: "#f8fafc", overlay: "rgba(15,20,30,0.55)" },
-  luxury:     { accent: "#D4AF37", bg: "#0a0a0a", overlay: "rgba(10,8,0,0.60)"   },
-};
-
-/* ─── Main page ─────────────────────────────────────────── */
+/* ─── Main ─────────────────────────────────────────────── */
 export function RsvpPage() {
   const params = useParams<{ token: string }>();
   const token = params.token;
   const { data: rsvp, isLoading, isError } = useGetRsvp(token);
   const submitRsvp = useSubmitRsvp();
   const [submitted, setSubmitted] = useState(false);
-  const [response, setResponse] = useState<"confirmed" | "declined" | null>(null);
+  const [rsvpResponse, setRsvpResponse] = useState<"confirmed" | "declined" | null>(null);
 
-  const inv = (rsvp as any)?.invitation;
-  const event = (rsvp as any)?.event ?? rsvp;
-  const guest = (rsvp as any)?.guest;
+  const inv        = (rsvp as any)?.invitation;
+  const eventDate  = (rsvp as any)?.eventDate;
+  const countdown  = useCountdown(eventDate);
 
-  const template = inv?.template ?? "classic";
-  const style = TEMPLATE_STYLES[template] ?? TEMPLATE_STYLES.classic;
+  const couplePhoto  = inv?.couplePhoto  || (rsvp as any)?.couplePhoto;
+  const coupleName   = inv?.coupleName   || (rsvp as any)?.coupleName   || (rsvp as any)?.eventName  || "";
+  const message      = inv?.message      || (rsvp as any)?.message      || "";
+  const showCountdown = inv?.showCountdown ?? true;
 
-  const eventDate: string | undefined =
-    (rsvp as any)?.eventDate ?? event?.date;
+  const guestName  = (rsvp as any)?.guestName || "";
+  const venue      = (rsvp as any)?.venue     || "";
+  const address    = (rsvp as any)?.address   || "";
+  const time       = (rsvp as any)?.eventTime || "";
+  const dressCode  = (rsvp as any)?.dressCode || "";
+  const phone      = (rsvp as any)?.phoneContact || "";
 
-  const countdown = useCountdown(eventDate);
+  /* wine/maroon palette matching the reference */
+  const WINE   = "#7B1F3A";
+  const WINE2  = "#9B2A4A";
+  const CREAM  = "#FDF8F3";
+  const WHITE  = "#FFFFFF";
+  const DARK   = "#1a1a1a";
 
   const handleRsvp = (attending: boolean) => {
     const resp = attending ? "confirmed" : "declined";
     submitRsvp.mutate(
       { token, data: { attending } },
-      {
-        onSuccess: () => {
-          setResponse(resp);
-          setSubmitted(true);
-        },
-      }
+      { onSuccess: () => { setRsvpResponse(resp); setSubmitted(true); } }
     );
   };
 
-  /* Loading */
-  if (isLoading) {
+  if (isLoading) return <LoadingScreen />;
+
+  if (isError || !rsvp) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-[#FEFAF5]">
-        <div className="w-full max-w-md space-y-4">
-          <Skeleton className="h-80 w-full rounded-none" />
-          <Skeleton className="h-48 w-full rounded-none" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: CREAM }}>
+        <div className="text-center space-y-4 px-6">
+          <div className="text-6xl">💌</div>
+          <h2 className="font-serif text-3xl font-bold" style={{ color: DARK }}>Ftesa nuk u gjet</h2>
+          <p style={{ color: "#666" }}>Linku mund të jetë i pasaktë ose i skaduar.</p>
         </div>
       </div>
     );
   }
 
-  /* Error */
-  if (isError || !rsvp) {
+  if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: style.bg }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-4 max-w-xs"
-        >
-          <div className="text-5xl">💌</div>
-          <h2 className="font-serif text-2xl font-bold">Ftesa nuk u gjet</h2>
-          <p className="text-muted-foreground text-sm">Linku mund të jetë i pasaktë ose i skaduar.</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: CREAM }}>
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-6 max-w-sm px-6">
+          <motion.div
+            initial={{ scale: 0 }} animate={{ scale: 1 }}
+            transition={{ type: "spring", bounce: 0.45, delay: 0.1 }}
+            className="inline-flex items-center justify-center w-24 h-24 rounded-full mx-auto"
+            style={{ background: rsvpResponse === "confirmed" ? `${WINE}15` : "#f3f4f6", border: `2px solid ${rsvpResponse === "confirmed" ? WINE : "#d1d5db"}` }}
+          >
+            {rsvpResponse === "confirmed"
+              ? <Heart className="h-10 w-10" style={{ color: WINE }} />
+              : <X className="h-10 w-10 text-gray-400" />}
+          </motion.div>
+          <div>
+            <h2 className="font-serif text-3xl font-bold" style={{ color: DARK }}>
+              {rsvpResponse === "confirmed" ? "Faleminderit!" : "Mirëkuptojmë"}
+            </h2>
+            <p className="mt-3 leading-relaxed" style={{ color: "#666" }}>
+              {rsvpResponse === "confirmed"
+                ? "Konfirmimi juaj u regjistrua. Presim me padurim ditën tonë të veçantë bashkë me ju!"
+                : "Faleminderit për përgjigjen tuaj. Ju mbajmë gjithmonë në zemër!"}
+            </p>
+          </div>
+          <p className="text-xs" style={{ color: "#aaa" }}>Powered by <strong style={{ color: WINE }}>NoaEvent</strong></p>
         </motion.div>
       </div>
     );
   }
 
-  /* Thank-you screen */
-  if (submitted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: style.bg }}>
-        <AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center space-y-6 max-w-sm px-4"
-          >
-            {response === "confirmed" ? (
-              <>
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", bounce: 0.5, delay: 0.1 }}
-                  className="inline-flex items-center justify-center w-24 h-24 rounded-full mx-auto"
-                  style={{ background: `${style.accent}20`, border: `2px solid ${style.accent}40` }}
-                >
-                  <Heart className="h-10 w-10" style={{ color: style.accent }} />
-                </motion.div>
-                <div>
-                  <h2 className="font-serif text-3xl font-bold">Faleminderit!</h2>
-                  <p className="text-muted-foreground mt-3 leading-relaxed">
-                    Konfirmimi juaj u regjistrua. Presim me padurim t'ju shohim në ditën tonë të veçantë!
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mx-auto bg-gray-100">
-                  <X className="h-10 w-10 text-gray-400" />
-                </div>
-                <div>
-                  <h2 className="font-serif text-3xl font-bold">Mirëkuptojmë</h2>
-                  <p className="text-muted-foreground mt-3 leading-relaxed">
-                    Faleminderit për përgjigjen tuaj. Ju mbajmë në zemër!
-                  </p>
-                </div>
-              </>
-            )}
-            <p className="text-xs text-muted-foreground pt-4">
-              Powered by <span className="font-semibold" style={{ color: style.accent }}>NoaEvent</span>
-            </p>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-    );
-  }
-
-  const coupleName   = (rsvp as any).coupleName   ?? inv?.coupleName   ?? (rsvp as any).eventName;
-  const message      = (rsvp as any).message       ?? inv?.message;
-  const couplePhoto  = (rsvp as any).couplePhoto   ?? inv?.couplePhoto;
-  const showCountdown = inv?.showCountdown ?? true;
-
-  const guestFirstName = (rsvp as any).guestName ?? `${guest?.firstName ?? ""} ${guest?.lastName ?? ""}`.trim();
-
-  const venue    = (rsvp as any).venue    ?? event?.venue;
-  const address  = (rsvp as any).address  ?? event?.address;
-  const time     = (rsvp as any).eventTime ?? event?.time;
-  const dressCode = (rsvp as any).dressCode ?? event?.dressCode;
-  const phone    = (rsvp as any).phoneContact ?? event?.phoneContact;
-
   return (
-    <div className="min-h-screen" style={{ background: style.bg, color: "#1a1a1a" }}>
+    <div className="min-h-screen font-sans" style={{ background: WHITE, color: DARK }}>
 
-      {/* ── Hero photo ───────────────────────────────────── */}
-      <div className="relative w-full" style={{ minHeight: "55vh" }}>
+      {/* ═══════════════════════════════════════════════════
+          SECTION 1 — Hero (full-width photo + overlay + name)
+          like: Gademan hero with dark red tint + bold white text
+      ═══════════════════════════════════════════════════ */}
+      <section className="relative w-full overflow-hidden" style={{ minHeight: "70vh" }}>
+        {/* Photo or gradient fallback */}
         {couplePhoto ? (
-          <img
-            src={couplePhoto}
-            alt="Couple"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          <img src={couplePhoto} alt="Couple" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
-          /* Fallback gradient background when no photo */
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(135deg, ${style.accent}60 0%, ${style.accent}20 50%, #1a0a10 100%)`,
-            }}
-          />
+          <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${WINE} 0%, #3d0f1d 100%)` }} />
         )}
 
-        {/* Dark overlay */}
-        <div className="absolute inset-0" style={{ background: style.overlay }} />
+        {/* Wine-red semi-transparent overlay — exactly like the Gademan hero */}
+        <div className="absolute inset-0" style={{ background: `${WINE}CC` }} />
 
-        {/* Hero content */}
+        {/* Top nav bar — minimal, like Gademan */}
+        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-8 py-5">
+          <div className="flex items-center gap-3">
+            <Heart className="h-5 w-5 text-white opacity-80" />
+          </div>
+          <div className="hidden md:flex items-center gap-10 text-xs uppercase tracking-[0.2em] text-white/70">
+            <a href="#details" className="hover:text-white transition-colors">Detajet</a>
+            <a href="#rsvp" className="hover:text-white transition-colors">RSVP</a>
+          </div>
+          <div />
+        </div>
+
+        {/* Hero text content */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-20"
-          style={{ minHeight: "55vh" }}
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-10 flex flex-col items-start justify-end px-8 md:px-20 pb-16 pt-32"
+          style={{ minHeight: "70vh" }}
         >
-          {/* Decorative line */}
-          <div className="w-12 h-[1px] mb-6" style={{ background: style.accent }} />
-
-          <p className="text-[11px] uppercase tracking-[0.25em] text-white/60 mb-3">Ftesë e Personalizuar</p>
-
-          <h1 className="font-serif text-4xl md:text-6xl font-bold text-white leading-tight mb-4">
-            {coupleName}
+          <p className="text-xs uppercase tracking-[0.3em] text-white/60 mb-3">Ftesë Personale</p>
+          <h1 className="font-bold text-white leading-tight mb-4" style={{ fontSize: "clamp(2.2rem, 7vw, 5rem)", fontFamily: "Georgia, serif" }}>
+            {coupleName || "EMRI I ÇIFTIT"}
           </h1>
 
           {eventDate && (
-            <p className="text-white/70 text-sm tracking-wide">
-              {format(new Date(eventDate + "T00:00:00"), "dd · MM · yyyy")}
+            <p className="text-white/80 text-sm md:text-base tracking-widest mb-8">
+              {format(new Date(eventDate + "T00:00:00"), "dd · MM · yyyy").toUpperCase()}
             </p>
           )}
 
-          {/* Countdown */}
+          {/* Countdown — inside hero, like a "Become A Customer" area */}
           {showCountdown && eventDate && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="mt-10 flex items-center gap-8"
-            >
-              <CountdownUnit value={countdown.days}    label="Ditë"    />
-              <span className="text-white/30 text-2xl font-light pb-4">:</span>
-              <CountdownUnit value={countdown.hours}   label="Orë"     />
-              <span className="text-white/30 text-2xl font-light pb-4">:</span>
-              <CountdownUnit value={countdown.minutes} label="Min"     />
-              <span className="text-white/30 text-2xl font-light pb-4">:</span>
-              <CountdownUnit value={countdown.seconds} label="Sek"     />
-            </motion.div>
+            <div className="inline-flex items-center gap-6 px-8 py-5 border border-white/30 bg-white/10 backdrop-blur-sm">
+              {[
+                { v: countdown.days,    l: "DITË"    },
+                { v: countdown.hours,   l: "ORË"     },
+                { v: countdown.minutes, l: "MIN"     },
+                { v: countdown.seconds, l: "SEK"     },
+              ].map(({ v, l }, i) => (
+                <div key={l} className="flex items-center gap-6">
+                  <div className="text-center">
+                    <div className="text-2xl md:text-3xl font-bold text-white tabular-nums" style={{ fontFamily: "Georgia, serif" }}>
+                      {String(v).padStart(2, "0")}
+                    </div>
+                    <div className="text-[9px] tracking-[0.2em] text-white/50 mt-0.5">{l}</div>
+                  </div>
+                  {i < 3 && <span className="text-white/30 text-xl font-light">:</span>}
+                </div>
+              ))}
+            </div>
           )}
         </motion.div>
-      </div>
+      </section>
 
-      {/* ── Invitation card ──────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 32 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="max-w-lg mx-auto px-4 -mt-6 pb-16 relative z-20"
-      >
-        <div
-          className="rounded-none shadow-2xl overflow-hidden border"
-          style={{ background: "white", borderColor: `${style.accent}30` }}
-        >
-          {/* Top accent bar */}
-          <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, transparent, ${style.accent}, transparent)` }} />
+      {/* ═══════════════════════════════════════════════════
+          SECTION 2 — Welcome (white bg, photo LEFT + text RIGHT)
+          like: Gademan "Welkom bij" section
+      ═══════════════════════════════════════════════════ */}
+      <section className="py-20" style={{ background: WHITE }}>
+        <div className="max-w-6xl mx-auto px-6 md:px-12">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
 
-          <div className="p-8 md:p-10 space-y-8">
-
-            {/* Greeting */}
-            <div className="text-center space-y-1 pb-6 border-b" style={{ borderColor: `${style.accent}20` }}>
-              <p className="text-xs uppercase tracking-[0.2em] text-gray-400">Të nderuar</p>
-              <p className="font-serif text-2xl font-semibold text-gray-900">{guestFirstName}</p>
-            </div>
-
-            {/* Personal message */}
-            {message && (
-              <div className="text-center py-2">
-                <p
-                  className="font-serif text-base leading-relaxed italic text-gray-600"
-                  style={{ borderLeft: `3px solid ${style.accent}`, paddingLeft: "1rem", textAlign: "left" }}
-                >
-                  "{message}"
-                </p>
-              </div>
+            {/* Photo left */}
+            {couplePhoto && (
+              <Reveal>
+                <div className="relative">
+                  {/* Offset shadow box — like Gademan stacked product shot */}
+                  <div className="absolute -bottom-4 -right-4 w-full h-full" style={{ background: `${WINE}20` }} />
+                  <img
+                    src={couplePhoto}
+                    alt="Couple"
+                    className="relative w-full object-cover"
+                    style={{ maxHeight: 480, objectPosition: "top" }}
+                  />
+                </div>
+              </Reveal>
             )}
 
-            {/* Event details */}
-            <div
-              className="space-y-4 rounded-none p-5"
-              style={{ background: `${style.accent}08`, border: `1px solid ${style.accent}20` }}
-            >
-              {eventDate && (
-                <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <CalendarDays className="h-4 w-4 shrink-0" style={{ color: style.accent }} />
-                  <span className="font-medium">
-                    {format(new Date(eventDate + "T00:00:00"), "EEEE, dd MMMM yyyy")}
-                  </span>
-                </div>
+            {/* Text right */}
+            <Reveal className={couplePhoto ? "" : "md:col-span-2 text-center max-w-2xl mx-auto"}>
+              <p className="text-xs uppercase tracking-[0.25em] mb-4" style={{ color: WINE }}>FTESË SPECIALE</p>
+              <h2 className="font-bold leading-tight mb-6" style={{ fontFamily: "Georgia, serif", fontSize: "clamp(1.8rem, 4vw, 3rem)", color: DARK }}>
+                Të nderuar<br />
+                <span style={{ color: WINE }}>{guestName || "Mysafir"}</span>
+              </h2>
+              {message && (
+                <>
+                  <p className="leading-relaxed mb-4" style={{ color: "#555", fontSize: "1.05rem" }}>
+                    {message}
+                  </p>
+                  <p className="leading-relaxed" style={{ color: "#555", fontSize: "1.05rem" }}>
+                    Ju ftojmë të ndani gëzimin e kësaj dite të veçantë bashkë me ne.
+                  </p>
+                </>
               )}
-              {time && (
-                <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <Clock className="h-4 w-4 shrink-0" style={{ color: style.accent }} />
-                  <span>{time}</span>
-                </div>
+              {!message && (
+                <p className="leading-relaxed" style={{ color: "#555", fontSize: "1.05rem" }}>
+                  Me kënaqësi të madhe ju ftojmë të ndani gëzimin e kësaj dite të veçantë bashkë me ne. Prania juaj do ta bëjë këtë moment edhe më të veçantë dhe të paharrueshëm.
+                </p>
               )}
-              {venue && (
-                <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <MapPin className="h-4 w-4 shrink-0" style={{ color: style.accent }} />
-                  <span>{venue}{address ? `, ${address}` : ""}</span>
+
+              {/* CTA-style button — like "Become A Customer?" */}
+              <a
+                href="#rsvp"
+                className="inline-block mt-8 px-8 py-3 font-bold text-sm uppercase tracking-widest text-white transition-all hover:opacity-90"
+                style={{ background: WINE }}
+              >
+                Konfirmo Pjesëmarrjen →
+              </a>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════
+          SECTION 3 — Event Details (dark card LEFT + photo RIGHT)
+          like: Gademan "Historie" section with dark card + b&w photo
+      ═══════════════════════════════════════════════════ */}
+      <section id="details" className="py-20 relative overflow-hidden" style={{ background: CREAM }}>
+        <div className="max-w-6xl mx-auto px-6 md:px-12">
+          <div className="grid md:grid-cols-2 gap-0 items-stretch">
+
+            {/* Dark card left */}
+            <Reveal>
+              <div className="h-full p-10 md:p-14 flex flex-col justify-center space-y-8" style={{ background: WINE, color: WHITE, minHeight: 400 }}>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.25em] text-white/60 mb-3">DETAJET E EVENTIT</p>
+                  <h2 className="font-bold text-3xl md:text-4xl text-white" style={{ fontFamily: "Georgia, serif" }}>
+                    {coupleName}
+                  </h2>
                 </div>
-              )}
-              {dressCode && (
-                <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <Shirt className="h-4 w-4 shrink-0" style={{ color: style.accent }} />
-                  <span>Dress code: <span className="font-medium">{dressCode}</span></span>
+
+                <div className="space-y-5">
+                  {eventDate && (
+                    <div className="flex items-center gap-4 text-sm">
+                      <CalendarDays className="h-5 w-5 text-white/60 shrink-0" />
+                      <span className="font-medium">{format(new Date(eventDate + "T00:00:00"), "EEEE, dd MMMM yyyy")}</span>
+                    </div>
+                  )}
+                  {time && (
+                    <div className="flex items-center gap-4 text-sm">
+                      <Clock className="h-5 w-5 text-white/60 shrink-0" />
+                      <span>Ora: <strong>{time}</strong></span>
+                    </div>
+                  )}
+                  {venue && (
+                    <div className="flex items-center gap-4 text-sm">
+                      <MapPin className="h-5 w-5 text-white/60 shrink-0" />
+                      <span>{venue}{address ? `, ${address}` : ""}</span>
+                    </div>
+                  )}
+                  {dressCode && (
+                    <div className="flex items-center gap-4 text-sm">
+                      <Shirt className="h-5 w-5 text-white/60 shrink-0" />
+                      <span>Dress code: <strong>{dressCode}</strong></span>
+                    </div>
+                  )}
+                  {phone && (
+                    <div className="flex items-center gap-4 text-sm">
+                      <Phone className="h-5 w-5 text-white/60 shrink-0" />
+                      <span>{phone}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-              {phone && (
-                <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <Phone className="h-4 w-4 shrink-0" style={{ color: style.accent }} />
-                  <span>{phone}</span>
+
+                <a
+                  href="#rsvp"
+                  className="inline-block border border-white/50 px-7 py-3 text-xs uppercase tracking-widest font-bold text-white hover:bg-white hover:text-[#7B1F3A] transition-all self-start"
+                >
+                  Konfirmo Tani →
+                </a>
+              </div>
+            </Reveal>
+
+            {/* Photo right */}
+            {couplePhoto ? (
+              <Reveal>
+                <img
+                  src={couplePhoto}
+                  alt="Event"
+                  className="w-full h-full object-cover"
+                  style={{ minHeight: 400 }}
+                />
+              </Reveal>
+            ) : (
+              <Reveal>
+                <div
+                  className="w-full flex items-center justify-center"
+                  style={{ minHeight: 400, background: `${WINE}15` }}
+                >
+                  <Heart className="h-20 w-20 opacity-20" style={{ color: WINE }} />
                 </div>
-              )}
+              </Reveal>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════
+          SECTION 4 — RSVP (two large cards, like "Smaken" section)
+      ═══════════════════════════════════════════════════ */}
+      <section id="rsvp" className="py-24" style={{ background: WHITE }}>
+        <div className="max-w-5xl mx-auto px-6 md:px-12">
+          <Reveal className="text-center mb-16 space-y-3">
+            <p className="text-xs uppercase tracking-[0.25em]" style={{ color: WINE }}>RSVP</p>
+            <h2 className="font-bold text-4xl md:text-5xl" style={{ fontFamily: "Georgia, serif", color: DARK }}>
+              A do të vini?
+            </h2>
+            <p style={{ color: "#888" }}>Ju lutem konfirmoni pjesëmarrjen tuaj</p>
+          </Reveal>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* YES card — like Gademan product card with image */}
+            <Reveal>
+              <button
+                onClick={() => handleRsvp(true)}
+                disabled={submitRsvp.isPending}
+                className="w-full group text-left border-2 transition-all duration-300 overflow-hidden hover:-translate-y-1"
+                style={{ borderColor: `${WINE}30` }}
+              >
+                {/* Card image area */}
+                {couplePhoto ? (
+                  <div className="relative overflow-hidden" style={{ height: 220 }}>
+                    <img src={couplePhoto} alt="Yes" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <div className="absolute inset-0" style={{ background: `${WINE}50` }} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <CheckCircle2 className="h-14 w-14 text-white drop-shadow-lg" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center" style={{ height: 220, background: `${WINE}10` }}>
+                    <CheckCircle2 className="h-14 w-14" style={{ color: WINE }} />
+                  </div>
+                )}
+                <div className="p-8 text-center" style={{ background: WHITE }}>
+                  <h3 className="font-bold text-xl mb-2" style={{ fontFamily: "Georgia, serif", color: DARK }}>
+                    Po, do të vij
+                  </h3>
+                  <p style={{ color: "#888", fontSize: "0.9rem" }}>Do të jem i/e pranishëm/e</p>
+                  <div
+                    className="mt-5 w-full py-3 text-xs uppercase tracking-widest font-bold text-white transition-opacity"
+                    style={{ background: WINE }}
+                  >
+                    {submitRsvp.isPending ? "Duke dërguar..." : "Konfirmo →"}
+                  </div>
+                </div>
+              </button>
+            </Reveal>
+
+            {/* NO card */}
+            <Reveal>
+              <button
+                onClick={() => handleRsvp(false)}
+                disabled={submitRsvp.isPending}
+                className="w-full group text-left border-2 transition-all duration-300 overflow-hidden hover:-translate-y-1"
+                style={{ borderColor: "#e5e7eb" }}
+              >
+                <div className="flex items-center justify-center" style={{ height: 220, background: "#f9fafb" }}>
+                  <X className="h-14 w-14 text-gray-300" />
+                </div>
+                <div className="p-8 text-center" style={{ background: WHITE }}>
+                  <h3 className="font-bold text-xl mb-2" style={{ fontFamily: "Georgia, serif", color: DARK }}>
+                    Jo, nuk vij
+                  </h3>
+                  <p style={{ color: "#888", fontSize: "0.9rem" }}>Nuk do të jem i/e pranishëm/e</p>
+                  <div
+                    className="mt-5 w-full py-3 text-xs uppercase tracking-widest font-bold text-gray-600 border transition-colors"
+                    style={{ borderColor: "#e5e7eb" }}
+                  >
+                    Refuzo
+                  </div>
+                </div>
+              </button>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════
+          FOOTER — dark maroon like Gademan footer
+      ═══════════════════════════════════════════════════ */}
+      <footer style={{ background: CREAM, borderTop: `1px solid ${WINE}20` }}>
+        {/* Ice cream row → here: couple photo strip */}
+        {couplePhoto && (
+          <div className="w-full overflow-hidden" style={{ height: 80 }}>
+            <img src={couplePhoto} alt="" className="w-full h-full object-cover object-top opacity-60" />
+          </div>
+        )}
+
+        <div className="max-w-6xl mx-auto px-6 py-12 md:py-16">
+          <div className="grid md:grid-cols-2 gap-8 items-center mb-12">
+            <div>
+              <h3 className="font-bold text-xl mb-2" style={{ fontFamily: "Georgia, serif", color: DARK }}>{coupleName}</h3>
+              {venue && <p className="text-sm" style={{ color: "#666" }}>{venue}{address ? `, ${address}` : ""}</p>}
+              {phone && <p className="text-sm mt-1" style={{ color: "#666" }}>Tel: {phone}</p>}
             </div>
-
-            {/* RSVP section */}
-            <div className="space-y-4 pt-2">
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-[1px]" style={{ background: `${style.accent}30` }} />
-                <p className="text-xs uppercase tracking-[0.2em] text-gray-400 whitespace-nowrap">A do të vini?</p>
-                <div className="flex-1 h-[1px]" style={{ background: `${style.accent}30` }} />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  onClick={() => handleRsvp(true)}
-                  disabled={submitRsvp.isPending}
-                  className="h-14 text-sm font-semibold tracking-wide rounded-none"
-                  style={{ background: style.accent, color: "white" }}
-                >
-                  {submitRsvp.isPending
-                    ? <Loader2 className="h-4 w-4 animate-spin" />
-                    : <><CheckCircle2 className="h-4 w-4 mr-2" /> Po, do të vij</>
-                  }
-                </Button>
-                <Button
-                  onClick={() => handleRsvp(false)}
-                  disabled={submitRsvp.isPending}
-                  variant="outline"
-                  className="h-14 text-sm rounded-none border-2"
-                  style={{ borderColor: `${style.accent}40`, color: "#555" }}
-                >
-                  <X className="h-4 w-4 mr-2" /> Nuk vij
-                </Button>
-              </div>
+            <div className="text-right">
+              <p className="text-xs uppercase tracking-widest mb-1" style={{ color: "#aaa" }}>Organizuar me</p>
+              <p className="font-bold" style={{ color: WINE, fontFamily: "Georgia, serif", fontSize: "1.2rem" }}>NoaEvent</p>
             </div>
           </div>
 
-          {/* Bottom accent bar */}
-          <div className="h-[1px] w-full" style={{ background: `linear-gradient(90deg, transparent, ${style.accent}, transparent)` }} />
+          <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs" style={{ borderColor: `${WINE}20`, color: "#aaa" }}>
+            <p>© {new Date().getFullYear()} {coupleName}. Të gjitha të drejtat e rezervuara.</p>
+            <p>Powered by <strong style={{ color: WINE }}>NoaEvent</strong></p>
+          </div>
         </div>
-
-        <p className="text-center text-[11px] text-gray-400 mt-6 tracking-wide">
-          Powered by <span className="font-semibold" style={{ color: style.accent }}>NoaEvent</span>
-        </p>
-      </motion.div>
+      </footer>
     </div>
   );
 }
