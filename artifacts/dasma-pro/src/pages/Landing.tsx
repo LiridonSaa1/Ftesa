@@ -69,83 +69,101 @@ const TESTIMONIALS = [
 ];
 
 /* ═══════════════════════════════════════════════════════════
-   TOP BAR (like Gademan: address + contact bar)
+   TOP BAR — small info bar above nav (Gademan style)
 ═══════════════════════════════════════════════════════════ */
 function TopBar() {
   return (
-    <div className="hidden md:flex items-center justify-between px-8 py-2 text-xs" style={{ background: DARK, color: "#aaa" }}>
+    <div className="hidden md:flex items-center justify-between px-10 py-2 text-xs" style={{ background: WINE, color: "rgba(255,255,255,0.75)" }}>
       <div className="flex items-center gap-6">
         <span className="flex items-center gap-1.5"><MapPin className="h-3 w-3" /> Prishtinë, Kosovë</span>
         <span className="flex items-center gap-1.5"><Mail className="h-3 w-3" /> info@noa-event.com</span>
       </div>
-      <div className="flex items-center gap-6">
-        <span>Bëhu Klient?</span>
-        <span className="flex items-center gap-1.5"><Facebook className="h-3 w-3" /> <Instagram className="h-3 w-3" /></span>
+      <div className="flex items-center gap-5">
+        <Link href="/sign-in"><span className="cursor-pointer hover:text-white transition-colors">Hyr</span></Link>
+        <span className="flex items-center gap-2">
+          <Facebook className="h-3 w-3 cursor-pointer hover:text-white transition-colors" />
+          <Instagram className="h-3 w-3 cursor-pointer hover:text-white transition-colors" />
+        </span>
       </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════
-   NAV (like Gademan: logo center-left + links + CTA button)
+   NAVBAR — exact Gademan header:
+   [circle logo] [HOME  FLAVOURS  HISTORY  PREPARATION  ORDER] [Become A Customer?]
+   solid wine/maroon background, white links, white rounded button
 ═══════════════════════════════════════════════════════════ */
 function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const h = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", h);
-    return () => window.removeEventListener("scroll", h);
-  }, []);
+  const [active, setActive] = useState("#welcome");
 
   return (
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="sticky top-0 z-50 transition-all"
-      style={{
-        background: scrolled ? "rgba(255,255,255,0.97)" : WHITE,
-        borderBottom: `1px solid #e5e5e5`,
-        boxShadow: scrolled ? "0 2px 20px rgba(0,0,0,0.08)" : "none",
-      }}
+      className="sticky top-0 z-50"
+      style={{ background: WINE }}
     >
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-8">
-        {/* Logo */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="w-12 h-12 rounded-full border-2 flex items-center justify-center" style={{ borderColor: WINE }}>
-            <Heart className="h-5 w-5" style={{ color: WINE }} />
-          </div>
-          <div className="leading-tight">
-            <span className="font-bold text-lg tracking-wide" style={{ color: DARK }}>NoaEvent</span>
-            <p className="text-[9px] uppercase tracking-[0.15em]" style={{ color: MUTED }}>Wedding Platform</p>
+      <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between gap-6">
+
+        {/* ── Logo: circular badge (like Gademan's oval stamp) ── */}
+        <div className="shrink-0">
+          <div
+            className="flex flex-col items-center justify-center text-center"
+            style={{
+              width: 68, height: 68,
+              borderRadius: "50%",
+              border: "2px solid rgba(255,255,255,0.7)",
+              background: "rgba(255,255,255,0.08)",
+              color: WHITE,
+              lineHeight: 1.1,
+            }}
+          >
+            <Heart className="h-3.5 w-3.5 mb-0.5" style={{ color: WHITE, opacity: 0.85 }} />
+            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>NoaEvent</span>
+            <span style={{ fontSize: 6.5, opacity: 0.6, letterSpacing: "0.06em", textTransform: "uppercase" }}>Wedding Platform</span>
           </div>
         </div>
 
-        {/* Nav links */}
-        <div className="hidden md:flex items-center gap-10">
-          {NAV_LINKS.map(({ href, label }) => (
-            <a
-              key={href}
-              href={href}
-              className="text-xs font-bold tracking-[0.15em] transition-colors hover:underline underline-offset-4"
-              style={{ color: DARK, textDecoration: "none" }}
-              onMouseEnter={e => (e.currentTarget.style.color = WINE)}
-              onMouseLeave={e => (e.currentTarget.style.color = DARK)}
-            >
-              {label}
-            </a>
-          ))}
+        {/* ── Nav links: centered, white, bold, uppercase ── */}
+        <div className="flex-1 flex items-center justify-center gap-8 md:gap-10">
+          {NAV_LINKS.map(({ href, label }) => {
+            const isActive = active === href;
+            return (
+              <a
+                key={href}
+                href={href}
+                onClick={() => setActive(href)}
+                className="text-xs font-bold tracking-[0.15em] transition-colors"
+                style={{
+                  color: WHITE,
+                  textDecoration: isActive ? "underline" : "none",
+                  textUnderlineOffset: "4px",
+                  textDecorationThickness: "2px",
+                  opacity: isActive ? 1 : 0.85,
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = isActive ? "1" : "0.85"; }}
+              >
+                {label}
+              </a>
+            );
+          })}
         </div>
 
-        {/* CTAs */}
-        <div className="flex items-center gap-3">
-          <Link href="/sign-in">
-            <span className="hidden sm:block text-xs font-bold tracking-widest cursor-pointer transition-colors" style={{ color: MUTED }}>Hyr</span>
-          </Link>
+        {/* ── CTA button: white bg, rounded, wine text ── */}
+        <div className="shrink-0">
           <Link href="/sign-up">
             <span
-              className="px-6 py-2.5 text-xs font-bold uppercase tracking-widest cursor-pointer border-2 transition-all hover:opacity-80"
-              style={{ borderColor: WINE, color: WINE, background: WHITE }}
+              className="inline-block px-5 py-2 text-xs font-bold cursor-pointer transition-all hover:bg-white/90"
+              style={{
+                background: WHITE,
+                color: WINE,
+                borderRadius: 4,
+                letterSpacing: "0.04em",
+                whiteSpace: "nowrap",
+              }}
             >
               Bëhu Klient?
             </span>
