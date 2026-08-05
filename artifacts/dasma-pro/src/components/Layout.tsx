@@ -63,7 +63,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold">
           <span className="inline-flex items-center rounded-lg bg-[#111] px-2 py-1">
-            <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.png`} alt="NoaInvite" className="h-6 w-auto" />
+            <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.png`} alt="NoaEvent" className="h-6 w-auto" />
           </span>
         </Link>
       </div>
@@ -121,7 +121,7 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className="w-full flex-1 flex justify-center">
              <Link href="/">
                <span className="inline-flex items-center rounded-lg bg-[#111] px-2 py-1">
-                 <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.png`} alt="NoaInvite" className="h-6 w-auto" />
+                 <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.png`} alt="NoaEvent" className="h-6 w-auto" />
                </span>
              </Link>
           </div>

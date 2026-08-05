@@ -82,12 +82,12 @@ const photos = [
   { url: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=1600&q=85", caption: "Salla e ëndrrave tuaja", sub: "Dizajnoni çdo tryezë, çdo karrigie" },
   { url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1600&q=85", caption: "Ftesa që lënë gjurmë", sub: "Elegancë digjitale për çdo mysafir" },
   { url: "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=1600&q=85", caption: "Bukuria e momentit", sub: "Organizoni me dashuri, jetoni çdo sekondë" },
-  { url: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=1600&q=85", caption: "Dasma e përsosur fillon këtu", sub: "NoaInvite — platforma juaj e besuar" },
+  { url: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=1600&q=85", caption: "Dasma e përsosur fillon këtu", sub: "NoaEvent — platforma juaj e besuar" },
 ];
 
 const testimonials = [
-  { name: "Arta Krasniqi", role: "Nuse, Prishtinë 2024", initials: "AK", color: G, quote: "NoaInvite e bëri organizimin e dasmës tonë gjë kënaqësi. QR check-in funksionoi pa asnjë problem dhe mysafirët ishin të mahnitur me ftesën digjitale!" },
-  { name: "Blerim Osmani", role: "Wedding Planner, Tiranë", initials: "BO", color: "#8FA88A", quote: "Kam organizuar mbi 40 dasma dhe NoaInvite është mjeti më i mirë që kam përdorur. Hall designer-i kursen orë pune dhe ndihmon të gjithë ekipin." },
+  { name: "Arta Krasniqi", role: "Nuse, Prishtinë 2024", initials: "AK", color: G, quote: "NoaEvent e bëri organizimin e dasmës tonë gjë kënaqësi. QR check-in funksionoi pa asnjë problem dhe mysafirët ishin të mahnitur me ftesën digjitale!" },
+  { name: "Blerim Osmani", role: "Wedding Planner, Tiranë", initials: "BO", color: "#8FA88A", quote: "Kam organizuar mbi 40 dasma dhe NoaEvent është mjeti më i mirë që kam përdorur. Hall designer-i kursen orë pune dhe ndihmon të gjithë ekipin." },
   { name: "Drita Hoxha", role: "Menaxhere Sale, Shkodër", initials: "DH", color: "#8B9DC3", quote: "Klientët tanë janë jashtëzakonisht të kënaqur me ftesat digjitale. Platforma është intuitive dhe mbështetja teknike është fantastike." },
 ];
 
@@ -295,7 +295,7 @@ export function Landing() {
         style={{ background: `${C}ee`, borderColor: "#e4d9cc" }}
       >
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <img src={`${BASE}/NoaInvite_transparent.png`} alt="NoaInvite" className="h-9 w-auto" />
+          <img src={`${BASE}/NoaEvent_transparent.png`} alt="NoaEvent" className="h-9 w-auto" />
 
           <div className="hidden md:flex items-center gap-8 text-sm font-medium" style={{ color: "#7a6f64" }}>
             {[["#features","Funksionet"],["#how","Si funksionon"],["#pricing","Çmimet"]].map(([href,label]) => (
@@ -419,7 +419,7 @@ export function Landing() {
                 </div>
 
                 <p className="text-center text-[9px]" style={{ color: "#c0b5a8" }}>
-                  Powered by <span style={{ color: G }} className="font-medium">NoaInvite</span>
+                  Powered by <span style={{ color: G }} className="font-medium">NoaEvent</span>
                 </p>
               </div>
             </motion.div>
@@ -504,7 +504,7 @@ export function Landing() {
             <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-5 border" style={{ background: `${G}12`, borderColor: `${G}30`, color: G }}>
               ✦ Funksionet
             </div>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4" style={{ color: D }}>Çfarë ofron NoaInvite?</h2>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4" style={{ color: D }}>Çfarë ofron NoaEvent?</h2>
             <p className="text-lg max-w-xl mx-auto" style={{ color: "#8a7f74" }}>Çdo mjet që ju nevojitet për të organizuar eventin e ëndrrave tuaja.</p>
           </Reveal>
 
@@ -682,7 +682,7 @@ export function Landing() {
             Gati për ditën<br /><span style={{ color: G }}>tuaj të veçantë?</span>
           </h2>
           <p className="text-xl mb-12 leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
-            Bashkohuni me qindra organizatorë që i besojnë NoaInvite për momentet e tyre më të çmuara.
+            Bashkohuni me qindra organizatorë që i besojnë NoaEvent për momentet e tyre më të çmuara.
           </p>
           <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
             <Button size="lg" asChild className="rounded-full px-12 py-6 text-lg font-bold shadow-2xl text-white" style={{ background: `linear-gradient(135deg,${G},#b8934d)`, boxShadow: `0 16px 48px ${G}50` }}>
@@ -696,7 +696,7 @@ export function Landing() {
       <footer className="py-14 border-t" style={{ background: D, borderColor: "#2e2926" }}>
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10 pb-10 border-b" style={{ borderColor: "#2e2926" }}>
-            <img src={`${BASE}/NoaInvite_transparent.png`} alt="NoaInvite" className="h-10 w-auto" />
+            <img src={`${BASE}/NoaEvent_transparent.png`} alt="NoaEvent" className="h-10 w-auto" />
             <div className="flex flex-wrap gap-8 text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>
               {[["#features","Funksionet"],["#how","Si funksionon"],["#pricing","Çmimet"]].map(([href,label]) => (
                 <a key={href} href={href} className="hover:text-[#C9A96E] transition-colors">{label}</a>
@@ -705,7 +705,7 @@ export function Landing() {
             </div>
           </div>
           <div className="flex flex-col md:flex-row items-center justify-between text-sm" style={{ color: "rgba(255,255,255,0.25)" }}>
-            <p>© {new Date().getFullYear()} NoaInvite — Të gjitha të drejtat e rezervuara.</p>
+            <p>© {new Date().getFullYear()} NoaEvent — Të gjitha të drejtat e rezervuara.</p>
             <p className="mt-2 md:mt-0 flex items-center gap-1.5">Bërë me <Heart className="h-3.5 w-3.5" style={{ color: G }} fill={G} /> për çiftet shqipfolëse</p>
           </div>
         </div>

@@ -347,7 +347,7 @@ export function AdminPanel() {
             Admin Panel
           </h1>
           <p className="text-muted-foreground mt-0.5">
-            Statistikat dhe menaxhimi i platformës NoaInvite.
+            Statistikat dhe menaxhimi i platformës NoaEvent.
           </p>
         </div>
       </div>

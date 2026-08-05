@@ -163,7 +163,7 @@ export function RsvpPage() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-4">
-          Powered by <span className="text-primary font-medium">NoaInvite</span>
+          Powered by <span className="text-primary font-medium">NoaEvent</span>
         </p>
       </div>
     </div>
