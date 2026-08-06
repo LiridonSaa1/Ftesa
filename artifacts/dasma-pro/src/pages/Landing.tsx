@@ -115,7 +115,6 @@ function TopBar() {
 const NAV_LINKS = [
   { href: "#home",     label: "HOME"      },
   { href: "#services", label: "SHËRBIMET" },
-  { href: "#history",  label: "HISTORIA"  },
   { href: "#hall",     label: "SALLA"     },
   { href: "#contact",  label: "KONTAKT"   },
   { href: "#order",    label: "ÇMIMET"    },
@@ -300,7 +299,7 @@ function Hero() {
   return (
     <section
       id="home"
-      style={{ position: "relative", width: "100%", height: "88vh", overflow: "hidden" }}
+      style={{ position: "relative", width: "100%", overflow: "hidden" }}
     >
       {/* ── Full-screen background images (Ken Burns zoom) ── */}
       <AnimatePresence initial={false}>
@@ -346,11 +345,9 @@ function Hero() {
       {/* ── Slide text — left-aligned, vertically centered ── */}
       <div
         style={{
-          position: "absolute",
-          inset: 0,
+          position: "relative",
           zIndex: 2,
-          display: "flex",
-          alignItems: "center",
+          padding: "120px 0 140px",
         }}
       >
         <div style={{ width: "100%", maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
@@ -784,105 +781,6 @@ function WelcomeSection() {
    HISTORY — dark wine card LEFT + b&w photo RIGHT
    (Gademan "HISTORIE" section — exact layout)
 ═══════════════════════════════════════════════════════════ */
-function HistorySection() {
-  return (
-    <section id="history" style={{ background: CREAM }}>
-      <div
-        style={{
-          maxWidth: 1280,
-          margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          minHeight: 480,
-        }}
-      >
-        {/* Wine card */}
-        <FadeUp style={{ display: "flex" }}>
-          <div
-            style={{
-              background: WINE,
-              padding: "72px 64px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              flex: 1,
-            }}
-          >
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
-              style={{
-                color: WHITE,
-                fontWeight: 900,
-                fontSize: "clamp(1.6rem, 2.5vw, 2.3rem)",
-                textTransform: "uppercase",
-                letterSpacing: "0.07em",
-                marginBottom: 28,
-              }}
-            >
-              HISTORIA
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.15, duration: 0.7 }}
-              style={{ color: "rgba(255,255,255,0.80)", lineHeight: 1.85, marginBottom: 16, fontSize: 15 }}
-            >
-              "Pasioni im është krijimi i produkteve të ndershme, pa ngjyra dhe shije artificiale, ku shija gjithmonë luan rolin kryesor." Nga kjo bindje, NoaEvent ka prodhuar mbi 200 dasma premium.
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.25, duration: 0.7 }}
-              style={{ color: "rgba(255,255,255,0.80)", lineHeight: 1.85, marginBottom: 40, fontSize: 15 }}
-            >
-              Çdo plan eventech zhvillohet me syrin e cilësisë, konsistencës dhe përjetimit — saktësisht ajo çka klientëla premium kërkon.
-            </motion.p>
-            <Link href="/sign-up">
-              <motion.span
-                whileHover={{ backgroundColor: "rgba(255,255,255,0.15)" }}
-                style={{
-                  display: "inline-block",
-                  border: "1.5px solid rgba(255,255,255,0.55)",
-                  color: WHITE,
-                  padding: "10px 26px",
-                  fontSize: 13,
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  cursor: "pointer",
-                  borderRadius: 4,
-                  textTransform: "uppercase",
-                  transition: "background .2s",
-                }}
-              >
-                Lexo Më Shumë...
-              </motion.span>
-            </Link>
-          </div>
-        </FadeUp>
-
-        {/* B&W photo */}
-        <FadeUp delay={0.1} style={{ display: "flex" }}>
-          <img
-            src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=900&q=85"
-            alt="Historia"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              minHeight: 440,
-              filter: "grayscale(35%) contrast(1.08)",
-            }}
-          />
-        </FadeUp>
-      </div>
-    </section>
-  );
-}
 
 /* ═══════════════════════════════════════════════════════════
    SERVICES / SMAKEN — centered title + desc + 2 large cards
@@ -1681,7 +1579,6 @@ export function Landing() {
       <Navbar />
       <Hero />
       <WelcomeSection />
-      <HistorySection />
       <ServicesSection />
       <HallSection />
       <Testimonials />
