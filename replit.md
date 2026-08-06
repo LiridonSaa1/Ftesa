@@ -4,12 +4,26 @@ Wedding and event management platform — lets organizers create digital invitat
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
+
+## Paddle Billing
+
+Full payment flow: **Choose Plan → Register (Clerk) → `/checkout/pending` → Paddle Checkout → Webhook → Activate → Dashboard**
+
+Required secrets: `PADDLE_API_KEY`, `PADDLE_CLIENT_TOKEN`, `PADDLE_WEBHOOK_SECRET`, `PADDLE_PRICE_ID_BASIC`, `PADDLE_PRICE_ID_PRO`
+
+Optional env: `PADDLE_ENVIRONMENT` — `"sandbox"` (default) or `"production"`
+
+- Webhook endpoint: `POST /api/paddle/webhook` — verifies HMAC-SHA256 signature, handles `subscription.activated` / `transaction.completed` / `subscription.canceled`
+- Config endpoint: `GET /api/paddle/config` (auth required) — returns client token + price IDs to the frontend
+- New users start with `status: "pending_payment"` and are redirected to `/checkout/pending` by `SubscriptionGuard` in `AppRouter.tsx`
+- After payment, webhook sets `users.status = "active"` and creates a `subscriptions` row
+- New DB tables: `subscriptions`, `payments` (in `lib/db/src/schema/`)
 
 ## Stack
 

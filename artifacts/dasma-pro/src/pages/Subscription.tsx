@@ -1,10 +1,12 @@
-import { useGetSubscription, useUpdateSubscription, getGetSubscriptionQueryKey } from "@workspace/api-client-react";
+import { useGetSubscription, getGetSubscriptionQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useUser } from "@clerk/react";
+import { usePaddle } from "@/hooks/usePaddle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Check, Sparkles, Crown, Building2, AlertCircle } from "lucide-react";
+import { Check, Sparkles, Crown, Building2, AlertCircle, CreditCard } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -66,36 +68,56 @@ const PLANS = [
 
 export function Subscription() {
   const { data: subscription, isLoading } = useGetSubscription();
-  const updateSubscription = useUpdateSubscription();
+  const { user } = useUser();
   const queryClient = useQueryClient();
+  const { paddle, config, loading: paddleLoading } = usePaddle();
 
-  const handleUpgrade = (plan: string) => {
-    if (plan === "custom") {
+  const handleUpgrade = (planKey: string) => {
+    if (planKey === "custom") {
       toast({
         title: "Kontaktoni ekipin tonë",
         description: "Për planin Custom, ju lutem na kontaktoni drejtpërdrejt për çmim dhe konfigurim.",
       });
       return;
     }
-    updateSubscription.mutate(
-      { data: { plan: plan as "basic" | "pro" | "custom" } },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getGetSubscriptionQueryKey() });
-          toast({
-            title: "Plani u ndryshua!",
-            description: `Tani jeni në planin ${plan.charAt(0).toUpperCase() + plan.slice(1)}.`,
-          });
-        },
-        onError: () => {
-          toast({
-            title: "Gabim",
-            description: "Nuk mund të ndryshohej plani. Provoni përsëri.",
-            variant: "destructive",
-          });
-        },
-      }
-    );
+
+    if (!paddle || !config) {
+      toast({
+        title: "Gabim",
+        description: "Sistemi i pagesës nuk u ngarkua. Provoni përsëri.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const priceId = planKey === "pro" ? config.priceIdPro : config.priceIdBasic;
+    if (!priceId) {
+      toast({
+        title: "Gabim konfigurimi",
+        description: "Çmimi i planit nuk është konfiguruar. Kontaktoni mbështetjen.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    paddle.Checkout.open({
+      items: [{ priceId, quantity: 1 }],
+      customer: user?.primaryEmailAddress?.emailAddress
+        ? { email: user.primaryEmailAddress.emailAddress }
+        : undefined,
+      customData: { userId: user?.id ?? "" },
+      settings: {
+        successUrl: `${window.location.origin}/subscription`,
+        displayMode: "overlay",
+        theme: "light",
+      },
+    });
+
+    // Invalidate subscription cache after a delay (webhook may take a few seconds)
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: getGetSubscriptionQueryKey() });
+      queryClient.invalidateQueries({ queryKey: ["user-status"] });
+    }, 5000);
   };
 
   return (
@@ -140,7 +162,7 @@ export function Subscription() {
       <div className="grid gap-6 md:grid-cols-3">
         {PLANS.map((plan) => {
           const isCurrent = subscription?.plan === plan.key;
-          const isPending = updateSubscription.isPending && updateSubscription.variables?.data?.plan === plan.key;
+          const isUpgradable = !isCurrent && plan.key !== "custom";
 
           return (
             <Card
@@ -187,7 +209,7 @@ export function Subscription() {
 
                 <Button
                   className={cn(
-                    "w-full",
+                    "w-full gap-2",
                     isCurrent
                       ? "bg-muted text-muted-foreground cursor-default pointer-events-none"
                       : plan.key === "pro"
@@ -195,20 +217,23 @@ export function Subscription() {
                       : ""
                   )}
                   variant={plan.key === "pro" ? "default" : "outline"}
-                  disabled={isCurrent || updateSubscription.isPending}
+                  disabled={isCurrent || (isUpgradable && (paddleLoading || !paddle))}
                   onClick={() => !isCurrent && handleUpgrade(plan.key)}
                 >
-                  {isPending ? (
-                    <span className="flex items-center gap-2">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      Duke ndryshuar...
-                    </span>
-                  ) : isCurrent ? (
+                  {isCurrent ? (
                     "Plani aktual ✓"
                   ) : plan.key === "custom" ? (
                     "Na kontaktoni"
+                  ) : paddleLoading && isUpgradable ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Duke ngarkuar...
+                    </span>
                   ) : (
-                    `Kalo te ${plan.name}`
+                    <>
+                      <CreditCard className="h-4 w-4" />
+                      Kalo te {plan.name}
+                    </>
                   )}
                 </Button>
               </CardContent>
@@ -221,8 +246,8 @@ export function Subscription() {
       <div className="rounded-xl border border-border/50 bg-muted/30 p-6 text-sm text-muted-foreground space-y-2">
         <p className="font-medium text-foreground">Shënime të rëndësishme</p>
         <ul className="space-y-1.5 list-disc list-inside">
-          <li>Ndryshimi i planit hyn në fuqi menjëherë.</li>
-          <li>Plani Basic lejon krijimin e 1 eventi. Nëse keni arritur limitin, kaloni te Pro.</li>
+          <li>Ndryshimi i planit kërkon pagesën përmes Paddle (kartë krediti/debiti).</li>
+          <li>Pas pagesës, plani i ri aktivizohet automatikisht brenda disa sekondave.</li>
           <li>Plani Custom është i negociueshëm — na kontaktoni për çmim dhe kushte.</li>
         </ul>
       </div>

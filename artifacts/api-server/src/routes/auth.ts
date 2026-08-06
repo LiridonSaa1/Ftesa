@@ -20,6 +20,7 @@ router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
     lastName: user.lastName,
     role: user.role,
     subscriptionPlan: user.subscriptionPlan,
+    status: user.status,
     createdAt: user.createdAt.toISOString(),
   });
 });
@@ -40,6 +41,7 @@ router.patch("/auth/profile", requireAuth, async (req, res): Promise<void> => {
     lastName: user.lastName,
     role: user.role,
     subscriptionPlan: user.subscriptionPlan,
+    status: user.status,
     createdAt: user.createdAt.toISOString(),
   });
 });

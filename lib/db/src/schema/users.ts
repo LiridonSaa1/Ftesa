@@ -8,6 +8,10 @@ export const subscriptionPlanEnum = pgEnum("subscription_plan", [
   "pro",
   "custom",
 ]);
+export const userStatusEnum = pgEnum("user_status", [
+  "pending_payment",
+  "active",
+]);
 
 export const usersTable = pgTable("users", {
   id: text("id").primaryKey(), // Clerk userId
@@ -18,6 +22,7 @@ export const usersTable = pgTable("users", {
   subscriptionPlan: subscriptionPlanEnum("subscription_plan")
     .notNull()
     .default("basic"),
+  status: userStatusEnum("status").notNull().default("active"), // existing rows → active; new inserts use pending_payment
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

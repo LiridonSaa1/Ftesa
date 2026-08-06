@@ -126,7 +126,7 @@ function StampLogo() {
     <img
       src="/logo-full.png"
       alt="NoaEvent"
-      style={{ height: 80, width: "auto", flexShrink: 0, objectFit: "contain" }}
+      style={{ height: 200, width: "auto", flexShrink: 0, objectFit: "contain" }}
     />
   );
 }
@@ -158,8 +158,8 @@ function Navbar() {
           maxWidth: 1280,
           margin: "0 auto",
           padding: "0 48px",
-          /* Nav height = 100px; logo = 136px → protrudes 18px top + 18px bottom */
-          height: 100,
+          /* Nav height = 200px to match logo */
+          height: 200,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -1272,23 +1272,25 @@ function Testimonials() {
 ═══════════════════════════════════════════════════════════ */
 const PLANS = [
   {
-    name: "Starter",
-    price: "€19",
+    name: "Basic",
+    planKey: "basic",
+    price: "€10",
     period: "/muaj",
     tag: null,
     events: "1 event aktiv",
     img: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=70",
-    perks: ["Deri 150 mysafirë", "Ftesa digjitale", "QR Check-in bazik", "Support me email"],
+    perks: ["1 organizim (1 event)", "Menaxhim mysafirësh", "Ftesa digjitale", "QR Check-in", "Support me email"],
     featured: false,
   },
   {
     name: "Pro",
-    price: "€49",
+    planKey: "pro",
+    price: "€50",
     period: "/muaj",
     tag: "Më i Popullarizuar",
-    events: "Evente të pakufizuara",
+    events: "Deri 11 organizime",
     img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=70",
-    perks: ["Mysafirë të pakufizuar", "Hall Designer Premium", "RSVP automatik", "Priority support 24/7", "Eksport CSV/Excel"],
+    perks: ["Deri në 11 organizime", "Hall Designer Premium", "RSVP automatik", "Priority support 24/7", "Eksport CSV/Excel"],
     featured: true,
   },
 ];
@@ -1345,7 +1347,10 @@ function PricingSection() {
                       </li>
                     ))}
                   </ul>
-                  <Link href="/sign-up">
+                  <Link
+                    href="/sign-up"
+                    onClick={() => localStorage.setItem("paddle_selected_plan", p.planKey)}
+                  >
                     <motion.span
                       whileHover={{ scale: 1.03 }}
                       style={{
@@ -1363,7 +1368,7 @@ function PricingSection() {
                         transition: "all .18s",
                       }}
                     >
-                      {p.featured ? "Fillo Me Pro" : "Zgjidh Starter"}
+                      {p.featured ? "Fillo Me Pro" : "Fillo Me Basic"}
                     </motion.span>
                   </Link>
                 </div>
@@ -1491,9 +1496,9 @@ function Footer() {
           {/* Col 1: company */}
           <div>
             <img
-              src="/logo.png"
+              src="/logo-full.png"
               alt="NoaEvent"
-              style={{ height: 140, width: "auto", marginBottom: 20, objectFit: "contain" }}
+              style={{ height: 200, width: "auto", marginBottom: 20, objectFit: "contain" }}
             />
             <p style={{ fontSize: 13, color: MUTED, marginBottom: 4 }}>Adresa: Prishtinë 10000, Kosovë</p>
             <p style={{ fontSize: 13, color: MUTED, marginBottom: 4 }}>Tel: +383 44 000 000</p>

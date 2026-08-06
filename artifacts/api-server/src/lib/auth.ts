@@ -14,7 +14,8 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
   next();
 }
 
-/** Just-in-time provision a user row on first API call */
+/** Just-in-time provision a user row on first API call.
+ *  New users start as pending_payment; existing rows default to active (see schema). */
 export async function ensureUser(req: Request): Promise<void> {
   const userId = (req as any).userId as string;
   const existing = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
@@ -27,6 +28,7 @@ export async function ensureUser(req: Request): Promise<void> {
       lastName: (auth as any)?.sessionClaims?.lastName ?? null,
       role: "organizer",
       subscriptionPlan: "basic",
+      status: "pending_payment", // new users must pay before accessing dashboard
     }).onConflictDoNothing();
   }
 }
@@ -39,7 +41,7 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction): v
       return;
     }
     next();
-  }).catch((err: any) => {
+  }).catch(() => {
     res.status(500).json({ error: "Internal server error" });
   });
 }

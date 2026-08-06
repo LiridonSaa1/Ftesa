@@ -11,6 +11,7 @@ import checkinRouter from "./checkin";
 import subscriptionRouter from "./subscription";
 import dashboardRouter from "./dashboard";
 import adminRouter from "./admin";
+import paddleRouter from "./paddle";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(checkinRouter);
 router.use(subscriptionRouter);
 router.use(dashboardRouter);
 router.use(adminRouter);
+router.use(paddleRouter);
 
 export default router;
