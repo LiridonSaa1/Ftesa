@@ -933,9 +933,8 @@ function ServicesSection() {
     setActive(((next % total) + total) % total);
   }, [total]);
 
-  /* translate so active card is centered */
-  const viewW = typeof window !== "undefined" ? Math.min(window.innerWidth, 1280) : 900;
-  const offset = (viewW / 2) - (CARD_W / 2) - active * STEP;
+  /* translate so active card is left-aligned inside the container */
+  const offset = -active * STEP;
 
   /* drag support */
   const dragStart = useRef(0);
@@ -967,26 +966,28 @@ function ServicesSection() {
         </div>
       </FadeUp>
 
-      {/* Slider track */}
-      <div
-        ref={trackRef}
-        style={{ cursor: "grab", paddingBottom: 8, userSelect: "none" }}
-        onMouseDown={handleDragStart}
-        onMouseUp={handleDragEnd as any}
-        onTouchStart={handleDragStart as any}
-        onTouchEnd={handleDragEnd as any}
-      >
-        <motion.div
-          animate={{ x: offset }}
-          transition={{ type: "spring", stiffness: 260, damping: 32 }}
-          style={{ display: "flex", gap: GAP }}
+      {/* Slider track — clipped to content width */}
+      <div style={{ maxWidth: 1280, margin: "0 auto", overflow: "hidden", padding: "0 48px" }}>
+        <div
+          ref={trackRef}
+          style={{ cursor: "grab", paddingBottom: 8, userSelect: "none" }}
+          onMouseDown={handleDragStart}
+          onMouseUp={handleDragEnd as any}
+          onTouchStart={handleDragStart as any}
+          onTouchEnd={handleDragEnd as any}
         >
-          {SERVICE_SLIDES.map((slide, i) => (
-            <div key={slide.label} onClick={() => go(i)}>
-              <ServiceCard slide={slide} isActive={i === active} />
-            </div>
-          ))}
-        </motion.div>
+          <motion.div
+            animate={{ x: offset }}
+            transition={{ type: "spring", stiffness: 260, damping: 32 }}
+            style={{ display: "flex", gap: GAP }}
+          >
+            {SERVICE_SLIDES.map((slide, i) => (
+              <div key={slide.label} onClick={() => go(i)}>
+                <ServiceCard slide={slide} isActive={i === active} />
+              </div>
+            ))}
+          </motion.div>
+        </div>
       </div>
 
       {/* Controls */}
