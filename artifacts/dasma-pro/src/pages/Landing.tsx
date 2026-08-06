@@ -50,55 +50,60 @@ function FadeUp({
 }
 
 /* ═══════════════════════════════════════════════════════════
-   TOP BAR — very dark, small, exact Gademan
-   Left: address + email   Right: Bëhu Klient? · Account · FB
+   TOP BAR — exact Gademan dark info bar
 ═══════════════════════════════════════════════════════════ */
 function TopBar() {
   return (
     <div
       style={{
         background: TOPBG,
-        color: "rgba(255,255,255,0.68)",
-        fontSize: 12,
-        padding: "7px 40px",
+        color: "rgba(255,255,255,0.72)",
+        fontSize: 12.5,
+        padding: "8px 48px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        letterSpacing: "0.01em",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <MapPin size={11} /> Prishtinë 10000, Kosovë
+      {/* Left */}
+      <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <MapPin size={12} strokeWidth={1.8} />
+          Prishtinë 10000, Kosovë
         </span>
-        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <Mail size={11} /> info@noa-event.com
+        <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <Mail size={12} strokeWidth={1.8} />
+          info@noa-event.com
         </span>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
+      {/* Right */}
+      <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
         <Link href="/sign-up">
           <span style={{ cursor: "pointer", transition: "color .15s" }}
             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = WHITE)}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "")}>
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.72)")}>
             Bëhu Klient?
           </span>
         </Link>
         <Link href="/sign-in">
-          <span style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}
+          <span style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "color .15s" }}
             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = WHITE)}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "")}>
-            <Heart size={11} /> Llogaria
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.72)")}>
+            <Heart size={12} strokeWidth={1.8} /> Llogaria
           </span>
         </Link>
-        <Facebook size={11} style={{ cursor: "pointer" }} />
+        <Facebook size={12} strokeWidth={1.8} style={{ cursor: "pointer", opacity: 0.72 }} />
       </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════
-   NAVBAR — WHITE bg, circular logo protrudes, dark links,
-            wine "Bëhu Klient?" button — exact Gademan
+   NAVBAR — pixel-perfect Gademan header
+   • WHITE bg, 100px tall
+   • Large stamp logo LEFT — 136px circle, protrudes 18px each side
+   • Nav links centered — dark, medium weight, spaced
+   • "Bëhu Klient?" pill button RIGHT — wine bg, white text
 ═══════════════════════════════════════════════════════════ */
 const NAV_LINKS = [
   { href: "#home",     label: "HOME"      },
@@ -109,13 +114,93 @@ const NAV_LINKS = [
   { href: "#order",    label: "ÇMIMET"    },
 ];
 
+/* Stamp logo SVG — mimics Gademan's circular stamp with text arc effect */
+function StampLogo() {
+  return (
+    <div
+      style={{
+        width: 136,
+        height: 136,
+        borderRadius: "50%",
+        background: "#faf7f2",
+        border: "2.5px solid #cfc0a8",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.14), 0 1px 4px rgba(0,0,0,0.08)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+        flexShrink: 0,
+      }}
+    >
+      {/* Outer text ring via SVG */}
+      <svg
+        width="136"
+        height="136"
+        viewBox="0 0 136 136"
+        style={{ position: "absolute", inset: 0 }}
+      >
+        {/* Top arc text */}
+        <defs>
+          <path id="topArc" d="M 18,68 A 50,50 0 0,1 118,68" />
+          <path id="botArc" d="M 118,68 A 50,50 0 0,1 18,68" />
+        </defs>
+        <text fontSize="8.5" fontWeight="700" letterSpacing="3" fill={WINE} fontFamily="system-ui,sans-serif" textAnchor="middle">
+          <textPath href="#topArc" startOffset="50%">NOAEVENT</textPath>
+        </text>
+        <text fontSize="7" fontWeight="500" letterSpacing="1.5" fill="#999" fontFamily="system-ui,sans-serif" textAnchor="middle">
+          <textPath href="#botArc" startOffset="50%">WEDDING PLATFORM</textPath>
+        </text>
+      </svg>
+
+      {/* Inner ring */}
+      <div
+        style={{
+          width: 96,
+          height: 96,
+          borderRadius: "50%",
+          border: "1.5px solid #c8b89e",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 3,
+          position: "relative",
+          zIndex: 2,
+        }}
+      >
+        {/* Script-style brand mark */}
+        <Heart size={18} color={WINE} strokeWidth={1.8} fill={`${WINE}22`} />
+        <span style={{
+          fontSize: 9.5,
+          fontWeight: 800,
+          color: WINE,
+          letterSpacing: "0.06em",
+          lineHeight: 1,
+          textTransform: "uppercase",
+        }}>
+          Noa
+        </span>
+        <span style={{
+          fontSize: 7,
+          color: "#aaa",
+          letterSpacing: "0.12em",
+          lineHeight: 1,
+          textTransform: "uppercase",
+        }}>
+          event
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function Navbar() {
   const [active, setActive] = useState("#home");
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 4);
-    window.addEventListener("scroll", onScroll);
+    const onScroll = () => setScrolled(window.scrollY > 2);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -126,95 +211,62 @@ function Navbar() {
         top: 0,
         zIndex: 50,
         background: WHITE,
-        borderBottom: scrolled ? "1px solid #e8e2da" : "1px solid #ede8e2",
-        boxShadow: scrolled ? "0 2px 16px rgba(0,0,0,0.06)" : "none",
-        transition: "box-shadow .25s",
+        borderBottom: "1px solid #ede7e0",
+        boxShadow: scrolled ? "0 2px 18px rgba(0,0,0,0.07)" : "none",
+        transition: "box-shadow .3s",
       }}
     >
       <div
         style={{
           maxWidth: 1280,
           margin: "0 auto",
-          padding: "0 40px",
-          height: 82,
+          padding: "0 48px",
+          /* Nav height = 100px; logo = 136px → protrudes 18px top + 18px bottom */
+          height: 100,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          gap: 24,
         }}
       >
-        {/* ── Circular stamp logo — protrudes 12px top + bottom ── */}
-        <div style={{ flexShrink: 0, position: "relative", zIndex: 10 }}>
-          <div
-            style={{
-              width: 106,
-              height: 106,
-              borderRadius: "50%",
-              background: WHITE,
-              border: "2px solid #d5c9b5",
-              boxShadow: "0 3px 14px rgba(0,0,0,0.13)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: -24,
-              marginBottom: -24,
-              position: "relative",
-              zIndex: 10,
-            }}
-          >
-            {/* Inner decorative ring — like Gademan stamp */}
-            <div
-              style={{
-                width: 84,
-                height: 84,
-                borderRadius: "50%",
-                border: "1.5px solid #c4b49a",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 2,
-                textAlign: "center",
-                padding: 4,
-              }}
-            >
-              <Heart size={15} color={WINE} />
-              <span style={{ fontSize: 8.5, fontWeight: 900, letterSpacing: "0.13em", color: WINE, textTransform: "uppercase", lineHeight: 1 }}>
-                NoaEvent
-              </span>
-              <span style={{ fontSize: 6.5, color: "#999", letterSpacing: "0.08em", textTransform: "uppercase", lineHeight: 1.3 }}>
-                Ambachtelijke
-              </span>
-              <span style={{ fontSize: 6.5, color: "#999", letterSpacing: "0.08em", textTransform: "uppercase", lineHeight: 1.3 }}>
-                Evente
-              </span>
-            </div>
-          </div>
+        {/* ── Stamp logo ── */}
+        <div style={{ marginTop: -36, marginBottom: -36, position: "relative", zIndex: 10 }}>
+          <StampLogo />
         </div>
 
-        {/* ── Centered nav links ── */}
-        <nav style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 36 }}>
+        {/* ── Nav links — centered ── */}
+        <nav
+          style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 40,
+          }}
+        >
           {NAV_LINKS.map(({ href, label }) => {
             const isActive = active === href;
             return (
               <a
                 key={href}
                 href={href}
-                onClick={() => setActive(href)}
+                onClick={e => { setActive(href); }}
                 style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  color: DARK,
+                  fontSize: 13.5,
+                  fontWeight: 600,
+                  letterSpacing: "0.07em",
+                  color: "#3a2020",
                   textDecoration: isActive ? "underline" : "none",
-                  textUnderlineOffset: 5,
-                  textDecorationThickness: 2,
-                  opacity: isActive ? 1 : 0.75,
+                  textUnderlineOffset: 6,
+                  textDecorationThickness: "2px",
+                  textDecorationColor: "#3a2020",
                   cursor: "pointer",
-                  transition: "opacity .15s",
                   whiteSpace: "nowrap",
+                  transition: "color .15s",
+                  opacity: isActive ? 1 : 1,
                 }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = isActive ? "1" : "0.75")}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = WINE)}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "#3a2020")}
               >
                 {label}
               </a>
@@ -222,28 +274,28 @@ function Navbar() {
           })}
         </nav>
 
-        {/* ── CTA: wine bg + white text + rounded — exact Gademan ── */}
+        {/* ── "Bëhu Klient?" — pill button, wine bg, white text ── */}
         <Link href="/sign-up">
-          <span
+          <motion.span
+            whileHover={{ backgroundColor: WINE_DARK }}
+            whileTap={{ scale: 0.97 }}
             style={{
-              flexShrink: 0,
               display: "inline-block",
               background: WINE,
               color: WHITE,
-              padding: "11px 26px",
-              borderRadius: 6,
-              fontSize: 13,
+              padding: "12px 28px",
+              borderRadius: 8,
+              fontSize: 14,
               fontWeight: 700,
-              letterSpacing: "0.04em",
+              letterSpacing: "0.02em",
               cursor: "pointer",
               whiteSpace: "nowrap",
+              flexShrink: 0,
               transition: "background .18s",
             }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = WINE_DARK)}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = WINE)}
           >
             Bëhu Klient?
-          </span>
+          </motion.span>
         </Link>
       </div>
     </div>
