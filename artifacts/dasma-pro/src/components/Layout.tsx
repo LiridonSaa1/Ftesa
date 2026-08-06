@@ -67,9 +67,9 @@ export function Layout({ children }: { children: ReactNode }) {
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
       
       <div className="flex h-20 items-center px-6 relative z-10">
-        <Link href="/" className="flex items-center gap-2 font-serif font-medium text-xl tracking-wide">
-          <Sparkles className="h-5 w-5 text-primary" />
-          <span>NoaEvent</span>
+        <Link href="/" className="flex items-center gap-2.5 no-underline">
+          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-serif font-bold text-lg" style={{ background: "linear-gradient(135deg, #C9A96E, #8B6914)" }}>N</div>
+          <span className="font-serif font-bold text-lg" style={{ color: "#1a0808" }}>NoaEvent</span>
         </Link>
       </div>
       
@@ -129,10 +129,9 @@ export function Layout({ children }: { children: ReactNode }) {
             </SheetContent>
           </Sheet>
           <div className="w-full flex-1 flex justify-center pr-10">
-             <Link href="/" className="flex items-center gap-2 font-serif font-medium text-lg">
-               <Sparkles className="h-4 w-4 text-primary" />
-               <span>NoaEvent</span>
-             </Link>
+            <Link href="/">
+              <img src="/NoaEvent_logo.png" alt="NoaEvent" className="h-9 w-auto object-contain" />
+            </Link>
           </div>
         </header>
         <main className="flex flex-1 flex-col p-4 md:p-8 lg:p-12 overflow-y-auto relative">
