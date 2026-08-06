@@ -199,7 +199,7 @@ function UsersTable() {
 
   function handlePlanChange(userId: string, plan: string) {
     mutation.mutate(
-      { userId, data: { plan } },
+      { userId, data: { plan: plan as import("@workspace/api-client-react").SubscriptionUpdatePlan } },
       {
         onSuccess: () => {
           qc.invalidateQueries({ queryKey: ["/api/admin/users"] });

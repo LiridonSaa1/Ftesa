@@ -126,7 +126,7 @@ export function Subscription() {
                 : `Keni ${subscription.currentEventCount} event${subscription.currentEventCount === 1 ? "" : "e"} — pa kufizim.`}
             </p>
           </div>
-          {subscription.eventLimit !== null &&
+          {subscription.eventLimit != null &&
             subscription.currentEventCount >= subscription.eventLimit && (
               <div className="flex items-center gap-1.5 text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
                 <AlertCircle className="h-4 w-4 shrink-0" />

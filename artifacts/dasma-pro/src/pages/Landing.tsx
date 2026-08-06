@@ -344,7 +344,7 @@ function Hero() {
           zIndex: 2,
           display: "flex",
           alignItems: "center",
-          padding: "0 96px",
+          padding: "0 48px",
         }}
       >
         <AnimatePresence mode="wait" custom={direction}>

@@ -454,11 +454,11 @@ function TablesTab({ eventId }: { eventId: number }) {
                   <div className="w-full bg-muted/30 rounded-none h-1.5 overflow-hidden">
                     <div
                       className="bg-primary h-full transition-all"
-                      style={{ width: `${Math.min(100, (table.currentGuests / table.capacity) * 100)}%` }}
+                      style={{ width: `${Math.min(100, (table.currentCount / table.capacity) * 100)}%` }}
                     />
                   </div>
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground text-right mt-2">
-                    {table.currentGuests} / {table.capacity} vende
+                    {table.currentCount} / {table.capacity} vende
                   </p>
                 </CardContent>
               </Card>
@@ -583,7 +583,7 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
           </div>
           <div className="space-y-2">
             <Label className="text-xs uppercase tracking-widest text-muted-foreground">Template</Label>
-            <Select value={form.template} onValueChange={v => setForm(f => ({ ...f, template: v }))}>
+            <Select value={form.template} onValueChange={v => setForm(f => ({ ...f, template: v as import("@workspace/api-client-react").InvitationTemplate }))}>
               <SelectTrigger className="rounded-none border-border bg-muted/10"><SelectValue /></SelectTrigger>
               <SelectContent className="rounded-none border-border">
                 {TEMPLATES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
@@ -649,8 +649,9 @@ function CheckInTab({ eventId }: { eventId: number }) {
   const [query, setQuery] = useState("");
   const [searched, setSearched] = useState(false);
 
-  const { data: guests, isLoading, refetch } = useLookupGuest(eventId, { query }, {
-    query: { enabled: false }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: guests, isLoading, refetch } = useLookupGuest(eventId, { name: query }, {
+    query: { enabled: false } as any
   });
 
   const handleSearch = (e: React.FormEvent) => {
