@@ -4,7 +4,7 @@
  * All sections, animations, and color palette match the reference exactly.
  */
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
@@ -491,104 +491,283 @@ function Hero() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   WELCOME — large circular image LEFT, text + bullets RIGHT
-   (Gademan "Ambachtelijk ijs met liefde…" section)
+   PHILOSOPHY — super-designed split section with animations
 ═══════════════════════════════════════════════════════════ */
-const WELCOME_BULLETS = [
-  { title: "Cilësi e Lartë & Shije Konstante", body: "Çdo detaj planifikohet me kujdes ekstrem — nga ftesat deri tek vendosja e mysafirëve." },
-  { title: "Higjenë dhe Profesionalizëm", body: "Punojmë me standarde strikte dhe teknologji moderne për një event pa asnjë problem." },
-  { title: "Personalizim & Orientim kah Klienti (B2B)", body: "Besojmë në transparencë dhe bashkëpunim — çdo organizator mund të mbështetet tek ne." },
-  { title: "Pasion për Artin e Eventit", body: "Dashuria jonë për evente të veçanta pasqyrohet në çdo produkt — i sinqertë, artizanal dhe me histori." },
+const PILLARS = [
+  {
+    num: "01",
+    title: "Cilësi e Lartë & Shije Konstante",
+    body: "Çdo detaj planifikohet me kujdes ekstrem — nga ftesat deri tek vendosja e mysafirëve.",
+  },
+  {
+    num: "02",
+    title: "Higjenë dhe Profesionalizëm",
+    body: "Punojmë me standarde strikte dhe teknologji moderne për një event pa asnjë problem.",
+  },
+  {
+    num: "03",
+    title: "Personalizim & Orientim kah Klienti",
+    body: "Besojmë në transparencë dhe bashkëpunim — çdo organizator mund të mbështetet tek ne.",
+  },
+  {
+    num: "04",
+    title: "Pasion për Artin e Eventit",
+    body: "Dashuria jonë për evente të veçanta pasqyrohet në çdo produkt — i sinqertë, artizanal dhe me histori.",
+  },
 ];
 
 function WelcomeSection() {
-  return (
-    <section style={{ background: WHITE, padding: "96px 0" }}>
-      <div
-        style={{
-          maxWidth: 1280,
-          margin: "0 auto",
-          padding: "0 80px",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 80,
-          alignItems: "center",
-        }}
-      >
-        {/* LEFT: large circle image — like Gademan's person circle */}
-        <FadeUp>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <div
-              style={{
-                width: "min(420px, 100%)",
-                height: "min(420px, 100%)",
-                borderRadius: "50%",
-                overflow: "hidden",
-                border: `6px solid ${CREAM}`,
-                boxShadow: `0 8px 40px rgba(123,31,58,0.18)`,
-                aspectRatio: "1",
-              }}
-            >
-              <img
-                src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=85"
-                alt="Wedding planning"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            </div>
-          </div>
-        </FadeUp>
+  const sectionRef = useRef<HTMLElement>(null);
+  const inView = useInView(sectionRef, { once: false, margin: "-100px" });
 
-        {/* RIGHT: heading + 4 bold bullets + CTA */}
-        <FadeUp delay={0.12}>
-          <h2
+  return (
+    <section
+      ref={sectionRef}
+      style={{ background: CREAM, padding: "0", overflow: "hidden", position: "relative" }}
+    >
+      {/* Subtle dot-grid background */}
+      <div style={{
+        position: "absolute", inset: 0, zIndex: 0,
+        backgroundImage: `radial-gradient(circle, rgba(123,31,58,0.07) 1px, transparent 1px)`,
+        backgroundSize: "32px 32px",
+      }} />
+
+      <div style={{
+        position: "relative", zIndex: 1,
+        maxWidth: 1280, margin: "0 auto",
+        padding: "0 0 0 0",
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        minHeight: 720,
+      }}>
+
+        {/* ── LEFT: Layered image composition ── */}
+        <div style={{ position: "relative", overflow: "hidden", minHeight: 720 }}>
+          {/* Main full-bleed image */}
+          <motion.div
+            initial={{ scale: 1.08 }}
+            animate={inView ? { scale: 1 } : { scale: 1.08 }}
+            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+            style={{ position: "absolute", inset: 0 }}
+          >
+            <img
+              src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=90"
+              alt="Dasma me dashuri"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+            {/* Gradient overlay right side for blending */}
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "linear-gradient(to right, transparent 55%, rgba(250,248,245,0.95) 100%)",
+            }} />
+          </motion.div>
+
+          {/* Floating stats badge — bottom left */}
+          <motion.div
+            initial={{ opacity: 0, y: 32, x: -20 }}
+            animate={inView ? { opacity: 1, y: 0, x: 0 } : {}}
+            transition={{ delay: 0.5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             style={{
-              fontWeight: 900,
-              fontSize: "clamp(1.5rem, 2.5vw, 2.1rem)",
-              color: DARK,
-              lineHeight: 1.3,
-              marginBottom: 28,
+              position: "absolute", bottom: 48, left: 40,
+              background: WHITE,
+              borderRadius: 16,
+              padding: "20px 28px",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.14)",
+              border: `1px solid rgba(123,31,58,0.12)`,
+              backdropFilter: "blur(8px)",
+              display: "flex", gap: 32,
             }}
           >
-            Dasma me dashuri, profesionalizëm dhe ingredientë të pastër.
-          </h2>
-          <p style={{ color: MUTED, lineHeight: 1.85, marginBottom: 28, fontSize: 15 }}>
-            Ne ofrojmë shërbime dasme dhe eventech premium. Gjithmonë me materiale dhe procese autentike, pa shtesa të panevojshme — kështu mbetet shija e pastër, e plotë dhe reale.
-          </p>
-          {WELCOME_BULLETS.map((b, i) => (
-            <motion.div
-              key={b.title}
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08, duration: 0.5 }}
-              style={{ marginBottom: 18 }}
-            >
-              <p style={{ fontWeight: 800, fontSize: 14, color: DARK, marginBottom: 3 }}>{b.title}</p>
-              <p style={{ fontSize: 13.5, color: MUTED, lineHeight: 1.7 }}>{b.body}</p>
-            </motion.div>
-          ))}
-          <div style={{ marginTop: 32 }}>
+            {[
+              { val: "200+", label: "Dasma" },
+              { val: "99%", label: "Kënaqësi" },
+              { val: "5★", label: "Vlerësim" },
+            ].map((s, i) => (
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, y: 12 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: 0.65 + i * 0.1, duration: 0.5 }}
+                style={{ textAlign: "center" }}
+              >
+                <p style={{ fontSize: 22, fontWeight: 900, color: WINE, lineHeight: 1.1, letterSpacing: "-0.02em" }}>{s.val}</p>
+                <p style={{ fontSize: 11, color: MUTED, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 3 }}>{s.label}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Decorative wine ring — top right of image */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.6, rotate: -30 }}
+            animate={inView ? { opacity: 1, scale: 1, rotate: 0 } : {}}
+            transition={{ delay: 0.3, duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              position: "absolute", top: 36, right: 28,
+              width: 100, height: 100,
+              borderRadius: "50%",
+              border: `2.5px solid ${WINE}`,
+              opacity: 0.25,
+            }}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.6, rotate: 30 }}
+            animate={inView ? { opacity: 1, scale: 1, rotate: 0 } : {}}
+            transition={{ delay: 0.4, duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              position: "absolute", top: 56, right: 48,
+              width: 60, height: 60,
+              borderRadius: "50%",
+              border: `1.5px solid ${WINE}`,
+              opacity: 0.18,
+            }}
+          />
+        </div>
+
+        {/* ── RIGHT: Text content ── */}
+        <div style={{
+          padding: "96px 72px 96px 64px",
+          display: "flex", flexDirection: "column", justifyContent: "center",
+          background: CREAM,
+        }}>
+
+          {/* Eyebrow */}
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+            style={{
+              fontSize: 11, fontWeight: 800, letterSpacing: "0.22em",
+              color: WINE, textTransform: "uppercase", marginBottom: 20,
+              display: "flex", alignItems: "center", gap: 10,
+            }}
+          >
+            <span style={{ display: "inline-block", width: 32, height: 1.5, background: WINE }} />
+            FILOZOFIA JONË
+          </motion.p>
+
+          {/* Heading — word-by-word reveal */}
+          <div style={{ marginBottom: 28, overflow: "hidden" }}>
+            {["Dasma me dashuri,", "profesionalizëm", "dhe ingredientë të pastër."].map((line, li) => (
+              <div key={li} style={{ overflow: "hidden" }}>
+                <motion.p
+                  initial={{ y: "110%", opacity: 0 }}
+                  animate={inView ? { y: "0%", opacity: 1 } : {}}
+                  transition={{ delay: 0.1 + li * 0.12, duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+                  style={{
+                    fontSize: li === 0 ? "clamp(1.7rem, 2.6vw, 2.45rem)" : "clamp(1.7rem, 2.6vw, 2.45rem)",
+                    fontWeight: 900, color: DARK, lineHeight: 1.18,
+                    fontStyle: li === 2 ? "italic" : "normal",
+                  }}
+                >
+                  {line}
+                </motion.p>
+              </div>
+            ))}
+          </div>
+
+          {/* Description */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.45, duration: 0.8 }}
+            style={{ color: MUTED, lineHeight: 1.85, fontSize: 15, marginBottom: 40 }}
+          >
+            Ne ofrojmë shërbime dasme dhe eventech premium. Gjithmonë me materiale dhe procese
+            autentike, pa shtesa të panevojshme — kështu mbetet shija e pastër, e plotë dhe reale.
+          </motion.p>
+
+          {/* Numbered pillars */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 0, marginBottom: 44 }}>
+            {PILLARS.map((p, i) => (
+              <motion.div
+                key={p.num}
+                initial={{ opacity: 0, x: 28 }}
+                animate={inView ? { opacity: 1, x: 0 } : {}}
+                transition={{ delay: 0.5 + i * 0.1, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                style={{ display: "flex", gap: 20, paddingBottom: 24, position: "relative" }}
+              >
+                {/* Number + vertical line */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: "50%",
+                    border: `1.5px solid ${WINE}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 11, fontWeight: 800, color: WINE,
+                    letterSpacing: "0.05em", flexShrink: 0,
+                    background: "rgba(123,31,58,0.05)",
+                  }}>
+                    {p.num}
+                  </div>
+                  {/* connector line */}
+                  {i < PILLARS.length - 1 && (
+                    <motion.div
+                      initial={{ scaleY: 0 }}
+                      animate={inView ? { scaleY: 1 } : {}}
+                      transition={{ delay: 0.7 + i * 0.1, duration: 0.4 }}
+                      style={{
+                        width: 1, flex: 1, minHeight: 20,
+                        background: `linear-gradient(to bottom, ${WINE}40, transparent)`,
+                        transformOrigin: "top",
+                        marginTop: 4,
+                      }}
+                    />
+                  )}
+                </div>
+
+                {/* Text */}
+                <div style={{ paddingTop: 8 }}>
+                  <p style={{ fontWeight: 800, fontSize: 13.5, color: DARK, marginBottom: 4, letterSpacing: "0.01em" }}>
+                    {p.title}
+                  </p>
+                  <p style={{ fontSize: 13.5, color: MUTED, lineHeight: 1.72 }}>{p.body}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 1.0, duration: 0.6 }}
+            style={{ display: "flex", gap: 16, alignItems: "center" }}
+          >
             <Link href="/sign-up">
               <motion.span
-                whileHover={{ scale: 1.04 }}
+                whileHover={{ scale: 1.04, backgroundColor: WINE_DARK }}
                 whileTap={{ scale: 0.97 }}
                 style={{
                   display: "inline-block",
                   background: WINE,
                   color: WHITE,
-                  padding: "13px 32px",
+                  padding: "15px 38px",
                   borderRadius: 6,
                   fontSize: 14,
                   fontWeight: 700,
-                  letterSpacing: "0.04em",
+                  letterSpacing: "0.06em",
                   cursor: "pointer",
+                  transition: "background .2s",
+                  boxShadow: `0 8px 24px rgba(123,31,58,0.28)`,
                 }}
               >
                 Bëhu Klient?
               </motion.span>
             </Link>
-          </div>
-        </FadeUp>
+            <Link href="/sign-in">
+              <motion.span
+                whileHover={{ color: WINE }}
+                style={{
+                  fontSize: 13, fontWeight: 700, color: MUTED,
+                  cursor: "pointer", letterSpacing: "0.04em",
+                  textDecoration: "underline", textUnderlineOffset: 4,
+                  transition: "color .2s",
+                }}
+              >
+                Hyr në llogari →
+              </motion.span>
+            </Link>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -857,110 +1036,6 @@ function ServicesSection() {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ABOUT / PHILOSOPHY — circular photo LEFT + bullets RIGHT (like uploaded design)
-═══════════════════════════════════════════════════════════ */
-const PHILOSOPHY_POINTS = [
-  { title: "Cilësi e Lartë & Shije Konstante", desc: "Çdo detaj planifikohet me kujdes të lartë — nga ftesat tek vendosja e mysafirëve." },
-  { title: "Higjienë dhe Profesionalizëm", desc: "Punojmë me standarde strikte dhe teknologji moderne për çdo event pa asnjë problem." },
-  { title: "Personalizim & Orientim kah Klienti (B2B)", desc: "Besojmë në transparencë dhe bashkëpunim — çdo organizator mund të mbështetet tek ne." },
-  { title: "Pasion për Artin e Eventit", desc: "Dashuria jonë për evente të veçanta të kthehet në çdo produkt — i sinqertë, artizanal dhe me histori." },
-];
-
-function PhilosophySection() {
-  return (
-    <section style={{ background: WHITE, padding: "96px 0" }}>
-      <div
-        style={{
-          maxWidth: 1280,
-          margin: "0 auto",
-          padding: "0 80px",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 80,
-          alignItems: "center",
-        }}
-      >
-        {/* LEFT — circular photo */}
-        <FadeUp>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <div
-              style={{
-                width: 420,
-                height: 420,
-                borderRadius: "50%",
-                overflow: "hidden",
-                flexShrink: 0,
-                boxShadow: `0 24px 64px rgba(123,31,58,0.18)`,
-                border: `6px solid ${CREAM}`,
-              }}
-            >
-              <img
-                src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=840&q=90"
-                alt="Dasma me dashuri"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            </div>
-          </div>
-        </FadeUp>
-
-        {/* RIGHT — heading + paragraph + bullet points + CTA */}
-        <FadeUp delay={0.12}>
-          <h2
-            style={{
-              fontWeight: 900,
-              fontSize: "clamp(1.7rem, 2.8vw, 2.5rem)",
-              color: DARK,
-              lineHeight: 1.2,
-              marginBottom: 20,
-            }}
-          >
-            Dasma me dashuri, profesionalizëm dhe ingredientë të pastër.
-          </h2>
-          <p style={{ color: MUTED, lineHeight: 1.85, fontSize: 15, marginBottom: 32 }}>
-            Ne ofrojmë shërbime dasme dhe eventech premium. Gjithmonë me materiale dhe procese autentike, pa shtesa të panevojshme — kështu mbetet shija e pastër, e plotë dhe reale.
-          </p>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 36 }}>
-            {PHILOSOPHY_POINTS.map((p, i) => (
-              <motion.div
-                key={p.title}
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.5 }}
-              >
-                <p style={{ fontWeight: 800, fontSize: 14, color: DARK, marginBottom: 4 }}>{p.title}</p>
-                <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.7 }}>{p.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          <Link href="/sign-up">
-            <motion.span
-              whileHover={{ background: WINE_DARK }}
-              whileTap={{ scale: 0.97 }}
-              style={{
-                display: "inline-block",
-                background: WINE,
-                color: WHITE,
-                padding: "14px 36px",
-                borderRadius: 6,
-                fontSize: 14,
-                fontWeight: 700,
-                letterSpacing: "0.06em",
-                cursor: "pointer",
-                transition: "background .2s",
-              }}
-            >
-              Bëhu Klient?
-            </motion.span>
-          </Link>
-        </FadeUp>
-      </div>
-    </section>
-  );
-}
 
 /* ═══════════════════════════════════════════════════════════
    HALL / PREPARATION — text LEFT + image RIGHT (Gademan "Bereiding")
@@ -1103,13 +1178,28 @@ function Testimonials() {
   }, [total]);
 
   return (
-    <section style={{ background: WHITE, padding: "96px 0" }}>
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "0 32px", textAlign: "center" }}>
+    <section style={{ position: "relative", padding: "96px 0", overflow: "hidden" }}>
+      {/* Background image */}
+      <img
+        src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1800&q=80"
+        alt=""
+        style={{
+          position: "absolute", inset: 0, width: "100%", height: "100%",
+          objectFit: "cover", objectPosition: "center 40%",
+        }}
+      />
+      {/* Dark overlay for readability */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(135deg, rgba(20,5,10,0.82) 0%, rgba(20,5,10,0.70) 100%)",
+      }} />
+
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 860, margin: "0 auto", padding: "0 32px", textAlign: "center" }}>
         <FadeUp>
-          <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: WINE, textTransform: "uppercase", marginBottom: 14 }}>
+          <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: "rgba(255,200,180,0.85)", textTransform: "uppercase", marginBottom: 14 }}>
             ERVARINGEN
           </p>
-          <h2 style={{ fontWeight: 900, fontSize: "clamp(1.5rem, 2.5vw, 2rem)", color: DARK, marginBottom: 10 }}>
+          <h2 style={{ fontWeight: 900, fontSize: "clamp(1.5rem, 2.5vw, 2rem)", color: WHITE, marginBottom: 10 }}>
             Ij që tregon histori. Klientët tanë e ndajnë me kënaqësi.
           </h2>
           {/* Stars row */}
@@ -1128,7 +1218,7 @@ function Testimonials() {
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.5 }}
             >
-              <p style={{ fontSize: 17, color: MUTED, lineHeight: 1.9, marginBottom: 32, fontStyle: "italic" }}>
+              <p style={{ fontSize: 17, color: "rgba(255,255,255,0.82)", lineHeight: 1.9, marginBottom: 32, fontStyle: "italic" }}>
                 "{REVIEWS[idx].q}"
               </p>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14 }}>
@@ -1143,10 +1233,10 @@ function Testimonials() {
                   }}
                 />
                 <div style={{ textAlign: "left" }}>
-                  <p style={{ fontWeight: 800, fontSize: 13, color: DARK, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 2 }}>
+                  <p style={{ fontWeight: 800, fontSize: 13, color: WHITE, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 2 }}>
                     {REVIEWS[idx].name}
                   </p>
-                  <p style={{ fontSize: 12, color: MUTED }}>{REVIEWS[idx].role}</p>
+                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{REVIEWS[idx].role}</p>
                 </div>
               </div>
             </motion.div>
@@ -1156,16 +1246,16 @@ function Testimonials() {
         {/* Prev / Next + Dots */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, marginTop: 36 }}>
           <button onClick={() => setIdx((idx - 1 + total) % total)}
-            style={{ background: "none", border: `1px solid #ddd`, borderRadius: "50%", width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ChevronLeft size={16} color={DARK} />
+            style={{ background: "rgba(255,255,255,0.12)", border: `1px solid rgba(255,255,255,0.30)`, borderRadius: "50%", width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <ChevronLeft size={16} color={WHITE} />
           </button>
           {REVIEWS.map((_, i) => (
             <button key={i} onClick={() => setIdx(i)}
-              style={{ width: i === idx ? 22 : 8, height: 8, borderRadius: 4, background: i === idx ? WINE : "#ddd", border: "none", cursor: "pointer", padding: 0, transition: "all .25s" }} />
+              style={{ width: i === idx ? 22 : 8, height: 8, borderRadius: 4, background: i === idx ? WINE : "rgba(255,255,255,0.30)", border: "none", cursor: "pointer", padding: 0, transition: "all .25s" }} />
           ))}
           <button onClick={() => setIdx((idx + 1) % total)}
-            style={{ background: "none", border: `1px solid #ddd`, borderRadius: "50%", width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ChevronRight size={16} color={DARK} />
+            style={{ background: "rgba(255,255,255,0.12)", border: `1px solid rgba(255,255,255,0.30)`, borderRadius: "50%", width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <ChevronRight size={16} color={WHITE} />
           </button>
         </div>
       </div>
@@ -1477,7 +1567,6 @@ export function Landing() {
       <Hero />
       <WelcomeSection />
       <HistorySection />
-      <PhilosophySection />
       <ServicesSection />
       <HallSection />
       <Testimonials />
