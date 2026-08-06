@@ -120,22 +120,14 @@ const NAV_LINKS = [
   { href: "#order",    label: "ÇMIMET"    },
 ];
 
-/* Logo — shows brand name until a valid logo file is provided */
+/* Logo */
 function StampLogo() {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-      <div style={{
-        width: 44, height: 44, borderRadius: "50%",
-        background: "linear-gradient(135deg, #C9A96E, #8B6914)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontFamily: "Georgia, serif", fontSize: 22, fontWeight: 700, color: "#fff",
-        boxShadow: "0 2px 12px rgba(201,169,110,0.35)",
-      }}>N</div>
-      <div style={{ lineHeight: 1.15 }}>
-        <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 18, color: "#1a0808", letterSpacing: "0.02em" }}>NoaEvent</div>
-        <div style={{ fontSize: 9, letterSpacing: "0.18em", color: "#a09589", textTransform: "uppercase" }}>Platforma e Eventeve</div>
-      </div>
-    </div>
+    <img
+      src="/logo-full.png"
+      alt="NoaEvent"
+      style={{ height: 80, width: "auto", flexShrink: 0, objectFit: "contain" }}
+    />
   );
 }
 
