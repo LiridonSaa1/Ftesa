@@ -125,14 +125,12 @@ function StampLogo() {
   return (
     <img
       src="/logo.png"
-      alt="NoaEvent"
+      alt="NoaInvite"
       style={{
         height: 200,
         width: "auto",
         objectFit: "contain",
         flexShrink: 0,
-        /* black bg → transparent on white nav */
-        mixBlendMode: "multiply",
       }}
     />
   );
@@ -267,7 +265,7 @@ const HERO_SLIDES = [
   {
     title: "HALL\nDESIGNER",
     sub: "Planifikoni sallën tuaj vizualisht — drag & drop, tavolina, VIP zona",
-    img: "https://images.unsplash.com/photo-1429514513361-8a632ff5e384?w=1800&q=90",
+    img: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1800&q=90",
     cta: "Krijo Planin",
   },
   {
@@ -299,7 +297,7 @@ function Hero() {
   return (
     <section
       id="home"
-      style={{ position: "relative", width: "100%", overflow: "hidden" }}
+      style={{ position: "relative", width: "100%", overflow: "hidden", height: "calc(100vh - 130px)", display: "flex", flexDirection: "column" }}
     >
       {/* ── Full-screen background images (Ken Burns zoom) ── */}
       <AnimatePresence initial={false}>
@@ -347,7 +345,10 @@ function Hero() {
         style={{
           position: "relative",
           zIndex: 2,
-          padding: "120px 0 140px",
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 0 60px",
         }}
       >
         <div style={{ width: "100%", maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
