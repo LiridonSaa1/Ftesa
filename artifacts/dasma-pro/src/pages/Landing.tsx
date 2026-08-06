@@ -114,27 +114,21 @@ const NAV_LINKS = [
   { href: "#order",    label: "ÇMIMET"    },
 ];
 
-/* Flat logo — no circle, just icon + wordmark */
+/* Real logo image */
 function StampLogo() {
   return (
-    <div
+    <img
+      src="/logo.png"
+      alt="NoaEvent"
       style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
+        height: 72,
+        width: "auto",
+        objectFit: "contain",
         flexShrink: 0,
+        /* black bg → transparent on white nav */
+        mixBlendMode: "multiply",
       }}
-    >
-      <Heart size={22} color={WINE} strokeWidth={1.8} fill={`${WINE}22`} />
-      <div style={{ lineHeight: 1.2 }}>
-        <div style={{ fontSize: 18, fontWeight: 800, color: WINE, letterSpacing: "0.04em" }}>
-          NoaEvent
-        </div>
-        <div style={{ fontSize: 9.5, color: "#aaa", letterSpacing: "0.12em", textTransform: "uppercase" }}>
-          Wedding Platform
-        </div>
-      </div>
-    </div>
+    />
   );
 }
 
@@ -254,41 +248,40 @@ function Navbar() {
 const HERO_SLIDES = [
   {
     title: "MIRË ERDHËT NË\nNOAEVENT",
-    sub: "Platforma Premium e Dasmave & Eventeve",
-    img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=85",
+    sub: "Platforma Premium e Dasmave & Eventeve në Kosovë",
+    img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1800&q=90",
     cta: "Bëhu Klient?",
   },
   {
     title: "FTESA\nDIGJITALE",
-    sub: "Krijoni ftesa elegante me foto, countdown dhe RSVP",
-    img: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=85",
+    sub: "Krijoni ftesa elegante me foto çifti, countdown dhe RSVP automatik",
+    img: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1800&q=90",
     cta: "Shiko Shërbimin",
   },
   {
     title: "HALL\nDESIGNER",
-    sub: "Planifikoni sallën tuaj vizualisht me drag & drop",
-    img: "https://images.unsplash.com/photo-1429514513361-8a632ff5e384?w=800&q=85",
+    sub: "Planifikoni sallën tuaj vizualisht — drag & drop, tavolina, VIP zona",
+    img: "https://images.unsplash.com/photo-1429514513361-8a632ff5e384?w=1800&q=90",
     cta: "Krijo Planin",
   },
   {
     title: "QR CHECK-IN\nAUTOMATIK",
-    sub: "Mysafirët skanojnë dhe hyjnë pa pritje — modern dhe elegant",
-    img: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=85",
+    sub: "Mysafirët skanojnë dhe hyjnë pa pritje — modern, i shpejtë, elegant",
+    img: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=1800&q=90",
     cta: "Mëso Më Shumë",
   },
 ];
 
 function Hero() {
   const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
+  const [direction, setDirection] = useState(1);
   const total = HERO_SLIDES.length;
 
-  // Auto-advance
   useEffect(() => {
     const t = setInterval(() => {
       setDirection(1);
       setCurrent(c => (c + 1) % total);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(t);
   }, [total]);
 
@@ -297,112 +290,134 @@ function Hero() {
     setCurrent((next + total) % total);
   };
 
-  const slide = HERO_SLIDES[current];
-
-  const variants = {
-    enter: (dir: number) => ({ x: dir * 80, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({ x: dir * -80, opacity: 0 }),
-  };
-
   return (
     <section
       id="home"
-      style={{
-        background: WINE,
-        minHeight: "72vh",
-        display: "flex",
-        alignItems: "center",
-        overflow: "hidden",
-        position: "relative",
-      }}
+      style={{ position: "relative", width: "100%", height: "88vh", overflow: "hidden" }}
     >
-      {/* Slide content */}
-      <div style={{ width: "100%", position: "relative" }}>
+      {/* ── Full-screen background images (Ken Burns zoom) ── */}
+      <AnimatePresence initial={false}>
+        <motion.div
+          key={`bg-${current}`}
+          initial={{ opacity: 0, scale: 1.08 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1 }}
+          transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+          }}
+        >
+          <img
+            src={HERO_SLIDES[current].img}
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+          />
+        </motion.div>
+      </AnimatePresence>
+
+      {/* ── Dark gradient overlay — bottom-heavy for text readability ── */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 1,
+          background: "linear-gradient(to right, rgba(20,5,10,0.78) 0%, rgba(20,5,10,0.45) 60%, rgba(20,5,10,0.10) 100%)",
+        }}
+      />
+      {/* Extra bottom gradient */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 1,
+          background: "linear-gradient(to top, rgba(10,2,5,0.55) 0%, transparent 50%)",
+        }}
+      />
+
+      {/* ── Slide text — left-aligned, vertically centered ── */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 2,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 96px",
+        }}
+      >
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
-            key={current}
+            key={`text-${current}`}
             custom={direction}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              maxWidth: 1280,
-              margin: "0 auto",
-              padding: "64px 80px",
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 48,
-              alignItems: "center",
-              width: "100%",
-              boxSizing: "border-box",
-            }}
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -24 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            style={{ maxWidth: 640 }}
           >
-            {/* Left: title + subtitle + CTA */}
-            <div>
-              <h1
+            {/* Slide number indicator */}
+            <p style={{
+              color: "rgba(255,255,255,0.55)",
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: "0.25em",
+              textTransform: "uppercase",
+              marginBottom: 20,
+            }}>
+              0{current + 1} — 0{total}
+            </p>
+
+            <h1
+              style={{
+                color: WHITE,
+                fontWeight: 900,
+                fontSize: "clamp(2.6rem, 5vw, 4.4rem)",
+                letterSpacing: "0.03em",
+                lineHeight: 1.12,
+                textTransform: "uppercase",
+                marginBottom: 20,
+                whiteSpace: "pre-line",
+                textShadow: "0 2px 24px rgba(0,0,0,0.4)",
+              }}
+            >
+              {HERO_SLIDES[current].title}
+            </h1>
+
+            <p style={{
+              color: "rgba(255,255,255,0.80)",
+              fontSize: 17,
+              lineHeight: 1.65,
+              marginBottom: 40,
+              maxWidth: 480,
+              fontWeight: 400,
+            }}>
+              {HERO_SLIDES[current].sub}
+            </p>
+
+            <Link href="/sign-up">
+              <motion.span
+                whileHover={{ backgroundColor: WHITE, color: WINE }}
+                whileTap={{ scale: 0.97 }}
                 style={{
+                  display: "inline-block",
+                  background: "transparent",
                   color: WHITE,
-                  fontWeight: 900,
-                  fontSize: "clamp(2.2rem, 4vw, 3.6rem)",
-                  letterSpacing: "0.03em",
-                  lineHeight: 1.15,
+                  padding: "14px 36px",
+                  borderRadius: 6,
+                  border: `2px solid ${WHITE}`,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  cursor: "pointer",
+                  transition: "background .22s, color .22s",
                   textTransform: "uppercase",
-                  marginBottom: 16,
-                  whiteSpace: "pre-line",
                 }}
               >
-                {slide.title}
-              </h1>
-              <p style={{
-                color: "rgba(255,255,255,0.75)",
-                fontSize: 16,
-                lineHeight: 1.6,
-                marginBottom: 36,
-                fontWeight: 400,
-              }}>
-                {slide.sub}
-              </p>
-              <Link href="/sign-up">
-                <motion.span
-                  whileHover={{ scale: 1.04, backgroundColor: "rgba(255,255,255,0.12)" }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{
-                    display: "inline-block",
-                    background: "transparent",
-                    color: WHITE,
-                    padding: "12px 30px",
-                    borderRadius: 6,
-                    border: `2px solid ${WHITE}`,
-                    fontSize: 14,
-                    fontWeight: 700,
-                    letterSpacing: "0.06em",
-                    cursor: "pointer",
-                    transition: "background .2s",
-                  }}
-                >
-                  {slide.cta}
-                </motion.span>
-              </Link>
-            </div>
-
-            {/* Right: slide image */}
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              <img
-                src={slide.img}
-                alt={slide.title}
-                style={{
-                  maxHeight: 480,
-                  maxWidth: "100%",
-                  width: "100%",
-                  objectFit: "cover",
-                  borderRadius: 4,
-                  boxShadow: "0 24px 64px rgba(0,0,0,0.32)",
-                }}
-              />
-            </div>
+                {HERO_SLIDES[current].cta}
+              </motion.span>
+            </Link>
           </motion.div>
         </AnimatePresence>
       </div>
@@ -410,97 +425,64 @@ function Hero() {
       {/* ── Prev arrow ── */}
       <button
         onClick={() => go(current - 1)}
-        aria-label="Slide e mëparshme"
         style={{
-          position: "absolute",
-          left: 24,
-          top: "50%",
-          transform: "translateY(-50%)",
-          background: "rgba(255,255,255,0.15)",
-          border: "1.5px solid rgba(255,255,255,0.35)",
-          borderRadius: "50%",
-          width: 44,
-          height: 44,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          color: WHITE,
-          transition: "background .2s",
-          zIndex: 10,
+          position: "absolute", left: 28, top: "50%", transform: "translateY(-50%)",
+          background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.30)",
+          borderRadius: "50%", width: 48, height: 48,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", color: WHITE, zIndex: 10, transition: "background .2s",
         }}
-        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.28)")}
-        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.15)")}
+        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.24)")}
+        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.12)")}
       >
-        <ChevronLeft size={20} />
+        <ChevronLeft size={22} />
       </button>
 
       {/* ── Next arrow ── */}
       <button
         onClick={() => go(current + 1)}
-        aria-label="Slide e ardhshme"
         style={{
-          position: "absolute",
-          right: 24,
-          top: "50%",
-          transform: "translateY(-50%)",
-          background: "rgba(255,255,255,0.15)",
-          border: "1.5px solid rgba(255,255,255,0.35)",
-          borderRadius: "50%",
-          width: 44,
-          height: 44,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          color: WHITE,
-          transition: "background .2s",
-          zIndex: 10,
+          position: "absolute", right: 28, top: "50%", transform: "translateY(-50%)",
+          background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.30)",
+          borderRadius: "50%", width: 48, height: 48,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", color: WHITE, zIndex: 10, transition: "background .2s",
         }}
-        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.28)")}
-        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.15)")}
+        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.24)")}
+        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.12)")}
       >
-        <ChevronRight size={20} />
+        <ChevronRight size={22} />
       </button>
 
-      {/* ── Dot indicators ── */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 24,
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "flex",
-          gap: 10,
-          zIndex: 10,
-        }}
-      >
+      {/* ── Dot indicators — bottom center ── */}
+      <div style={{
+        position: "absolute", bottom: 36, left: "50%", transform: "translateX(-50%)",
+        display: "flex", gap: 10, zIndex: 10,
+      }}>
         {HERO_SLIDES.map((_, i) => (
           <button
             key={i}
             onClick={() => go(i)}
             style={{
-              width: i === current ? 28 : 10,
+              width: i === current ? 32 : 10,
               height: 10,
               borderRadius: 5,
-              background: i === current ? WHITE : "rgba(255,255,255,0.38)",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-              transition: "all .35s cubic-bezier(0.22,1,0.36,1)",
+              background: i === current ? WHITE : "rgba(255,255,255,0.35)",
+              border: "none", cursor: "pointer", padding: 0,
+              transition: "all .4s cubic-bezier(0.22,1,0.36,1)",
             }}
           />
         ))}
       </div>
 
-      {/* ── Progress bar at bottom ── */}
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(255,255,255,0.15)" }}>
+      {/* ── Thin progress bar ── */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(255,255,255,0.15)", zIndex: 10 }}>
         <motion.div
-          key={current}
+          key={`prog-${current}`}
           initial={{ width: "0%" }}
           animate={{ width: "100%" }}
-          transition={{ duration: 5, ease: "linear" }}
-          style={{ height: "100%", background: "rgba(255,255,255,0.55)" }}
+          transition={{ duration: 6, ease: "linear" }}
+          style={{ height: "100%", background: WINE }}
         />
       </div>
     </section>
