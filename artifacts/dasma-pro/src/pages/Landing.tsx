@@ -9,7 +9,7 @@ import { Link } from "wouter";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
   MapPin, Mail, Heart, Facebook, Instagram, Check,
-  ChevronLeft, ChevronRight, Star,
+  ChevronLeft, ChevronRight, ChevronDown, Star,
 } from "lucide-react";
 
 /* ─── Palette (exact Gademan) ──────────────────────────── */
@@ -137,9 +137,17 @@ function StampLogo() {
   );
 }
 
+const BANK_DETAILS = [
+  { label: "Bank",  value: "Raiffeisen"          },
+  { label: "IBAN",  value: "XK05 1234 0000 0000" },
+  { label: "NUI",   value: "811234567"            },
+  { label: "TVSH",  value: "123456789"            },
+];
+
 function Navbar() {
   const [active, setActive] = useState("#home");
   const [scrolled, setScrolled] = useState(false);
+  const [bankOpen, setBankOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 2);
@@ -189,24 +197,96 @@ function Navbar() {
         >
           {NAV_LINKS.map(({ href, label }) => {
             const isActive = active === href;
+            const isBanka = href === "#banka";
+
+            if (isBanka) {
+              return (
+                <div
+                  key={href}
+                  style={{ position: "relative" }}
+                  onMouseEnter={() => setBankOpen(true)}
+                  onMouseLeave={() => setBankOpen(false)}
+                >
+                  <span
+                    style={{
+                      fontSize: 13.5, fontWeight: 600, letterSpacing: "0.07em",
+                      color: bankOpen ? WINE : "#3a2020",
+                      cursor: "pointer", whiteSpace: "nowrap",
+                      display: "flex", alignItems: "center", gap: 4,
+                      userSelect: "none",
+                    }}
+                  >
+                    {label}
+                    <ChevronDown size={13} style={{ marginTop: 1, transition: "transform .2s", transform: bankOpen ? "rotate(180deg)" : "rotate(0deg)" }} />
+                  </span>
+
+                  <AnimatePresence>
+                    {bankOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        style={{
+                          position: "absolute", top: "calc(100% + 16px)", left: "50%",
+                          transform: "translateX(-50%)",
+                          background: WHITE,
+                          border: "1px solid #ede7e0",
+                          borderRadius: 10,
+                          boxShadow: "0 12px 40px rgba(0,0,0,0.11)",
+                          padding: "20px 24px",
+                          minWidth: 240,
+                          zIndex: 200,
+                        }}
+                      >
+                        {/* Triangle pointer */}
+                        <div style={{
+                          position: "absolute", top: -7, left: "50%", transform: "translateX(-50%)",
+                          width: 14, height: 7,
+                          overflow: "hidden",
+                        }}>
+                          <div style={{
+                            width: 14, height: 14,
+                            background: WHITE,
+                            border: "1px solid #ede7e0",
+                            transform: "rotate(45deg)",
+                            transformOrigin: "0 0",
+                            marginLeft: 0,
+                          }} />
+                        </div>
+
+                        <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", color: MUTED, textTransform: "uppercase", marginBottom: 14 }}>
+                          Të dhënat bankare
+                        </p>
+                        {BANK_DETAILS.map(({ label, value }) => (
+                          <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 16, marginBottom: 10 }}>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.06em", flexShrink: 0 }}>
+                              {label}:
+                            </span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: DARK, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                              {value}
+                            </span>
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            }
+
             return (
               <a
                 key={href}
                 href={href}
-                onClick={e => { setActive(href); }}
+                onClick={() => setActive(href)}
                 style={{
-                  fontSize: 13.5,
-                  fontWeight: 600,
-                  letterSpacing: "0.07em",
+                  fontSize: 13.5, fontWeight: 600, letterSpacing: "0.07em",
                   color: "#3a2020",
                   textDecoration: isActive ? "underline" : "none",
-                  textUnderlineOffset: 6,
-                  textDecorationThickness: "2px",
+                  textUnderlineOffset: 6, textDecorationThickness: "2px",
                   textDecorationColor: "#3a2020",
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                  transition: "color .15s",
-                  opacity: isActive ? 1 : 1,
+                  cursor: "pointer", whiteSpace: "nowrap", transition: "color .15s",
                 }}
                 onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = WINE)}
                 onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "#3a2020")}
