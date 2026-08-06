@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <link rel="dns-prefetch" href="//s3.envato.com" />
+<link rel="preload" href="https://public-assets.envato-static.com/assets/generated_sprites/logos-20f56d7ae7a08da2c6698db678490c591ce302aedb1fcd05d3ad1e1484d3caf9.png" as="image" />
+<link rel="preload" href="https://public-assets.envato-static.com/assets/generated_sprites/common-5af54247f3a645893af51456ee4c483f6530608e9c15ca4a8ac5a6e994d9a340.png" as="image" />
+
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Wedding Reval - Planner &amp; Agency WordPress Theme Preview - ThemeForest</title>
+    <meta name="description" content="&amp;lt;p&amp;gt;Wedding Reval- is one of the best Multi-Page WordPress theme for Wedding Planner, Weddin...">
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1" />
+    <meta name="turbo-visit-control" content="reload">
+
+    <script nonce="4r61trDOCTf1yo2qaQjdCg==">
+//<![CDATA[
+  window.dataLayer = window.dataLayer || [];
+
+//]]>
+</script>
+    
+
+        <script type="text/plain" nonce="4r61trDOCTf1yo2qaQjdCg==" data-cookieconsent="statistics">
+//<![CDATA[
+      var container_env_param = "";
+      (function(w,d,s,l,i) {
+      w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});
+      var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
+      j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl+container_env_param;
+      f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','GTM-W8KL5Q5');
+
+//]]>
+</script>
+
+    <link rel="stylesheet" href="https://public-assets.envato-static.com/assets/market/core/index-5665d754ef625be81cc2238970abbd28562c803cb37a8c7a1f01c629b3442a97.css" media="all" />
+    <link rel="stylesheet" href="https://public-assets.envato-static.com/assets/market/pages/preview/index-457550c0311c719db250e79989e7462091be593549fb6bcb3801c9182189d1e5.css" media="all" />
+
+      <link rel="apple-touch-icon-precomposed" type="image/x-icon" href="https://public-assets.envato-static.com/assets/icons/favicons/apple-touch-icon-72x72-precomposed-ea6fb08063069270d41814bdcea6a36fee5fffaba8ec1f0be6ccf3ebbb63dddb.png" sizes="72x72" />
+  <link rel="apple-touch-icon-precomposed" type="image/x-icon" href="https://public-assets.envato-static.com/assets/icons/favicons/apple-touch-icon-114x114-precomposed-bab982e452fbea0c6821ffac2547e01e4b78e1df209253520c7c4e293849c4d3.png" sizes="114x114" />
+  <link rel="apple-touch-icon-precomposed" type="image/x-icon" href="https://public-assets.envato-static.com/assets/icons/favicons/apple-touch-icon-120x120-precomposed-8275dc5d1417e913b7bd8ad048dccd1719510f0ca4434f139d675172c1095386.png" sizes="120x120" />
+  <link rel="apple-touch-icon-precomposed" type="image/x-icon" href="https://public-assets.envato-static.com/assets/icons/favicons/apple-touch-icon-144x144-precomposed-c581101b4f39d1ba1c4a5e45edb6b3418847c5c387b376930c6a9922071c8148.png" sizes="144x144" />
+<link rel="apple-touch-icon-precomposed" type="image/x-icon" href="https://public-assets.envato-static.com/assets/icons/favicons/apple-touch-icon-precomposed-c581101b4f39d1ba1c4a5e45edb6b3418847c5c387b376930c6a9922071c8148.png" />
+
+    <script src="https://public-assets.envato-static.com/assets/market/pages/full_screen_preview/index-32a2c775445fe25800101c1fc917865a21c9decbe4ded4ebfdf0b8240b6bb989.js" nonce="4r61trDOCTf1yo2qaQjdCg=="></script>
+
+    <script nonce="4r61trDOCTf1yo2qaQjdCg==">
+//<![CDATA[
+      //function to fix height of iframe!
+      var calcHeight = function() {
+        var headerDimensions = $('.preview__header').height();
+        $('.full-screen-preview__frame').height($(window).height() - headerDimensions);
+      }
+
+      $(document).ready(function() {
+        calcHeight();
+      });
+
+      $(window).resize(function() {
+        calcHeight();
+      }).load(function() {
+        calcHeight();
+      });
+
+//]]>
+</script>  </head>
