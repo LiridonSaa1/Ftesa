@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Landing } from "./pages/Landing";
 import { ClerkProvider, SignIn, SignUp, useClerk } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
-import { dark } from '@clerk/themes';
+// light theme — no dark import needed
 import { Switch, Route, useLocation, Router as WouterRouter } from 'wouter';
 
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
@@ -28,39 +28,38 @@ function stripBase(path: string): string {
   return basePath && path.startsWith(basePath) ? path.slice(basePath.length) || "/" : path;
 }
 
-// Build appearance object matching the Glassmorphism Dark theme
+// Clerk appearance — light theme
 const clerkAppearance = {
-  baseTheme: dark,
   cssLayerName: "clerk",
   options: {
     logoPlacement: "inside" as const,
     logoLinkUrl: basePath || "/",
   },
   variables: {
-    colorPrimary: "#d9385e",       // Rose
-    colorForeground: "#f2f2f2",
-    colorMutedForeground: "#94949b",
+    colorPrimary: "#7B1F3A",
+    colorForeground: "#1a1a1a",
+    colorMutedForeground: "#6b6b6b",
     colorDanger: "#ef4444",
-    colorBackground: "#0f1115",    // Dark background
-    colorInputBackground: "#181a20",
-    colorInputText: "#f2f2f2",
+    colorBackground: "#ffffff",
+    colorInputBackground: "#f9f7f5",
+    colorInputText: "#1a1a1a",
     fontFamily: "'Inter', sans-serif",
     borderRadius: "0.75rem",
   },
   elements: {
     rootBox: "w-full flex justify-center",
-    cardBox: "bg-[#0f1115]/80 backdrop-blur-xl rounded-2xl w-[440px] max-w-full overflow-hidden shadow-2xl border border-white/10",
-    headerTitle: "text-foreground font-serif text-2xl font-normal",
-    headerSubtitle: "text-muted-foreground",
-    socialButtonsBlockButtonText: "text-foreground font-medium",
-    formFieldLabel: "text-foreground",
-    footerActionLink: "text-primary hover:text-primary/90 transition-colors",
-    footerActionText: "text-muted-foreground",
-    dividerText: "text-muted-foreground",
-    formFieldInput: "border-white/10 focus:border-primary bg-[#181a20]/80 text-foreground",
-    formButtonPrimary: "bg-primary hover:bg-primary/90 text-white font-medium shadow-[0_0_15px_rgba(217,56,94,0.3)] transition-all",
-    socialButtonsBlockButton: "border-white/10 hover:border-white/20 hover:bg-white/5 bg-[#181a20]/50 transition-all",
-    dividerLine: "bg-white/10",
+    cardBox: "bg-white rounded-2xl w-[440px] max-w-full overflow-hidden shadow-xl border border-gray-100",
+    headerTitle: "font-serif text-2xl font-semibold text-gray-900",
+    headerSubtitle: "text-gray-500",
+    formFieldLabel: "text-gray-700 font-medium",
+    formFieldInput: "border-gray-200 focus:border-[#7B1F3A] bg-[#f9f7f5] text-gray-900",
+    formButtonPrimary: "bg-[#7B1F3A] hover:bg-[#6a1a32] text-white font-medium transition-all",
+    socialButtonsBlockButton: "border-gray-200 hover:bg-gray-50 bg-white text-gray-700 transition-all",
+    socialButtonsBlockButtonText: "text-gray-700 font-medium",
+    dividerLine: "bg-gray-200",
+    dividerText: "text-gray-400",
+    footerActionLink: "text-[#7B1F3A] hover:text-[#6a1a32] transition-colors",
+    footerActionText: "text-gray-500",
     main: "px-6 py-4",
   },
 };
@@ -82,8 +81,20 @@ function ClerkQueryClientCacheInvalidator() {
 
 export function SignInPage() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 dark">
-      <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+    <div style={{ minHeight: "100dvh", background: "#FAF8F5", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}>
+      <SignIn
+        routing="path"
+        path={`${basePath}/sign-in`}
+        signUpUrl={`${basePath}/sign-up`}
+        appearance={{
+          ...clerkAppearance,
+          elements: {
+            ...clerkAppearance.elements,
+            footerAction: "hidden",       // fsheh "Nuk keni llogari? Regjistrohuni"
+            footer: "hidden",
+          },
+        }}
+      />
     </div>
   );
 }
