@@ -114,81 +114,25 @@ const NAV_LINKS = [
   { href: "#order",    label: "ÇMIMET"    },
 ];
 
-/* Stamp logo SVG — mimics Gademan's circular stamp with text arc effect */
+/* Flat logo — no circle, just icon + wordmark */
 function StampLogo() {
   return (
     <div
       style={{
-        width: 136,
-        height: 136,
-        borderRadius: "50%",
-        background: "#faf7f2",
-        border: "2.5px solid #cfc0a8",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.14), 0 1px 4px rgba(0,0,0,0.08)",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
+        gap: 10,
         flexShrink: 0,
       }}
     >
-      {/* Outer text ring via SVG */}
-      <svg
-        width="136"
-        height="136"
-        viewBox="0 0 136 136"
-        style={{ position: "absolute", inset: 0 }}
-      >
-        {/* Top arc text */}
-        <defs>
-          <path id="topArc" d="M 18,68 A 50,50 0 0,1 118,68" />
-          <path id="botArc" d="M 118,68 A 50,50 0 0,1 18,68" />
-        </defs>
-        <text fontSize="8.5" fontWeight="700" letterSpacing="3" fill={WINE} fontFamily="system-ui,sans-serif" textAnchor="middle">
-          <textPath href="#topArc" startOffset="50%">NOAEVENT</textPath>
-        </text>
-        <text fontSize="7" fontWeight="500" letterSpacing="1.5" fill="#999" fontFamily="system-ui,sans-serif" textAnchor="middle">
-          <textPath href="#botArc" startOffset="50%">WEDDING PLATFORM</textPath>
-        </text>
-      </svg>
-
-      {/* Inner ring */}
-      <div
-        style={{
-          width: 96,
-          height: 96,
-          borderRadius: "50%",
-          border: "1.5px solid #c8b89e",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 3,
-          position: "relative",
-          zIndex: 2,
-        }}
-      >
-        {/* Script-style brand mark */}
-        <Heart size={18} color={WINE} strokeWidth={1.8} fill={`${WINE}22`} />
-        <span style={{
-          fontSize: 9.5,
-          fontWeight: 800,
-          color: WINE,
-          letterSpacing: "0.06em",
-          lineHeight: 1,
-          textTransform: "uppercase",
-        }}>
-          Noa
-        </span>
-        <span style={{
-          fontSize: 7,
-          color: "#aaa",
-          letterSpacing: "0.12em",
-          lineHeight: 1,
-          textTransform: "uppercase",
-        }}>
-          event
-        </span>
+      <Heart size={22} color={WINE} strokeWidth={1.8} fill={`${WINE}22`} />
+      <div style={{ lineHeight: 1.2 }}>
+        <div style={{ fontSize: 18, fontWeight: 800, color: WINE, letterSpacing: "0.04em" }}>
+          NoaEvent
+        </div>
+        <div style={{ fontSize: 9.5, color: "#aaa", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          Wedding Platform
+        </div>
       </div>
     </div>
   );
@@ -229,8 +173,8 @@ function Navbar() {
           gap: 24,
         }}
       >
-        {/* ── Stamp logo ── */}
-        <div style={{ marginTop: -36, marginBottom: -36, position: "relative", zIndex: 10 }}>
+        {/* ── Logo ── */}
+        <div style={{ position: "relative", zIndex: 10 }}>
           <StampLogo />
         </div>
 
@@ -303,10 +247,64 @@ function Navbar() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   HERO — wine/maroon bg, bold text LEFT, product image RIGHT
-   (exact Gademan: NO photo overlay — wine bg is the hero bg)
+   HERO CAROUSEL — wine bg, text LEFT, image RIGHT
+   Auto-advances every 5s, smooth slide + fade animation,
+   prev/next arrows, dot indicators
 ═══════════════════════════════════════════════════════════ */
+const HERO_SLIDES = [
+  {
+    title: "MIRË ERDHËT NË\nNOAEVENT",
+    sub: "Platforma Premium e Dasmave & Eventeve",
+    img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=85",
+    cta: "Bëhu Klient?",
+  },
+  {
+    title: "FTESA\nDIGJITALE",
+    sub: "Krijoni ftesa elegante me foto, countdown dhe RSVP",
+    img: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=85",
+    cta: "Shiko Shërbimin",
+  },
+  {
+    title: "HALL\nDESIGNER",
+    sub: "Planifikoni sallën tuaj vizualisht me drag & drop",
+    img: "https://images.unsplash.com/photo-1429514513361-8a632ff5e384?w=800&q=85",
+    cta: "Krijo Planin",
+  },
+  {
+    title: "QR CHECK-IN\nAUTOMATIK",
+    sub: "Mysafirët skanojnë dhe hyjnë pa pritje — modern dhe elegant",
+    img: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=85",
+    cta: "Mëso Më Shumë",
+  },
+];
+
 function Hero() {
+  const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
+  const total = HERO_SLIDES.length;
+
+  // Auto-advance
+  useEffect(() => {
+    const t = setInterval(() => {
+      setDirection(1);
+      setCurrent(c => (c + 1) % total);
+    }, 5000);
+    return () => clearInterval(t);
+  }, [total]);
+
+  const go = (next: number) => {
+    setDirection(next > current ? 1 : -1);
+    setCurrent((next + total) % total);
+  };
+
+  const slide = HERO_SLIDES[current];
+
+  const variants = {
+    enter: (dir: number) => ({ x: dir * 80, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir * -80, opacity: 0 }),
+  };
+
   return (
     <section
       id="home"
@@ -319,78 +317,191 @@ function Hero() {
         position: "relative",
       }}
     >
-      <div
-        style={{
-          maxWidth: 1280,
-          margin: "0 auto",
-          padding: "64px 80px",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 40,
-          alignItems: "center",
-          width: "100%",
-        }}
-      >
-        {/* Left: title + CTA */}
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <h1
+      {/* Slide content */}
+      <div style={{ width: "100%", position: "relative" }}>
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={current}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             style={{
-              color: WHITE,
-              fontWeight: 900,
-              fontSize: "clamp(2.2rem, 4vw, 3.6rem)",
-              letterSpacing: "0.03em",
-              lineHeight: 1.15,
-              textTransform: "uppercase",
-              marginBottom: 36,
+              maxWidth: 1280,
+              margin: "0 auto",
+              padding: "64px 80px",
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 48,
+              alignItems: "center",
+              width: "100%",
+              boxSizing: "border-box",
             }}
           >
-            MIRË ERDHËT NË<br />
-            NOAEVENT
-          </h1>
-          <Link href="/sign-up">
-            <motion.span
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.97 }}
-              style={{
-                display: "inline-block",
-                background: "transparent",
-                color: WHITE,
-                padding: "11px 28px",
-                borderRadius: 6,
-                border: `2px solid ${WHITE}`,
-                fontSize: 14,
-                fontWeight: 700,
-                letterSpacing: "0.06em",
-                cursor: "pointer",
-              }}
-            >
-              Bëhu Klient?
-            </motion.span>
-          </Link>
-        </motion.div>
+            {/* Left: title + subtitle + CTA */}
+            <div>
+              <h1
+                style={{
+                  color: WHITE,
+                  fontWeight: 900,
+                  fontSize: "clamp(2.2rem, 4vw, 3.6rem)",
+                  letterSpacing: "0.03em",
+                  lineHeight: 1.15,
+                  textTransform: "uppercase",
+                  marginBottom: 16,
+                  whiteSpace: "pre-line",
+                }}
+              >
+                {slide.title}
+              </h1>
+              <p style={{
+                color: "rgba(255,255,255,0.75)",
+                fontSize: 16,
+                lineHeight: 1.6,
+                marginBottom: 36,
+                fontWeight: 400,
+              }}>
+                {slide.sub}
+              </p>
+              <Link href="/sign-up">
+                <motion.span
+                  whileHover={{ scale: 1.04, backgroundColor: "rgba(255,255,255,0.12)" }}
+                  whileTap={{ scale: 0.97 }}
+                  style={{
+                    display: "inline-block",
+                    background: "transparent",
+                    color: WHITE,
+                    padding: "12px 30px",
+                    borderRadius: 6,
+                    border: `2px solid ${WHITE}`,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    letterSpacing: "0.06em",
+                    cursor: "pointer",
+                    transition: "background .2s",
+                  }}
+                >
+                  {slide.cta}
+                </motion.span>
+              </Link>
+            </div>
 
-        {/* Right: floating product/couple image — like Gademan gelato tower */}
-        <motion.div
-          initial={{ opacity: 0, x: 60, scale: 0.92 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 1.1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          style={{ display: "flex", justifyContent: "center" }}
-        >
-          <img
-            src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=700&q=85"
-            alt="Wedding couple"
+            {/* Right: slide image */}
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <img
+                src={slide.img}
+                alt={slide.title}
+                style={{
+                  maxHeight: 480,
+                  maxWidth: "100%",
+                  width: "100%",
+                  objectFit: "cover",
+                  borderRadius: 4,
+                  boxShadow: "0 24px 64px rgba(0,0,0,0.32)",
+                }}
+              />
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* ── Prev arrow ── */}
+      <button
+        onClick={() => go(current - 1)}
+        aria-label="Slide e mëparshme"
+        style={{
+          position: "absolute",
+          left: 24,
+          top: "50%",
+          transform: "translateY(-50%)",
+          background: "rgba(255,255,255,0.15)",
+          border: "1.5px solid rgba(255,255,255,0.35)",
+          borderRadius: "50%",
+          width: 44,
+          height: 44,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: WHITE,
+          transition: "background .2s",
+          zIndex: 10,
+        }}
+        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.28)")}
+        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.15)")}
+      >
+        <ChevronLeft size={20} />
+      </button>
+
+      {/* ── Next arrow ── */}
+      <button
+        onClick={() => go(current + 1)}
+        aria-label="Slide e ardhshme"
+        style={{
+          position: "absolute",
+          right: 24,
+          top: "50%",
+          transform: "translateY(-50%)",
+          background: "rgba(255,255,255,0.15)",
+          border: "1.5px solid rgba(255,255,255,0.35)",
+          borderRadius: "50%",
+          width: 44,
+          height: 44,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: WHITE,
+          transition: "background .2s",
+          zIndex: 10,
+        }}
+        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.28)")}
+        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.15)")}
+      >
+        <ChevronRight size={20} />
+      </button>
+
+      {/* ── Dot indicators ── */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 24,
+          left: "50%",
+          transform: "translateX(-50%)",
+          display: "flex",
+          gap: 10,
+          zIndex: 10,
+        }}
+      >
+        {HERO_SLIDES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => go(i)}
             style={{
-              maxHeight: 520,
-              maxWidth: "100%",
-              objectFit: "contain",
-              filter: "drop-shadow(0 20px 60px rgba(0,0,0,0.35))",
+              width: i === current ? 28 : 10,
+              height: 10,
+              borderRadius: 5,
+              background: i === current ? WHITE : "rgba(255,255,255,0.38)",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              transition: "all .35s cubic-bezier(0.22,1,0.36,1)",
             }}
           />
-        </motion.div>
+        ))}
+      </div>
+
+      {/* ── Progress bar at bottom ── */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(255,255,255,0.15)" }}>
+        <motion.div
+          key={current}
+          initial={{ width: "0%" }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 5, ease: "linear" }}
+          style={{ height: "100%", background: "rgba(255,255,255,0.55)" }}
+        />
       </div>
     </section>
   );
