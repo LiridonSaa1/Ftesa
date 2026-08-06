@@ -1,0 +1,176 @@
+# Prompt – User & Admin Roles
+
+Krijo një sistem me dy role kryesore: **User (Organizer)** dhe **Admin**.
+
+## User (Organizer)
+
+Useri mund të shohë dhe menaxhojë vetëm të dhënat e tij.
+
+### Dashboard
+
+* Total Events
+* Total Guests
+* RSVP (Accepted, Declined, Pending)
+* Total Tables
+* Subscription Status
+
+### Events
+
+* Create Event
+* Edit Event
+* Delete Event
+* View Event Details
+
+### Guests
+
+* Add Guests
+* Edit Guests
+* Delete Guests
+* Import Excel/CSV
+* Search & Filter Guests
+* Guest Categories
+
+### Digital Invitations
+
+* Choose Invitation Template
+* Customize Invitation
+* Generate Invitation Link
+* Send via Email
+* Send via WhatsApp
+* QR Code for Each Guest
+
+### Hall Designer
+
+* Create Hall Layout
+* Add Tables
+* Select Table Shape
+* Set Number of Chairs
+* Drag & Drop Tables
+* Seat Planner
+
+### RSVP
+
+* View Accepted Guests
+* View Declined Guests
+* View Pending Guests
+
+### Reports
+
+* Export PDF
+* Export Excel
+* Print Guest List
+* Print Hall Layout
+
+### Subscription
+
+* View Current Plan
+* Upgrade Plan
+* View Payment History
+* Cancel Subscription
+
+### Profile
+
+* Update Profile
+* Change Password
+* Upload Profile Picture
+
+---
+
+# Admin Panel
+
+Admin Panel duhet të jetë **Light Theme (i ndriçuar)**, modern dhe profesional.
+
+Administratori ka akses të plotë në platformë.
+
+### Dashboard
+
+* Total Users
+* Active Users
+* Total Events
+* Total Guests
+* Active Subscriptions
+* Total Revenue
+* Monthly Revenue
+* Recent Payments
+* Pending Custom Requests
+
+### Users
+
+* View Users
+* Search & Filter
+* Edit User
+* Activate / Deactivate User
+* Delete User
+
+### Events
+
+* View All Events
+* Search Events
+* View Event Details
+
+### Subscriptions
+
+* Basic Plans
+* Pro Plans
+* Custom Plans
+* Active Subscriptions
+* Expired Subscriptions
+* Cancelled Subscriptions
+
+### Payments
+
+* View All Payments
+* Paddle Transactions
+* Failed Payments
+* Refund History
+* Revenue Reports
+
+### Invitation Templates
+
+* Create Template
+* Edit Template
+* Delete Template
+* Enable / Disable Template
+
+### Categories
+
+* Event Categories
+* Guest Categories
+
+### Custom Requests
+
+* View Requests
+* Approve or Reject
+* Contact Customer
+
+### Notifications
+
+* Send Notifications
+* Send Email to Users
+
+### Reports & Analytics
+
+* Revenue Reports
+* User Growth
+* Event Statistics
+* Subscription Statistics
+
+### Settings
+
+* Platform Settings
+* Paddle Configuration
+* Google Maps API
+* Email Settings
+* WhatsApp Settings
+* Branding (Logo & Platform Name)
+
+### Roles
+
+* Admin
+* User
+
+## Permissions
+
+* User mund të shohë dhe menaxhojë vetëm eventet, mysafirët dhe abonimin e tij.
+* Admin ka akses të plotë në të gjithë sistemin, përdoruesit, pagesat, abonimet dhe konfigurimet e platformës.
+* Përdor Role-Based Access Control (RBAC) për të kufizuar aksesin sipas rolit.

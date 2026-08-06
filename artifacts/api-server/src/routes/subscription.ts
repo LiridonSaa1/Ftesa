@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, count } from "drizzle-orm";
-import { db, usersTable, eventsTable } from "@workspace/db";
+import { eq, count, desc } from "drizzle-orm";
+import { db, usersTable, eventsTable, paymentsTable, subscriptionsTable } from "@workspace/db";
 import { requireAuth, ensureUser, PLAN_LIMITS } from "../lib/auth";
 
 const router: IRouter = Router();
@@ -52,4 +52,39 @@ router.patch("/subscription", requireAuth, async (req, res): Promise<void> => {
   });
 });
 
+// Payment history for current user
+router.get("/subscription/payments", requireAuth, async (req, res): Promise<void> => {
+  await ensureUser(req);
+  const userId = (req as any).userId as string;
+  const rows = await db
+    .select()
+    .from(paymentsTable)
+    .where(eq(paymentsTable.userId, userId))
+    .orderBy(desc(paymentsTable.createdAt))
+    .limit(20);
+  res.json(rows.map(p => ({
+    id: p.id,
+    amount: p.amount,
+    amountFormatted: `€${(p.amount / 100).toFixed(2)}`,
+    currency: p.currency,
+    status: p.status,
+    paddleTransactionId: p.paddleTransactionId,
+    createdAt: p.createdAt.toISOString(),
+  })));
+});
+
+// Cancel subscription (marks subscription canceled + user back to basic)
+router.post("/subscription/cancel", requireAuth, async (req, res): Promise<void> => {
+  await ensureUser(req);
+  const userId = (req as any).userId as string;
+  await db.update(subscriptionsTable)
+    .set({ status: "canceled" })
+    .where(eq(subscriptionsTable.userId, userId));
+  await db.update(usersTable)
+    .set({ subscriptionPlan: "basic" })
+    .where(eq(usersTable.id, userId));
+  res.json({ canceled: true });
+});
+
 export default router;
+
