@@ -858,6 +858,111 @@ function ServicesSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   ABOUT / PHILOSOPHY — circular photo LEFT + bullets RIGHT (like uploaded design)
+═══════════════════════════════════════════════════════════ */
+const PHILOSOPHY_POINTS = [
+  { title: "Cilësi e Lartë & Shije Konstante", desc: "Çdo detaj planifikohet me kujdes të lartë — nga ftesat tek vendosja e mysafirëve." },
+  { title: "Higjienë dhe Profesionalizëm", desc: "Punojmë me standarde strikte dhe teknologji moderne për çdo event pa asnjë problem." },
+  { title: "Personalizim & Orientim kah Klienti (B2B)", desc: "Besojmë në transparencë dhe bashkëpunim — çdo organizator mund të mbështetet tek ne." },
+  { title: "Pasion për Artin e Eventit", desc: "Dashuria jonë për evente të veçanta të kthehet në çdo produkt — i sinqertë, artizanal dhe me histori." },
+];
+
+function PhilosophySection() {
+  return (
+    <section style={{ background: WHITE, padding: "96px 0" }}>
+      <div
+        style={{
+          maxWidth: 1280,
+          margin: "0 auto",
+          padding: "0 80px",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 80,
+          alignItems: "center",
+        }}
+      >
+        {/* LEFT — circular photo */}
+        <FadeUp>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <div
+              style={{
+                width: 420,
+                height: 420,
+                borderRadius: "50%",
+                overflow: "hidden",
+                flexShrink: 0,
+                boxShadow: `0 24px 64px rgba(123,31,58,0.18)`,
+                border: `6px solid ${CREAM}`,
+              }}
+            >
+              <img
+                src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=840&q=90"
+                alt="Dasma me dashuri"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            </div>
+          </div>
+        </FadeUp>
+
+        {/* RIGHT — heading + paragraph + bullet points + CTA */}
+        <FadeUp delay={0.12}>
+          <h2
+            style={{
+              fontWeight: 900,
+              fontSize: "clamp(1.7rem, 2.8vw, 2.5rem)",
+              color: DARK,
+              lineHeight: 1.2,
+              marginBottom: 20,
+            }}
+          >
+            Dasma me dashuri, profesionalizëm dhe ingredientë të pastër.
+          </h2>
+          <p style={{ color: MUTED, lineHeight: 1.85, fontSize: 15, marginBottom: 32 }}>
+            Ne ofrojmë shërbime dasme dhe eventech premium. Gjithmonë me materiale dhe procese autentike, pa shtesa të panevojshme — kështu mbetet shija e pastër, e plotë dhe reale.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 36 }}>
+            {PHILOSOPHY_POINTS.map((p, i) => (
+              <motion.div
+                key={p.title}
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08, duration: 0.5 }}
+              >
+                <p style={{ fontWeight: 800, fontSize: 14, color: DARK, marginBottom: 4 }}>{p.title}</p>
+                <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.7 }}>{p.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <Link href="/sign-up">
+            <motion.span
+              whileHover={{ background: WINE_DARK }}
+              whileTap={{ scale: 0.97 }}
+              style={{
+                display: "inline-block",
+                background: WINE,
+                color: WHITE,
+                padding: "14px 36px",
+                borderRadius: 6,
+                fontSize: 14,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                cursor: "pointer",
+                transition: "background .2s",
+              }}
+            >
+              Bëhu Klient?
+            </motion.span>
+          </Link>
+        </FadeUp>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    HALL / PREPARATION — text LEFT + image RIGHT (Gademan "Bereiding")
 ═══════════════════════════════════════════════════════════ */
 function HallSection() {
@@ -980,11 +1085,11 @@ function HallSection() {
    TESTIMONIALS — auto-scrolling quote slider (Gademan "Ervaringen")
 ═══════════════════════════════════════════════════════════ */
 const REVIEWS = [
-  { name: "Arta & Besniku",   role: "Prishtinë, 2024",   q: "NoaEvent e bëri organizimin e dasmës tonë gjë të kënaqshme. QR check-in funksionoi pa asnjë problem dhe mysafirët ishin të mahnitur me ftesën digjitale!" },
-  { name: "Blerim Osmani",    role: "Wedding Planner",    q: "Kam organizuar mbi 40 dasma dhe NoaEvent është mjeti më i mirë që kam përdorur. Hall designer-i kursen orë pune dhe ndihmon të gjithë ekipin." },
-  { name: "Drita Hoxha",      role: "Menaxhere Sale",    q: "Klientët tanë janë jashtëzakonisht të kënaqur me ftesat digjitale. Platforma është intuitive dhe mbështetja teknike është fantastike." },
-  { name: "Arben Gashi",      role: "Tiranë, 2025",      q: "Heerlijk vers product, vriendelijke bediening. Nuk kam pasur kurrë ndonjë problem — çdo detaj ishte perfekt!" },
-  { name: "René & Mira",      role: "Dasma, 2025",       q: "Echt verrukkelijk — çdo shërbim i dorëzuar me kohë dhe profesionalizëm të lartë. Shërbimi me email ishte super i shpejtë." },
+  { name: "Arta & Besniku",   role: "Prishtinë, 2024",   img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=120&q=80", q: "NoaEvent e bëri organizimin e dasmës tonë gjë të kënaqshme. QR check-in funksionoi pa asnjë problem dhe mysafirët ishin të mahnitur me ftesën digjitale!" },
+  { name: "Blerim Osmani",    role: "Wedding Planner",    img: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=120&q=80", q: "Kam organizuar mbi 40 dasma dhe NoaEvent është mjeti më i mirë që kam përdorur. Hall designer-i kursen orë pune dhe ndihmon të gjithë ekipin." },
+  { name: "Drita Hoxha",      role: "Menaxhere Sale",     img: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=120&q=80", q: "Klientët tanë janë jashtëzakonisht të kënaqur me ftesat digjitale. Platforma është intuitive dhe mbështetja teknike është fantastike." },
+  { name: "Arben Gashi",      role: "Tiranë, 2025",       img: "https://images.unsplash.com/photo-1429514513361-8a632ff5e384?w=120&q=80", q: "Nuk kam pasur kurrë ndonjë problem — çdo detaj ishte perfekt dhe profesionalizmi i skuadrës ishte i jashtëzakonshëm!" },
+  { name: "René & Mira",      role: "Dasma, 2025",        img: "https://images.unsplash.com/photo-1481833761820-0509d3217039?w=120&q=80", q: "Çdo shërbim i dorëzuar me kohë dhe profesionalizëm të lartë. Shërbimi me email ishte super i shpejtë dhe gjithmonë të gatshëm." },
 ];
 
 function Testimonials() {
@@ -1023,13 +1128,27 @@ function Testimonials() {
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.5 }}
             >
-              <p style={{ fontSize: 17, color: MUTED, lineHeight: 1.9, marginBottom: 24, fontStyle: "italic" }}>
+              <p style={{ fontSize: 17, color: MUTED, lineHeight: 1.9, marginBottom: 32, fontStyle: "italic" }}>
                 "{REVIEWS[idx].q}"
               </p>
-              <p style={{ fontWeight: 800, fontSize: 13, color: DARK, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                {REVIEWS[idx].name}
-              </p>
-              <p style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{REVIEWS[idx].role}</p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14 }}>
+                <img
+                  src={REVIEWS[idx].img}
+                  alt={REVIEWS[idx].name}
+                  style={{
+                    width: 52, height: 52, borderRadius: "50%",
+                    objectFit: "cover",
+                    border: `2px solid ${WINE}`,
+                    flexShrink: 0,
+                  }}
+                />
+                <div style={{ textAlign: "left" }}>
+                  <p style={{ fontWeight: 800, fontSize: 13, color: DARK, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 2 }}>
+                    {REVIEWS[idx].name}
+                  </p>
+                  <p style={{ fontSize: 12, color: MUTED }}>{REVIEWS[idx].role}</p>
+                </div>
+              </div>
             </motion.div>
           </AnimatePresence>
         </div>
@@ -1358,6 +1477,7 @@ export function Landing() {
       <Hero />
       <WelcomeSection />
       <HistorySection />
+      <PhilosophySection />
       <ServicesSection />
       <HallSection />
       <Testimonials />
