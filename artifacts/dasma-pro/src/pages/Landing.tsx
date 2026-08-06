@@ -1159,7 +1159,7 @@ function HallSection() {
               }}
             />
             <img
-              src="https://images.unsplash.com/photo-1429514513361-8a632ff5e384?w=900&q=85"
+              src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=900&q=85"
               alt="Hall planner"
               style={{ width: "100%", maxHeight: 500, objectFit: "cover", position: "relative", display: "block" }}
             />
