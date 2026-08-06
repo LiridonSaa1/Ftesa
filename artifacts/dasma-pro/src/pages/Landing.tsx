@@ -126,7 +126,7 @@ function StampLogo() {
     <img
       src="/logo-full.png"
       alt="NoaEvent"
-      style={{ height: 160, width: "auto", flexShrink: 0, objectFit: "contain" }}
+      style={{ height: 140, width: "auto", flexShrink: 0, objectFit: "contain", display: "block" }}
     />
   );
 }
@@ -158,7 +158,8 @@ function Navbar() {
           maxWidth: 1280,
           margin: "0 auto",
           padding: "0 48px",
-          height: 170,
+          height: 90,
+          overflow: "visible",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
