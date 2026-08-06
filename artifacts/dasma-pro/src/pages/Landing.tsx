@@ -121,7 +121,7 @@ function StampLogo() {
       src="/logo.png"
       alt="NoaEvent"
       style={{
-        height: 96,
+        height: 130,
         width: "auto",
         objectFit: "contain",
         flexShrink: 0,
@@ -344,9 +344,9 @@ function Hero() {
           zIndex: 2,
           display: "flex",
           alignItems: "center",
-          padding: "0 48px",
         }}
       >
+        <div style={{ width: "100%", maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={`text-${current}`}
@@ -420,6 +420,7 @@ function Hero() {
             </Link>
           </motion.div>
         </AnimatePresence>
+        </div>
       </div>
 
       {/* ── Prev arrow ── */}
