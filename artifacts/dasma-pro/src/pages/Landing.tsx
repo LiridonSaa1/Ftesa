@@ -59,12 +59,18 @@ function TopBar() {
         background: TOPBG,
         color: "rgba(255,255,255,0.72)",
         fontSize: 12.5,
-        padding: "8px 48px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
       }}
     >
+      <div
+        style={{
+          maxWidth: 1280,
+          margin: "0 auto",
+          padding: "8px 48px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
       {/* Left */}
       <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
         <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
@@ -93,6 +99,7 @@ function TopBar() {
           </span>
         </Link>
         <Facebook size={12} strokeWidth={1.8} style={{ cursor: "pointer", opacity: 0.72 }} />
+      </div>
       </div>
     </div>
   );
