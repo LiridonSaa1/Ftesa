@@ -1489,31 +1489,45 @@ function Footer() {
             margin: "0 auto",
             padding: "0 80px",
             display: "grid",
-            gridTemplateColumns: "2fr 1fr 1fr",
+            gridTemplateColumns: "2fr 1fr 1fr 1fr",
             gap: 40,
           }}
         >
           {/* Col 1: company */}
           <div>
-            {/* Logo in footer */}
             <img
               src="/logo.png"
               alt="NoaEvent"
-              style={{ height: 90, width: "auto", marginBottom: 16, objectFit: "contain" }}
+              style={{ height: 140, width: "auto", marginBottom: 20, objectFit: "contain" }}
             />
-            <p style={{ fontWeight: 700, fontSize: 14, color: DARK, marginBottom: 8 }}>NoaEvent</p>
             <p style={{ fontSize: 13, color: MUTED, marginBottom: 4 }}>Adresa: Prishtinë 10000, Kosovë</p>
             <p style={{ fontSize: 13, color: MUTED, marginBottom: 4 }}>Tel: +383 44 000 000</p>
             <p style={{ fontSize: 13, color: MUTED }}>Email: info@noa-event.com</p>
           </div>
-          {/* Col 2: empty spacer */}
-          <div />
-          {/* Col 4: Legal — bold like Gademan */}
+          {/* Col 2: Nav menu */}
           <div>
-            {["Dokumentet", "Politika Cookie", "Privatësia", "Disclaimer"].map(l => (
-              <p key={l} style={{ fontWeight: 700, fontSize: 13.5, color: DARK, marginBottom: 10, cursor: "pointer" }}
+            <p style={{ fontWeight: 800, fontSize: 12, color: DARK, marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.1em" }}>Menu</p>
+            {NAV_LINKS.map(({ href, label }) => (
+              <a
+                key={href}
+                href={href}
+                style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: MUTED, marginBottom: 10, textDecoration: "none", transition: "color .15s", cursor: "pointer" }}
                 onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = WINE)}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = DARK)}>
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = MUTED)}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+          {/* Col 3: empty spacer */}
+          <div />
+          {/* Col 4: Legal */}
+          <div>
+            <p style={{ fontWeight: 800, fontSize: 12, color: DARK, marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.1em" }}>Informacione</p>
+            {["Dokumentet", "Politika Cookie", "Privatësia", "Disclaimer"].map(l => (
+              <p key={l} style={{ fontWeight: 600, fontSize: 13.5, color: MUTED, marginBottom: 10, cursor: "pointer", transition: "color .15s" }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = WINE)}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = MUTED)}>
                 {l}
               </p>
             ))}
