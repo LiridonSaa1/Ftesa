@@ -1,0 +1,202 @@
+# Prompt – User Registration, Subscription & Paddle Payment Flow
+
+Krijo një sistem regjistrimi dhe abonimi ku përdoruesi **nuk duhet të hyjë direkt në dashboard pa zgjedhur dhe paguar një paketë**.
+
+## User Flow
+
+### Hapi 1 – Zgjedhja e Paketës
+
+Në faqen kryesore përdoruesi sheh planet:
+
+### Basic – €10
+
+* 1 organizim (1 event)
+
+### Pro – €50
+
+* Deri në 11 organizime
+
+### Custom
+
+* Organizime të pakufizuara
+* Kontakt për çmim
+
+Përdoruesi klikon:
+**Choose Plan**
+
+---
+
+# Hapi 2 – Krijimi i Llogarisë
+
+Pas zgjedhjes së paketës, përdoruesi dërgohet në faqen e regjistrimit.
+
+Forma duhet të kërkojë:
+
+* Full Name
+* Email Address
+* Password
+* Confirm Password
+
+Ruaj planin e zgjedhur gjatë regjistrimit.
+
+Shembull:
+User zgjedh Pro → regjistrohet → vazhdon në pagesë me planin Pro.
+
+---
+
+# Hapi 3 – Pagesa me Paddle
+
+Implemento Paddle Billing për pagesat.
+
+Procesi:
+
+1. Krijo checkout session në Paddle.
+2. Dërgo përdoruesin në Paddle Checkout.
+3. Përdoruesi paguan me kartë.
+4. Paddle dërgon webhook pas pagesës së suksesshme.
+5. Sistemi verifikon pagesën.
+6. Aktivizohet abonimi automatikisht.
+
+Pas pagesës ruaj në databazë:
+
+* User ID
+* Plan ID
+* Paddle Customer ID
+* Paddle Subscription ID
+* Payment Status
+* Start Date
+* Next Billing Date
+* Amount
+
+---
+
+# Hapi 4 – Aktivizimi i Llogarisë
+
+Vetëm pasi Paddle konfirmon pagesën:
+
+Ndrysho statusin e userit:
+
+* Pending Payment → Active
+
+Pastaj lejo hyrjen në dashboard.
+
+Nëse pagesa dështon:
+
+* User mbetet në Pending
+* Nuk ka qasje në platformë
+
+---
+
+# Hapi 5 – Dashboard i Përdoruesit
+
+Pas aktivizimit përdoruesi mund të:
+
+* Krijojë evente
+* Menaxhojë mysafirët
+* Krijojë ftesa digjitale
+* Organizojë tavolinat
+* Përdorë Hall Designer
+* Gjenerojë QR Codes
+* Shikojë statistikat
+
+---
+
+# Database Structure
+
+Krijo tabelat:
+
+## users
+
+* id
+* full_name
+* email
+* password
+* role
+* status
+* created_at
+
+## plans
+
+* id
+* name
+* price
+* event_limit
+* paddle_price_id
+
+## subscriptions
+
+* id
+* user_id
+* plan_id
+* paddle_customer_id
+* paddle_subscription_id
+* status
+* start_date
+* next_billing_date
+
+## payments
+
+* id
+* user_id
+* subscription_id
+* paddle_transaction_id
+* amount
+* currency
+* status
+* created_at
+
+---
+
+# Authentication Rules
+
+* User nuk mund të hyjë në dashboard pa abonim aktiv.
+* Kontrollo subscription status në çdo login.
+* Nëse abonimi skadon, blloko funksionet premium.
+* Admin mund të shohë dhe menaxhojë të gjitha abonimet.
+
+---
+
+# Admin Panel
+
+Admin Panel duhet të jetë **Light Theme (i ndriçuar)**.
+
+Admin mund të shohë:
+
+* Users
+* Planet
+* Subscription status
+* Pagesat Paddle
+* Transactions
+* Failed payments
+* Revenue
+* Active subscriptions
+
+---
+
+# Teknologjitë
+
+Frontend:
+
+* React Native
+* React Web
+* TypeScript
+
+Backend:
+
+* Supabase
+
+Authentication:
+
+* Supabase Auth
+
+Payments:
+
+* Paddle Billing API
+* Paddle Webhooks
+
+Database:
+
+* Supabase PostgreSQL
+
+Implemento flow të plotë:
+**Choose Plan → Register → Paddle Checkout → Payment Success → Activate Account → Dashboard Access**

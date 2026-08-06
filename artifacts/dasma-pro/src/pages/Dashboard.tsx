@@ -50,8 +50,8 @@ export function Dashboard() {
 
   const isLoading = ovLoading || subLoading;
 
-  const rsvpTotal = (overview?.totalConfirmed ?? 0) + (overview?.totalDeclined ?? 0) + (overview?.totalPending ?? 0);
-  const confirmedPct = rsvpTotal > 0 ? Math.round(((overview?.totalConfirmed ?? 0) / rsvpTotal) * 100) : 0;
+  const rsvpTotal = ((overview as any)?.totalConfirmed ?? 0) + ((overview as any)?.totalDeclined ?? 0) + ((overview as any)?.totalPending ?? 0);
+  const confirmedPct = rsvpTotal > 0 ? Math.round((((overview as any)?.totalConfirmed ?? 0) / rsvpTotal) * 100) : 0;
 
   const plan = subscription?.plan ?? (overview as any)?.subscription?.plan ?? "basic";
   const pm = PLAN_META[plan] ?? PLAN_META.basic;
@@ -134,7 +134,7 @@ export function Dashboard() {
           label="Shkalla RSVP"
           value={`${confirmedPct}%`}
           icon={<TrendingUp className="h-4 w-4 text-green-600" />}
-          sub={rsvpTotal > 0 ? `${rsvpTotal} i ftuar, ${overview?.totalConfirmed ?? 0} konfirmoi` : "Ende nuk ka RSVP"}
+          sub={rsvpTotal > 0 ? `${rsvpTotal} i ftuar, ${(overview as any)?.totalConfirmed ?? 0} konfirmoi` : "Ende nuk ka RSVP"}
         />
       </div>
 
@@ -145,8 +145,8 @@ export function Dashboard() {
           <div className="flex h-4 rounded-full overflow-hidden gap-1 bg-black/40 p-0.5 border border-white/5">
             <div
               className="bg-green-500/80 rounded-full transition-all shadow-[0_0_10px_rgba(34,197,94,0.3)]"
-              style={{ width: `${Math.round(((overview?.totalConfirmed ?? 0) / rsvpTotal) * 100)}%` }}
-              title={`Konfirmuar: ${overview?.totalConfirmed}`}
+              style={{ width: `${Math.round((((overview as any)?.totalConfirmed ?? 0) / rsvpTotal) * 100)}%` }}
+              title={`Konfirmuar: ${(overview as any)?.totalConfirmed}`}
             />
             <div
               className="bg-red-500/80 rounded-full transition-all shadow-[0_0_10px_rgba(239,68,68,0.3)]"
@@ -160,7 +160,7 @@ export function Dashboard() {
             />
           </div>
           <div className="flex flex-wrap gap-6 text-xs text-muted-foreground">
-            <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />Konfirmuar: {overview?.totalConfirmed ?? 0}</span>
+            <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />Konfirmuar: {(overview as any)?.totalConfirmed ?? 0}</span>
             <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.4)]" />Refuzuar: {(overview as any)?.totalDeclined ?? 0}</span>
             <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-secondary/80 shadow-[0_0_8px_rgba(203,166,104,0.4)]" />Në pritje: {(overview as any)?.totalPending ?? 0}</span>
           </div>

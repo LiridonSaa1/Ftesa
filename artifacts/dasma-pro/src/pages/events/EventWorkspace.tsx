@@ -932,7 +932,7 @@ export function EventWorkspace() {
         </TabsList>
 
         <TabsContent value="overview"><OverviewTab eventId={eventId} /></TabsContent>
-        <TabsContent value="guests"><GuestsTab eventId={eventId} /></TabsContent>
+        <TabsContent value="guests"><GuestsTab eventId={eventId} eventName={event?.name ?? ""} /></TabsContent>
         <TabsContent value="tables"><TablesTab eventId={eventId} /></TabsContent>
         <TabsContent value="invitation"><InvitationTab eventId={eventId} event={event} /></TabsContent>
         <TabsContent value="hall" className="h-[75vh] min-h-[600px]">

@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { CheckCircle, ArrowRight } from "lucide-react";
+import { CheckCircle, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 
 const WINE = "#7B1F3A";
 const WHITE = "#FFFFFF";
@@ -10,18 +10,61 @@ const CREAM = "#FAF8F5";
 const DARK = "#2d1a1f";
 const MUTED = "#6b6b6b";
 
+type ActivationStatus = "pending" | "active" | "timeout";
+
+const MAX_POLLS = 20;   // 20 × 3s = 60 seconds max
+const POLL_MS   = 3000;
+
 export function CheckoutSuccess() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const [activationStatus, setActivationStatus] = useState<ActivationStatus>("pending");
+  const [pollCount, setPollCount] = useState(0);
 
   useEffect(() => {
-    // Clear stored plan selection
     localStorage.removeItem("paddle_selected_plan");
-    // Invalidate user status cache so SubscriptionGuard re-fetches
-    queryClient.invalidateQueries({ queryKey: ["user-status"] });
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    async function poll() {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json() as { status: string };
+          if (data.status === "active") {
+            // Invalidate all user/subscription caches
+            queryClient.invalidateQueries({ queryKey: ["user-status"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+            setActivationStatus("active");
+            return;
+          }
+        }
+      } catch {
+        // Network error — keep polling
+      }
+
+      setPollCount((c) => {
+        const next = c + 1;
+        if (next >= MAX_POLLS) {
+          setActivationStatus("timeout");
+        } else {
+          timeoutId = setTimeout(poll, POLL_MS);
+        }
+        return next;
+      });
+    }
+
+    // Start polling after a short delay (give Paddle webhook time to arrive)
+    timeoutId = setTimeout(poll, 1500);
+
+    return () => clearTimeout(timeoutId);
   }, [queryClient]);
 
-  const goToDashboard = () => setLocation("/dashboard");
+  const goToDashboard = () => {
+    queryClient.invalidateQueries({ queryKey: ["user-status"] });
+    setLocation("/dashboard");
+  };
 
   return (
     <div
@@ -92,38 +135,87 @@ export function CheckoutSuccess() {
         </h1>
         <p style={{ color: MUTED, fontSize: 15, lineHeight: 1.8, marginBottom: 32 }}>
           Llogaria juaj është aktivizuar. Tani mund të filloni të organizoni
-          eventit tuaj me NoaEvent.
+          eventin tuaj me NoaEvent.
         </p>
+
+        {/* Activation status */}
+        {activationStatus === "pending" && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              padding: "12px 20px",
+              background: "rgba(123,31,58,0.05)",
+              borderRadius: 8,
+              marginBottom: 20,
+              color: MUTED,
+              fontSize: 14,
+            }}
+          >
+            <Loader2 size={16} color={WINE} style={{ animation: "spin 1s linear infinite" }} />
+            Duke aktivizuar llogarinë tuaj...
+          </div>
+        )}
+
+        {activationStatus === "timeout" && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 10,
+              padding: "12px 16px",
+              background: "#fff8f0",
+              border: "1px solid #f5d0a9",
+              borderRadius: 8,
+              marginBottom: 20,
+              color: "#92400e",
+              fontSize: 13,
+              textAlign: "left",
+            }}
+          >
+            <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span>
+              Aktivizimi po merr kohë. Kliko butonin poshtë — nëse abonimi u aktivizua,
+              do të hyni direkt. Kontaktoni support@noa-event.com nëse problemi vazhdon.
+            </span>
+          </div>
+        )}
 
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           onClick={goToDashboard}
+          disabled={activationStatus === "pending"}
           style={{
             width: "100%",
             padding: "14px",
-            background: WINE,
+            background: activationStatus === "pending" ? "#c4a0a8" : WINE,
             color: WHITE,
             border: "none",
             borderRadius: 8,
             fontWeight: 700,
             fontSize: 15,
             letterSpacing: "0.05em",
-            cursor: "pointer",
+            cursor: activationStatus === "pending" ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             gap: 10,
+            transition: "background 0.2s",
           }}
         >
-          Hyr në Dashboard
-          <ArrowRight size={16} />
+          {activationStatus === "active" ? "Hyr në Dashboard" : activationStatus === "timeout" ? "Provo Hyrjen" : "Duke pritur aktivizimin..."}
+          {activationStatus !== "pending" && <ArrowRight size={16} />}
         </motion.button>
       </motion.div>
 
       <p style={{ marginTop: 24, color: MUTED, fontSize: 13 }}>
         Konfirmimi dërgohet në emailin tuaj.
       </p>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

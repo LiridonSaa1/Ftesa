@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, count, desc } from "drizzle-orm";
-import { db, usersTable, eventsTable, guestsTable } from "@workspace/db";
+import { eq, count, desc, sum } from "drizzle-orm";
+import { db, usersTable, eventsTable, guestsTable, subscriptionsTable, paymentsTable } from "@workspace/db";
 import { requireAuth, ensureUser, requireAdmin } from "../lib/auth";
 
 const router: IRouter = Router();
@@ -69,4 +69,94 @@ router.patch("/admin/users/:userId/subscription", requireAuth, requireAdmin, asy
   });
 });
 
+// ── Admin: subscriptions ──────────────────────────────────────────────────────
+
+router.get("/admin/subscriptions", requireAuth, requireAdmin, async (req, res): Promise<void> => {
+  const page  = parseInt((req.query.page  as string) ?? "1",  10);
+  const limit = parseInt((req.query.limit as string) ?? "20", 10);
+  const offset = (page - 1) * limit;
+
+  const [{ value: total }] = await db.select({ value: count() }).from(subscriptionsTable);
+
+  const rows = await db
+    .select({
+      id:                   subscriptionsTable.id,
+      userId:               subscriptionsTable.userId,
+      plan:                 subscriptionsTable.plan,
+      status:               subscriptionsTable.status,
+      paddleCustomerId:     subscriptionsTable.paddleCustomerId,
+      paddleSubscriptionId: subscriptionsTable.paddleSubscriptionId,
+      startDate:            subscriptionsTable.startDate,
+      nextBillingDate:      subscriptionsTable.nextBillingDate,
+      createdAt:            subscriptionsTable.createdAt,
+      userEmail:            usersTable.email,
+      userFirstName:        usersTable.firstName,
+      userLastName:         usersTable.lastName,
+    })
+    .from(subscriptionsTable)
+    .leftJoin(usersTable, eq(subscriptionsTable.userId, usersTable.id))
+    .orderBy(desc(subscriptionsTable.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  res.json({
+    subscriptions: rows.map(r => ({
+      ...r,
+      startDate:      r.startDate?.toISOString()      ?? null,
+      nextBillingDate: r.nextBillingDate?.toISOString() ?? null,
+      createdAt:      r.createdAt.toISOString(),
+    })),
+    total: Number(total),
+    page,
+    limit,
+  });
+});
+
+// ── Admin: payments ───────────────────────────────────────────────────────────
+
+router.get("/admin/payments", requireAuth, requireAdmin, async (req, res): Promise<void> => {
+  const page   = parseInt((req.query.page   as string) ?? "1",  10);
+  const limit  = parseInt((req.query.limit  as string) ?? "20", 10);
+  const offset = (page - 1) * limit;
+
+  const [{ value: total }] = await db.select({ value: count() }).from(paymentsTable);
+  const [{ value: totalRevenue }] = await db
+    .select({ value: sum(paymentsTable.amount) })
+    .from(paymentsTable)
+    .where(eq(paymentsTable.status, "completed"));
+
+  const rows = await db
+    .select({
+      id:                   paymentsTable.id,
+      userId:               paymentsTable.userId,
+      subscriptionId:       paymentsTable.subscriptionId,
+      paddleTransactionId:  paymentsTable.paddleTransactionId,
+      amount:               paymentsTable.amount,
+      currency:             paymentsTable.currency,
+      status:               paymentsTable.status,
+      createdAt:            paymentsTable.createdAt,
+      userEmail:            usersTable.email,
+      userFirstName:        usersTable.firstName,
+      userLastName:         usersTable.lastName,
+    })
+    .from(paymentsTable)
+    .leftJoin(usersTable, eq(paymentsTable.userId, usersTable.id))
+    .orderBy(desc(paymentsTable.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  res.json({
+    payments: rows.map(r => ({
+      ...r,
+      amountFormatted: `€${(r.amount / 100).toFixed(2)}`,
+      createdAt: r.createdAt.toISOString(),
+    })),
+    total: Number(total),
+    totalRevenue: Number(totalRevenue ?? 0), // in cents
+    page,
+    limit,
+  });
+});
+
 export default router;
+
