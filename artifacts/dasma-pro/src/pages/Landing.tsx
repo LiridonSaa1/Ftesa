@@ -116,6 +116,7 @@ const NAV_LINKS = [
   { href: "#home",     label: "HOME"      },
   { href: "#services", label: "SHËRBIMET" },
   { href: "#hall",     label: "SALLA"     },
+  { href: "#banka",    label: "BANKA"     },
   { href: "#contact",  label: "KONTAKT"   },
   { href: "#order",    label: "ÇMIMET"    },
 ];
@@ -1501,24 +1502,12 @@ function Footer() {
         >
           {/* Col 1: company */}
           <div>
-            {/* Stamp logo in footer */}
-            <div
-              style={{
-                width: 70,
-                height: 70,
-                borderRadius: "50%",
-                border: "1.5px solid #c4b49a",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 16,
-                background: CREAM,
-              }}
-            >
-              <Heart size={14} color={WINE} />
-              <span style={{ fontSize: 7, fontWeight: 900, color: WINE, textTransform: "uppercase", letterSpacing: "0.1em" }}>NoaEvent</span>
-            </div>
+            {/* Logo in footer */}
+            <img
+              src="/logo.png"
+              alt="NoaEvent"
+              style={{ height: 90, width: "auto", marginBottom: 16, objectFit: "contain" }}
+            />
             <p style={{ fontWeight: 700, fontSize: 14, color: DARK, marginBottom: 8 }}>NoaEvent</p>
             <p style={{ fontSize: 13, color: MUTED, marginBottom: 4 }}>Adresa: Prishtinë 10000, Kosovë</p>
             <p style={{ fontSize: 13, color: MUTED, marginBottom: 4 }}>Tel: +383 44 000 000</p>
