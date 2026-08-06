@@ -121,7 +121,7 @@ function StampLogo() {
       src="/logo.png"
       alt="NoaEvent"
       style={{
-        height: 72,
+        height: 96,
         width: "auto",
         objectFit: "contain",
         flexShrink: 0,
