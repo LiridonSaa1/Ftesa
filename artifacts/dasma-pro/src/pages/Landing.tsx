@@ -881,157 +881,265 @@ function HistorySection() {
    SERVICES / SMAKEN — centered title + desc + 2 large cards
    (Gademan "Smaken" section: Sorbetijs + Melkijs layout)
 ═══════════════════════════════════════════════════════════ */
-const BIG_CARDS = [
+/* ─── Services slider data ─────────────────────────────── */
+const SERVICE_SLIDES = [
   {
     label: "Ftesa Digjitale",
-    sub: "Shiko Shërbimin",
-    img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80",
-    href: "/sign-up",
+    desc: "Krijoni ftesa elegante me foto çifti, countdown dhe RSVP automatik.",
+    img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=85",
+    tag: "Popullar",
   },
   {
     label: "Hall Designer",
-    sub: "Shiko Shërbimin",
-    img: "https://images.unsplash.com/photo-1481833761820-0509d3217039?w=800&q=80",
-    href: "/sign-up",
+    desc: "Planifikoni sallën tuaj vizualisht — drag & drop, tavolina, VIP zona.",
+    img: "https://images.unsplash.com/photo-1481833761820-0509d3217039?w=900&q=85",
+    tag: "Premium",
+  },
+  {
+    label: "QR Check-in",
+    desc: "Mysafirët skanojnë kodin QR dhe hyjnë në event pa asnjë pritje.",
+    img: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=900&q=85",
+    tag: null,
+  },
+  {
+    label: "RSVP Automatik",
+    desc: "Çdo mysafir merr link unik — përgjigjet me një klik, ju shihni live.",
+    img: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=900&q=85",
+    tag: null,
+  },
+  {
+    label: "Menaxhimi i Mysafirëve",
+    desc: "Lista e plotë, statuset, kategorizimi dhe filtrat — gjithçka në një vend.",
+    img: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=900&q=85",
+    tag: null,
+  },
+  {
+    label: "Seat Planner",
+    desc: "Cakto çdo mysafir tek tavolina dhe vendi i tij me drag & drop.",
+    img: "https://images.unsplash.com/photo-1429514513361-8a632ff5e384?w=900&q=85",
+    tag: "I ri",
   },
 ];
 
-const SMALL_CARDS = [
-  { label: "QR Check-in",    img: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=500&q=70" },
-  { label: "RSVP Automatik", img: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=500&q=70" },
-  { label: "Mysafirët",       img: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=500&q=70" },
-  { label: "Seat Planner",   img: "https://images.unsplash.com/photo-1429514513361-8a632ff5e384?w=500&q=70" },
-];
-
-function ServicesSection() {
+/* ─── Slider card ─────────────────────────────────────── */
+function ServiceCard({ slide, isActive }: { slide: typeof SERVICE_SLIDES[0]; isActive: boolean }) {
   return (
-    <section id="services" style={{ background: WHITE, padding: "96px 0" }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
-
-        {/* Centered intro — like Gademan's "Smaken" text block */}
-        <FadeUp>
-          <div style={{ textAlign: "center", marginBottom: 56, maxWidth: 700, margin: "0 auto 56px" }}>
-            <h2
-              style={{
-                fontWeight: 900,
-                fontSize: "clamp(2rem, 3.5vw, 2.9rem)",
-                color: DARK,
-                marginBottom: 20,
-              }}
-            >
-              Shërbimet
-            </h2>
-            <p style={{ color: MUTED, lineHeight: 1.85, fontSize: 15 }}>
-              Lërini zemrën tuaj të flasë dhe ne do të kujdesemi për çdo detaj të ditës suaj të veçantë.
-              Nuk e gjeni atë që kërkoni? Zhvillojmë me kënaqësi zgjidhje unike sipas kërkesës suaj —
-              si ftesa me AR, plane sallash me AI ose menaxhim VIP. Punojmë ekskluzivisht me teknologji
-              moderne, pa kompromise të cilësisë.
-            </p>
+    <motion.div
+      animate={{ opacity: isActive ? 1 : 0.55, scale: isActive ? 1 : 0.96 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        width: 420,
+        flexShrink: 0,
+        borderRadius: 16,
+        overflow: "hidden",
+        background: WHITE,
+        boxShadow: isActive
+          ? "0 24px 64px rgba(0,0,0,0.16), 0 4px 16px rgba(123,31,58,0.08)"
+          : "0 4px 16px rgba(0,0,0,0.06)",
+        border: `1px solid ${isActive ? "rgba(123,31,58,0.18)" : "#ede8e2"}`,
+        userSelect: "none",
+        cursor: "grab",
+      }}
+    >
+      {/* Image */}
+      <div style={{ position: "relative", height: 280, overflow: "hidden" }}>
+        <motion.img
+          src={slide.img}
+          alt={slide.label}
+          whileHover={{ scale: 1.06 }}
+          transition={{ duration: 0.6 }}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          draggable={false}
+        />
+        {/* Gradient overlay */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to top, rgba(20,5,10,0.55) 0%, transparent 55%)",
+        }} />
+        {/* Tag */}
+        {slide.tag && (
+          <div style={{
+            position: "absolute", top: 16, left: 16,
+            background: WINE, color: WHITE,
+            fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
+            padding: "4px 12px", borderRadius: 20, textTransform: "uppercase",
+          }}>
+            {slide.tag}
           </div>
-        </FadeUp>
-
-        {/* 2 large cards — exact Gademan Sorbetijs/Melkijs layout */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
-          {BIG_CARDS.map((card, i) => (
-            <FadeUp key={card.label} delay={i * 0.1}>
-              <div
-                style={{
-                  border: "1px solid #ede8e2",
-                  overflow: "hidden",
-                  background: WHITE,
-                  transition: "transform .25s, box-shadow .25s",
-                }}
-                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(-5px)"; el.style.boxShadow = "0 12px 32px rgba(0,0,0,0.08)"; }}
-                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(0)"; el.style.boxShadow = "none"; }}
-              >
-                {/* Photo */}
-                <div style={{ height: 300, overflow: "hidden" }}>
-                  <img
-                    src={card.img}
-                    alt={card.label}
-                    style={{
-                      width: "100%", height: "100%", objectFit: "cover",
-                      transition: "transform .5s ease",
-                    }}
-                    onMouseEnter={e => ((e.currentTarget as HTMLImageElement).style.transform = "scale(1.05)")}
-                    onMouseLeave={e => ((e.currentTarget as HTMLImageElement).style.transform = "scale(1)")}
-                  />
-                </div>
-                {/* Card footer */}
-                <div style={{ textAlign: "center", padding: "32px 24px" }}>
-                  <h3 style={{ fontWeight: 900, fontSize: 22, color: DARK, marginBottom: 20, letterSpacing: "0.02em" }}>
-                    {card.label}
-                  </h3>
-                  <Link href={card.href}>
-                    <motion.span
-                      whileHover={{ background: WINE, color: WHITE }}
-                      style={{
-                        display: "inline-block",
-                        border: `2px solid ${WINE}`,
-                        color: WINE,
-                        padding: "10px 30px",
-                        fontWeight: 700,
-                        fontSize: 13,
-                        letterSpacing: "0.08em",
-                        cursor: "pointer",
-                        borderRadius: 4,
-                        transition: "all .18s",
-                      }}
-                    >
-                      {card.sub}
-                    </motion.span>
-                  </Link>
-                </div>
-              </div>
-            </FadeUp>
-          ))}
-        </div>
-
-        {/* 4 smaller cards below — like Gademan's extra flavour cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
-          {SMALL_CARDS.map((card, i) => (
-            <FadeUp key={card.label} delay={i * 0.07}>
-              <div
-                style={{ border: "1px solid #ede8e2", overflow: "hidden", background: WHITE }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.boxShadow = "0 8px 24px rgba(0,0,0,0.07)")}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.boxShadow = "none")}
-              >
-                <div style={{ height: 160, overflow: "hidden" }}>
-                  <img
-                    src={card.img}
-                    alt={card.label}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform .4s" }}
-                    onMouseEnter={e => ((e.currentTarget as HTMLImageElement).style.transform = "scale(1.06)")}
-                    onMouseLeave={e => ((e.currentTarget as HTMLImageElement).style.transform = "scale(1)")}
-                  />
-                </div>
-                <div style={{ textAlign: "center", padding: "20px 12px" }}>
-                  <h3 style={{ fontWeight: 800, fontSize: 14, color: DARK, marginBottom: 12, letterSpacing: "0.02em" }}>
-                    {card.label}
-                  </h3>
-                  <Link href="/sign-up">
-                    <span
-                      style={{
-                        display: "inline-block",
-                        border: `1.5px solid ${WINE}`,
-                        color: WINE,
-                        padding: "6px 16px",
-                        fontWeight: 700,
-                        fontSize: 11,
-                        letterSpacing: "0.08em",
-                        cursor: "pointer",
-                        borderRadius: 4,
-                      }}
-                    >
-                      Shiko →
-                    </span>
-                  </Link>
-                </div>
-              </div>
-            </FadeUp>
-          ))}
-        </div>
+        )}
+        {/* Label over image bottom */}
+        <h3 style={{
+          position: "absolute", bottom: 20, left: 24,
+          color: WHITE, fontWeight: 900,
+          fontSize: 22, letterSpacing: "0.02em",
+          textShadow: "0 2px 12px rgba(0,0,0,0.4)",
+          margin: 0,
+        }}>
+          {slide.label}
+        </h3>
       </div>
+
+      {/* Footer */}
+      <div style={{ padding: "24px 28px 28px" }}>
+        <p style={{ color: MUTED, fontSize: 14, lineHeight: 1.72, marginBottom: 20 }}>
+          {slide.desc}
+        </p>
+        <Link href="/sign-up">
+          <motion.span
+            whileHover={{ backgroundColor: WINE, color: WHITE }}
+            style={{
+              display: "inline-block",
+              border: `1.5px solid ${WINE}`,
+              color: WINE,
+              padding: "9px 24px",
+              fontWeight: 700,
+              fontSize: 12,
+              letterSpacing: "0.1em",
+              cursor: "pointer",
+              borderRadius: 6,
+              textTransform: "uppercase",
+              transition: "all .18s",
+            }}
+          >
+            Shiko Shërbimin →
+          </motion.span>
+        </Link>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Services Section with full-width drag slider ─────── */
+function ServicesSection() {
+  const total = SERVICE_SLIDES.length;
+  const [active, setActive] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const CARD_W = 420;
+  const GAP = 28;
+  const STEP = CARD_W + GAP;
+
+  /* auto-advance */
+  useEffect(() => {
+    const t = setInterval(() => setActive(a => (a + 1) % total), 4500);
+    return () => clearInterval(t);
+  }, [total]);
+
+  const go = useCallback((next: number) => {
+    setActive(((next % total) + total) % total);
+  }, [total]);
+
+  /* translate so active card is centered */
+  const viewW = typeof window !== "undefined" ? Math.min(window.innerWidth, 1280) : 900;
+  const offset = (viewW / 2) - (CARD_W / 2) - active * STEP;
+
+  /* drag support */
+  const dragStart = useRef(0);
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    dragStart.current = "touches" in e ? e.touches[0].clientX : e.clientX;
+  };
+  const handleDragEnd = (e: React.MouseEvent | React.TouchEvent) => {
+    const end = "changedTouches" in e ? e.changedTouches[0].clientX : e.clientX;
+    const diff = dragStart.current - end;
+    if (Math.abs(diff) > 48) go(active + (diff > 0 ? 1 : -1));
+  };
+
+  return (
+    <section id="services" style={{ background: WHITE, padding: "96px 0", overflow: "hidden" }}>
+
+      {/* Header */}
+      <FadeUp>
+        <div style={{ textAlign: "center", marginBottom: 56, maxWidth: 680, margin: "0 auto 56px", padding: "0 32px" }}>
+          <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", color: WINE, textTransform: "uppercase", marginBottom: 14 }}>
+            SHËRBIMET TONA
+          </p>
+          <h2 style={{ fontWeight: 900, fontSize: "clamp(2rem, 3.5vw, 2.9rem)", color: DARK, marginBottom: 18 }}>
+            Shërbimet
+          </h2>
+          <p style={{ color: MUTED, lineHeight: 1.85, fontSize: 15 }}>
+            Lërini zemrën tuaj të flasë dhe ne do të kujdesemi për çdo detaj të ditës suaj të veçantë.
+            Punojmë ekskluzivisht me teknologji moderne, pa kompromise të cilësisë.
+          </p>
+        </div>
+      </FadeUp>
+
+      {/* Slider track */}
+      <div
+        ref={trackRef}
+        style={{ cursor: "grab", paddingBottom: 8, userSelect: "none" }}
+        onMouseDown={handleDragStart}
+        onMouseUp={handleDragEnd as any}
+        onTouchStart={handleDragStart as any}
+        onTouchEnd={handleDragEnd as any}
+      >
+        <motion.div
+          animate={{ x: offset }}
+          transition={{ type: "spring", stiffness: 260, damping: 32 }}
+          style={{ display: "flex", gap: GAP }}
+        >
+          {SERVICE_SLIDES.map((slide, i) => (
+            <div key={slide.label} onClick={() => go(i)}>
+              <ServiceCard slide={slide} isActive={i === active} />
+            </div>
+          ))}
+        </motion.div>
+      </div>
+
+      {/* Controls */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        gap: 20, marginTop: 44,
+      }}>
+        {/* Prev */}
+        <motion.button
+          whileHover={{ scale: 1.08, borderColor: WINE }}
+          whileTap={{ scale: 0.94 }}
+          onClick={() => go(active - 1)}
+          style={{
+            background: "none", border: `1.5px solid #ccc`, borderRadius: "50%",
+            width: 44, height: 44, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "border-color .2s",
+          }}
+        >
+          <ChevronLeft size={18} color={DARK} />
+        </motion.button>
+
+        {/* Dots */}
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {SERVICE_SLIDES.map((_, i) => (
+            <motion.button
+              key={i}
+              onClick={() => go(i)}
+              animate={{ width: i === active ? 28 : 8, background: i === active ? WINE : "#ddd" }}
+              transition={{ duration: 0.3 }}
+              style={{
+                height: 8, borderRadius: 4,
+                border: "none", cursor: "pointer", padding: 0,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Next */}
+        <motion.button
+          whileHover={{ scale: 1.08, borderColor: WINE }}
+          whileTap={{ scale: 0.94 }}
+          onClick={() => go(active + 1)}
+          style={{
+            background: "none", border: `1.5px solid #ccc`, borderRadius: "50%",
+            width: 44, height: 44, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "border-color .2s",
+          }}
+        >
+          <ChevronRight size={18} color={DARK} />
+        </motion.button>
+      </div>
+
+      {/* Active counter */}
+      <p style={{ textAlign: "center", marginTop: 16, fontSize: 12, color: MUTED, letterSpacing: "0.12em" }}>
+        0{active + 1} / 0{total}
+      </p>
     </section>
   );
 }
