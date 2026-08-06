@@ -1,0 +1,201 @@
+# Prompt – Platformë për Ftesa Digjitale & Menaxhim Eventesh
+
+Krijo një platformë moderne (Web + Mobile) për organizimin e dasmave dhe eventeve me **React Native, React Web, TypeScript dhe Supabase**. Platforma duhet të ketë një dizajn premium, intuitiv dhe të jetë plotësisht responsive.
+
+## Rrjedha e përdoruesit (User Flow)
+
+### 1. Regjistrimi
+
+* Sign Up / Sign In
+* Verifikim me email
+* Login
+
+### 2. Planet e Abonimit
+
+Platforma duhet të ketë 3 plane:
+
+**Basic – €10**
+
+* 1 organizim (1 event)
+
+**Pro – €50**
+
+* Deri në 11 organizime
+
+**Custom**
+
+* Organizime të pakufizuara
+* Çmim sipas kërkesës
+
+Pasi përdoruesi zgjedh planin, ai kryen pagesën dhe abonimi aktivizohet automatikisht.
+
+---
+
+## Pas pagesës përdoruesi mund të:
+
+### Dashboard
+
+* Shikojë statistikat e eventeve
+* Numrin e mysafirëve
+* RSVP
+* Numrin e tavolinave
+* Statusin e abonimit
+
+### Eventet
+
+* Krijojë evente
+* Modifikojë evente
+* Fshijë evente
+* Vendosë datën, orën dhe lokacionin
+* Shtojë fotografi
+
+### Mysafirët
+
+* Shtojë manualisht
+* Importojë Excel/CSV
+* Kategorizojë mysafirët
+* Kërkojë dhe filtrojë
+* Shikojë statusin e secilit
+
+### Ftesat Digjitale
+
+* Zgjedhë template
+* Personalizojë dizajnin
+* Shtojë foto
+* Gjenerojë link privat
+* Dërgojë me Email
+* Dërgojë me WhatsApp
+
+### RSVP
+
+* Shikojë konfirmimet
+* Refuzimet
+* Përgjigjet në pritje
+
+### Hall Designer
+
+* Krijojë planin e sallës
+* Shtojë tavolina
+* Zgjedhë formën e tavolinave
+* Vendosë numrin e karrigeve
+* Drag & Drop për tavolinat
+
+### Seat Planner
+
+* Vendosë mysafirët në tavolina
+* Drag & Drop
+* Zhvendosë mysafirët
+* Sistemi të mos lejojë tejkalimin e kapacitetit
+
+### QR Code
+
+* Gjenerojë QR Code për çdo mysafir
+* Check-in me skanim
+* Tregojë tavolinën dhe vendin e mysafirit
+
+### Raportet
+
+* Eksport PDF
+* Eksport Excel
+* Printim i planit të sallës
+* Printim i listës së mysafirëve
+
+---
+
+# Admin Panel
+
+Admin Panel duhet të jetë **me temë Light (i ndriçuar)**, modern, profesional dhe i lehtë për përdorim. Mos përdor Dark Mode në panelin e administratorit.
+
+Administratori mund të:
+
+* Menaxhojë përdoruesit
+* Menaxhojë abonimet
+* Menaxhojë pagesat
+* Menaxhojë planet
+* Menaxhojë eventet
+* Menaxhojë template-t e ftesave
+* Menaxhojë kategoritë
+* Menaxhojë njoftimet
+* Shikojë statistikat
+* Shikojë raportet
+* Menaxhojë kërkesat për planin Custom
+
+---
+
+# Teknologjitë
+
+Frontend:
+
+* React Native (Expo)
+* React Web
+* TypeScript
+
+Backend:
+
+* Supabase
+
+Authentication:
+
+* Supabase Auth
+
+Database:
+
+* Supabase PostgreSQL
+
+Storage:
+
+* Supabase Storage
+
+Realtime:
+
+* Supabase Realtime
+
+Maps:
+
+* Google Maps
+
+QR:
+
+* QR Code Generator
+
+Drag & Drop:
+
+* dnd-kit ose React DnD
+
+Canvas:
+
+* React Konva ose Fabric.js
+
+---
+
+# Dizajni
+
+### Mobile App
+
+* Premium
+* Elegant
+* Glassmorphism
+* Dark Mode
+* Animacione të buta
+* UI moderne
+
+### Web App
+
+* Responsive
+* Premium
+* Glassmorphism
+* Dark Mode
+
+### Admin Panel
+
+* Light Theme (i ndriçuar)
+* Minimalist
+* Profesional
+* Sidebar në të majtë
+* Header në krye
+* Cards moderne
+* Tabela me kërkim, filtra dhe pagination
+* Grafiqe për statistika
+* UI shumë e pastër dhe e lehtë për përdorim
+
+Krijo strukturën e databazës në Supabase me marrëdhënie (relations), autentikim, role (Admin dhe User), RLS Policies, API-të e nevojshme dhe një arkitekturë të pastër që mund të zgjerohet lehtësisht në të ardhmen.

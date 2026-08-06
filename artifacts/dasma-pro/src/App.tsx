@@ -28,7 +28,7 @@ function stripBase(path: string): string {
   return basePath && path.startsWith(basePath) ? path.slice(basePath.length) || "/" : path;
 }
 
-// Build appearance object matching the Wedding Reval dark theme
+// Build appearance object matching the Glassmorphism Dark theme
 const clerkAppearance = {
   baseTheme: dark,
   cssLayerName: "clerk",
@@ -37,29 +37,29 @@ const clerkAppearance = {
     logoLinkUrl: basePath || "/",
   },
   variables: {
-    colorPrimary: "#C94B6E",       // Rose
-    colorForeground: "#e9e4e1",
-    colorMutedForeground: "#998b92",
+    colorPrimary: "#d9385e",       // Rose
+    colorForeground: "#f2f2f2",
+    colorMutedForeground: "#94949b",
     colorDanger: "#ef4444",
-    colorBackground: "#171215",    // Dark plum
-    colorInputBackground: "#1e171b",
-    colorInputText: "#e9e4e1",
+    colorBackground: "#0f1115",    // Dark background
+    colorInputBackground: "#181a20",
+    colorInputText: "#f2f2f2",
     fontFamily: "'Inter', sans-serif",
-    borderRadius: "0.5rem",
+    borderRadius: "0.75rem",
   },
   elements: {
     rootBox: "w-full flex justify-center",
-    cardBox: "bg-[#171215] rounded-2xl w-[440px] max-w-full overflow-hidden shadow-2xl border border-white/5",
-    headerTitle: "text-[#e9e4e1] font-serif text-2xl font-normal",
-    headerSubtitle: "text-[#998b92]",
-    socialButtonsBlockButtonText: "text-[#e9e4e1] font-medium",
-    formFieldLabel: "text-[#e9e4e1]",
-    footerActionLink: "text-[#C94B6E] hover:text-[#D4607B]",
-    footerActionText: "text-[#998b92]",
-    dividerText: "text-[#998b92]",
-    formFieldInput: "border-white/10 focus:border-[#C94B6E] bg-[#1e171b] text-[#e9e4e1]",
-    formButtonPrimary: "bg-[#C94B6E] hover:bg-[#D4607B] text-white font-semibold",
-    socialButtonsBlockButton: "border-white/10 hover:border-white/20 bg-[#1e171b]",
+    cardBox: "bg-[#0f1115]/80 backdrop-blur-xl rounded-2xl w-[440px] max-w-full overflow-hidden shadow-2xl border border-white/10",
+    headerTitle: "text-foreground font-serif text-2xl font-normal",
+    headerSubtitle: "text-muted-foreground",
+    socialButtonsBlockButtonText: "text-foreground font-medium",
+    formFieldLabel: "text-foreground",
+    footerActionLink: "text-primary hover:text-primary/90 transition-colors",
+    footerActionText: "text-muted-foreground",
+    dividerText: "text-muted-foreground",
+    formFieldInput: "border-white/10 focus:border-primary bg-[#181a20]/80 text-foreground",
+    formButtonPrimary: "bg-primary hover:bg-primary/90 text-white font-medium shadow-[0_0_15px_rgba(217,56,94,0.3)] transition-all",
+    socialButtonsBlockButton: "border-white/10 hover:border-white/20 hover:bg-white/5 bg-[#181a20]/50 transition-all",
     dividerLine: "bg-white/10",
     main: "px-6 py-4",
   },
@@ -82,7 +82,7 @@ function ClerkQueryClientCacheInvalidator() {
 
 export function SignInPage() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-[#171215] px-4 dark">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 dark">
       <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
     </div>
   );
@@ -90,7 +90,7 @@ export function SignInPage() {
 
 export function SignUpPage() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-[#171215] px-4 dark">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 dark">
       <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
     </div>
   );
@@ -125,18 +125,18 @@ function ClerkProviderWithRoutes() {
 
 function DemoAuthPage({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-[#171215] px-4 dark text-foreground">
-      <div className="w-full max-w-sm rounded-2xl border border-white/5 bg-[#1a1418] p-8 shadow-2xl text-center space-y-4">
-        <div className="inline-flex rounded-xl bg-[#C94B6E]/10 p-3 mb-2">
-          <svg className="h-7 w-7 text-[#C94B6E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 dark text-foreground">
+      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-card/60 backdrop-blur-xl p-8 shadow-2xl text-center space-y-4">
+        <div className="inline-flex rounded-xl bg-primary/20 p-3 mb-2 shadow-[0_0_20px_rgba(217,56,94,0.3)]">
+          <svg className="h-7 w-7 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
         <h2 className="font-serif text-2xl font-bold text-foreground">{title}</h2>
         <p className="text-muted-foreground text-sm leading-relaxed">{subtitle}</p>
-        <div className="rounded-xl border border-[#C94B6E]/20 bg-[#C94B6E]/5 px-4 py-3 text-sm text-[#e9e4e1]">
+        <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-foreground backdrop-blur-sm">
           Autentifikimi kërkon konfigurimin e <strong>Clerk</strong>.<br />
-          Shtoni <code className="rounded bg-[#C94B6E]/20 px-1 font-mono text-xs">VITE_CLERK_PUBLISHABLE_KEY</code> në secrets.
+          Shtoni <code className="rounded bg-primary/20 px-1 font-mono text-xs">VITE_CLERK_PUBLISHABLE_KEY</code> në secrets.
         </div>
-        <a href={basePath || "/"} className="block mt-2 text-sm text-[#C94B6E] hover:underline">← Kthehu në faqen kryesore</a>
+        <a href={basePath || "/"} className="block mt-2 text-sm text-primary hover:text-primary/80 transition-colors">← Kthehu në faqen kryesore</a>
       </div>
     </div>
   );

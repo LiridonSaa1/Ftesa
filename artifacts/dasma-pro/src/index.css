@@ -52,50 +52,62 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
 }
 
-/* Default is Dark/Moody Mode (Wedding Reval) */
+/* Glassmorphism Dark Mode */
 :root {
-  --background: 330 15% 8%;   
-  --foreground: 20 20% 90%; 
+  --background: 220 15% 7%;
+  --foreground: 0 0% 95%;
   
-  --card: 330 15% 10%;
-  --card-foreground: 20 20% 90%;
+  --card: 220 15% 10%;
+  --card-foreground: 0 0% 95%;
   
-  --popover: 330 15% 10%;
-  --popover-foreground: 20 20% 90%;
+  --popover: 220 15% 9%;
+  --popover-foreground: 0 0% 95%;
   
-  --primary: 343 58% 54%;    
+  --primary: 345 70% 55%;
   --primary-foreground: 0 0% 100%;
   
-  --secondary: 330 10% 15%;
-  --secondary-foreground: 20 20% 80%;
+  --secondary: 38 60% 65%;
+  --secondary-foreground: 220 15% 7%;
   
-  --muted: 330 10% 15%;
-  --muted-foreground: 20 10% 60%;
+  --muted: 220 10% 16%;
+  --muted-foreground: 220 10% 65%;
   
-  --accent: 343 40% 25%;
-  --accent-foreground: 343 60% 95%;
+  --accent: 345 70% 55%;
+  --accent-foreground: 0 0% 100%;
   
-  --destructive: 0 62% 55%;
+  --destructive: 0 62% 50%;
   --destructive-foreground: 0 0% 100%;
   
-  --border: 330 10% 20%;
-  --input: 330 10% 20%;
-  --ring: 343 58% 54%;
+  --border: 220 10% 20%;
+  --input: 220 10% 20%;
+  --ring: 345 70% 55%;
   
-  --sidebar: 330 15% 8%;
-  --sidebar-foreground: 20 20% 90%;
-  --sidebar-border: 330 10% 15%;
-  --sidebar-primary: 343 58% 54%;
+  --sidebar: 220 15% 7%;
+  --sidebar-foreground: 0 0% 95%;
+  --sidebar-border: 220 10% 15%;
+  --sidebar-primary: 345 70% 55%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 330 10% 15%;
-  --sidebar-accent-foreground: 20 20% 90%;
-  --sidebar-ring: 343 58% 54%;
+  --sidebar-accent: 220 10% 16%;
+  --sidebar-accent-foreground: 0 0% 95%;
+  --sidebar-ring: 345 70% 55%;
+
+  --chart-1: 345 70% 55%; 
+  --chart-2: 173 58% 39%; 
+  --chart-3: 43 74% 66%; 
+  --chart-4: 262 71% 73%; 
+  --chart-5: 14 89% 65%; 
 
   --app-font-sans: 'Inter', sans-serif;
   --app-font-serif: 'Playfair Display', serif;
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 }
 
 .light {
@@ -155,5 +167,22 @@
     content: attr(data-placeholder);
     color: hsl(var(--muted-foreground));
     pointer-events: none;
+  }
+  
+  .glass {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .glass-panel {
+    backdrop-filter: blur(24px);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  }
+  .glass-card {
+    backdrop-filter: blur(16px);
+    background: rgba(20, 22, 28, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 }

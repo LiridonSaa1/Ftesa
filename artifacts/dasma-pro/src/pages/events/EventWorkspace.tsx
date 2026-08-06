@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, Link } from "wouter";
 import { HallDesigner } from "@/components/HallDesigner";
 import {
@@ -15,6 +15,7 @@ import {
   useSaveInvitation,
   useSendInvitations,
   useLookupGuest,
+  useImportGuests,
   getListGuestsQueryKey,
   getListTablesQueryKey,
   getGetDashboardStatsQueryKey,
@@ -41,10 +42,12 @@ import {
   ArrowLeft, Users, LayoutGrid, Mail, QrCode, BarChart3,
   Plus, Trash2, Pencil, Search, Loader2, CheckCircle2,
   X, CircleDot, UserCheck, UserX, Clock, Send, Map,
+  Download, Upload, Share2
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import * as XLSX from "xlsx";
 
 /* ─── helpers ─────────────────────────────────────────── */
 
@@ -57,11 +60,11 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-gray-100 text-gray-700",
-  invited: "bg-blue-100 text-blue-700",
-  confirmed: "bg-green-100 text-green-700",
-  declined: "bg-red-100 text-red-700",
-  checked_in: "bg-purple-100 text-purple-700",
+  pending: "bg-secondary/20 text-secondary border border-secondary/30",
+  invited: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
+  confirmed: "bg-green-500/20 text-green-400 border border-green-500/30",
+  declined: "bg-red-500/20 text-red-400 border border-red-500/30",
+  checked_in: "bg-purple-500/20 text-purple-400 border border-purple-500/30",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -93,18 +96,21 @@ function OverviewTab({ eventId }: { eventId: number }) {
     <div className="space-y-6">
       {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28 rounded-none" />)}
+          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28 rounded-2xl glass" />)}
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {items.map((item) => (
-            <Card key={item.label} className="border-border/50 bg-card/40 rounded-none shadow-none hover:border-primary/30 transition-colors">
-              <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0">
+            <Card key={item.label} className="glass border-white/5 rounded-2xl shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_8px_30px_rgba(217,56,94,0.1)] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 blur-[30px] rounded-full pointer-events-none" />
+              <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0 relative z-10">
                 <CardTitle className="text-xs uppercase tracking-widest font-medium text-muted-foreground">{item.label}</CardTitle>
-                <span className="text-primary/70">{item.icon}</span>
+                <div className="p-2 rounded-xl bg-white/5">
+                  <span className="text-primary/70">{item.icon}</span>
+                </div>
               </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-serif">{item.value}</p>
+              <CardContent className="relative z-10">
+                <p className="text-3xl font-serif text-foreground">{item.value}</p>
               </CardContent>
             </Card>
           ))}
@@ -116,17 +122,20 @@ function OverviewTab({ eventId }: { eventId: number }) {
 
 /* ─── Guests tab ────────────────────────────────────────── */
 
-function GuestsTab({ eventId }: { eventId: number }) {
+function GuestsTab({ eventId, eventName }: { eventId: number; eventName: string }) {
   const qc = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [addOpen, setAddOpen] = useState(false);
-  const [editGuest, setEditGuest] = useState<any>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<any[]>([]);
 
   const { data: guests = [], isLoading } = useListGuests(eventId);
   const createGuest = useCreateGuest();
   const updateGuest = useUpdateGuest();
   const deleteGuest = useDeleteGuest();
+  const importGuests = useImportGuests();
 
   const [form, setForm] = useState({
     firstName: "", lastName: "", phone: "", email: "",
@@ -167,6 +176,74 @@ function GuestsTab({ eventId }: { eventId: number }) {
     );
   };
 
+  const exportExcel = () => {
+    const dataToExport = filtered.map((g, index) => ({
+      "Nr": index + 1,
+      "Emri": g.firstName,
+      "Mbiemri": g.lastName,
+      "Telefoni": g.phone || "",
+      "Email": g.email || "",
+      "Kategoria": CATEGORY_LABELS[g.category] || g.category,
+      "Numri i personave": g.partySize,
+      "Statusi": STATUS_LABELS[g.status] || g.status
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Mysafiret");
+    XLSX.writeFile(workbook, `mysafiret-${eventName || 'event'}.xlsx`);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: "binary" });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws);
+        
+        // Map columns
+        const mappedData = data.map((row: any) => {
+          return {
+            firstName: row.Emri || row.Name || row.firstName || row.Emri_1 || "I panjohur",
+            lastName: row.Mbiemri || row.LastName || row.lastName || row.Mbiemri_1 || "",
+            phone: row.Telefoni || row.Phone || row.phone || row.Telefon || "",
+            email: row.Email || row.email || "",
+            partySize: Number(row['Numri i personave'] || row.PartySize || row.partySize || row.Personat) || 1,
+            category: (row.Kategoria || row.Category || row.category || 'family').toLowerCase()
+          };
+        });
+
+        setPreviewData(mappedData);
+        setImportOpen(true);
+      } catch (err) {
+        toast({ title: "Gabim gjatë leximit të skedarit", variant: "destructive" });
+      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+    reader.readAsBinaryString(file);
+  };
+
+  const confirmImport = () => {
+    importGuests.mutate(
+      { eventId, data: { guests: previewData as any } },
+      {
+        onSuccess: (res) => { 
+          invalidate(); 
+          setImportOpen(false); 
+          setPreviewData([]);
+          toast({ title: `${res.imported} mysafirë u importuan me sukses!` }); 
+        },
+        onError: () => toast({ title: "Gabim gjatë importimit", variant: "destructive" }),
+      }
+    );
+  };
+
   const filtered = guests.filter((g) => {
     const matchSearch =
       !search ||
@@ -176,23 +253,23 @@ function GuestsTab({ eventId }: { eventId: number }) {
   });
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        <div className="flex gap-2 flex-1 max-w-md">
-          <div className="relative flex-1">
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Kërko mysafir..."
-              className="pl-9"
+              className="pl-9 rounded-xl border-white/10 bg-black/20 focus-visible:ring-primary/50"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40 rounded-xl border-white/10 bg-black/20 focus:ring-primary/50">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="border-white/10 bg-background/95 backdrop-blur-xl">
               <SelectItem value="all">Të gjithë</SelectItem>
               {Object.entries(STATUS_LABELS).map(([v, l]) => (
                 <SelectItem key={v} value={v}>{l}</SelectItem>
@@ -201,83 +278,141 @@ function GuestsTab({ eventId }: { eventId: number }) {
           </Select>
         </div>
 
-        <Dialog open={addOpen} onOpenChange={setAddOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90 text-white">
-              <Plus className="mr-2 h-4 w-4" /> Shto Mysafir
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="font-serif">Shto Mysafir</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3 py-2">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label>Emri *</Label>
-                  <Input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} placeholder="Alban" />
-                </div>
-                <div className="space-y-1">
-                  <Label>Mbiemri *</Label>
-                  <Input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} placeholder="Berisha" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label>Telefon</Label>
-                  <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+383..." />
-                </div>
-                <div className="space-y-1">
-                  <Label>Email</Label>
-                  <Input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@..." type="email" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label>Nr. personave</Label>
-                  <Input type="number" min="1" value={form.partySize} onChange={e => setForm(f => ({ ...f, partySize: e.target.value }))} />
-                </div>
-                <div className="space-y-1">
-                  <Label>Kategoria</Label>
-                  <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(CATEGORY_LABELS).map(([v, l]) => (
-                        <SelectItem key={v} value={v}>{l}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setAddOpen(false)}>Anulo</Button>
-              <Button
-                onClick={handleAdd}
-                disabled={!form.firstName || !form.lastName || createGuest.isPending}
-                className="bg-primary hover:bg-primary/90 text-white"
-              >
-                {createGuest.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Shto
+        <div className="flex flex-wrap gap-2 w-full md:w-auto">
+          <Button variant="outline" className="rounded-xl border-white/10 bg-white/5 hover:bg-white/10 hover:text-white transition-all flex-1 md:flex-none" onClick={() => fileInputRef.current?.click()}>
+            <Upload className="mr-2 h-4 w-4" /> Importo
+          </Button>
+          <input type="file" ref={fileInputRef} className="hidden" accept=".csv, .xlsx, .xls" onChange={handleFileUpload} />
+          
+          <Button variant="outline" className="rounded-xl border-white/10 bg-white/5 hover:bg-white/10 hover:text-white transition-all flex-1 md:flex-none" onClick={exportExcel} disabled={filtered.length === 0}>
+            <Download className="mr-2 h-4 w-4" /> Eksporto
+          </Button>
+
+          <Dialog open={addOpen} onOpenChange={setAddOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-[0_0_15px_rgba(217,56,94,0.3)] transition-all hover:shadow-[0_0_25px_rgba(217,56,94,0.5)] flex-1 md:flex-none">
+                <Plus className="mr-2 h-4 w-4" /> Shto Mysafir
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="border-white/10 bg-background/90 backdrop-blur-2xl rounded-2xl">
+              <DialogHeader>
+                <DialogTitle className="font-serif text-xl">Shto Mysafir</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs uppercase tracking-wider">Emri *</Label>
+                    <Input className="rounded-xl border-white/10 bg-black/20 focus-visible:ring-primary/50" value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} placeholder="Alban" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs uppercase tracking-wider">Mbiemri *</Label>
+                    <Input className="rounded-xl border-white/10 bg-black/20 focus-visible:ring-primary/50" value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} placeholder="Berisha" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs uppercase tracking-wider">Telefon</Label>
+                    <Input className="rounded-xl border-white/10 bg-black/20 focus-visible:ring-primary/50" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+383..." />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs uppercase tracking-wider">Email</Label>
+                    <Input className="rounded-xl border-white/10 bg-black/20 focus-visible:ring-primary/50" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@..." type="email" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs uppercase tracking-wider">Nr. personave</Label>
+                    <Input className="rounded-xl border-white/10 bg-black/20 focus-visible:ring-primary/50" type="number" min="1" value={form.partySize} onChange={e => setForm(f => ({ ...f, partySize: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs uppercase tracking-wider">Kategoria</Label>
+                    <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
+                      <SelectTrigger className="rounded-xl border-white/10 bg-black/20 focus:ring-primary/50"><SelectValue /></SelectTrigger>
+                      <SelectContent className="border-white/10 bg-background/95 backdrop-blur-xl">
+                        {Object.entries(CATEGORY_LABELS).map(([v, l]) => (
+                          <SelectItem key={v} value={v}>{l}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" className="rounded-xl border-white/10 hover:bg-white/5" onClick={() => setAddOpen(false)}>Anulo</Button>
+                <Button
+                  onClick={handleAdd}
+                  disabled={!form.firstName || !form.lastName || createGuest.isPending}
+                  className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-[0_0_15px_rgba(217,56,94,0.3)]"
+                >
+                  {createGuest.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Shto
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Import Preview Dialog */}
+          <Dialog open={importOpen} onOpenChange={setImportOpen}>
+            <DialogContent className="border-white/10 bg-background/90 backdrop-blur-2xl rounded-2xl max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="font-serif text-xl">Rishiko Importin</DialogTitle>
+              </DialogHeader>
+              <div className="py-4 space-y-4">
+                <p className="text-sm text-muted-foreground">Do të importohen {previewData.length} mysafirë. Ja një pamje e 5 rreshtave të parë:</p>
+                <div className="rounded-xl border border-white/10 overflow-hidden bg-black/20">
+                  <table className="w-full text-sm">
+                    <thead className="bg-white/5 border-b border-white/10">
+                      <tr>
+                        <th className="text-left px-4 py-2 font-medium text-xs text-muted-foreground">Emri</th>
+                        <th className="text-left px-4 py-2 font-medium text-xs text-muted-foreground">Mbiemri</th>
+                        <th className="text-left px-4 py-2 font-medium text-xs text-muted-foreground">Telefoni</th>
+                        <th className="text-left px-4 py-2 font-medium text-xs text-muted-foreground">Personat</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {previewData.slice(0, 5).map((row, i) => (
+                        <tr key={i}>
+                          <td className="px-4 py-2">{row.firstName}</td>
+                          <td className="px-4 py-2">{row.lastName}</td>
+                          <td className="px-4 py-2 text-muted-foreground">{row.phone || "—"}</td>
+                          <td className="px-4 py-2 text-muted-foreground">{row.partySize}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" className="rounded-xl border-white/10 hover:bg-white/5" onClick={() => { setImportOpen(false); setPreviewData([]); }}>Anulo</Button>
+                <Button
+                  onClick={confirmImport}
+                  disabled={importGuests.isPending}
+                  className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-[0_0_15px_rgba(217,56,94,0.3)]"
+                >
+                  {importGuests.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Konfirmo Importin
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {isLoading ? (
         <div className="space-y-3 pt-6">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-none" />)}
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-2xl glass" />)}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center border border-border/50 rounded-none bg-card/20 mt-6">
-          <Users className="h-8 w-8 text-primary/40 mb-4" />
-          <p className="text-muted-foreground font-light italic font-serif">Nuk u gjet asnjë mysafir.</p>
+        <div className="flex flex-col items-center justify-center py-20 text-center border border-white/5 rounded-2xl glass shadow-xl mt-8">
+          <div className="rounded-full bg-white/5 p-6 mb-6 border border-white/10">
+            <Users className="h-8 w-8 text-primary/40" />
+          </div>
+          <p className="text-muted-foreground font-light text-lg">Nuk u gjet asnjë mysafir.</p>
         </div>
       ) : (
-        <div className="rounded-none border border-border/50 overflow-hidden mt-6 bg-card/30">
+        <div className="rounded-2xl border border-white/5 overflow-hidden mt-8 glass shadow-xl">
           <table className="w-full text-sm">
-            <thead className="bg-muted/20 border-b border-border/50">
+            <thead className="bg-white/[0.02] border-b border-white/5">
               <tr>
                 <th className="text-left px-6 py-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Emri</th>
                 <th className="text-left px-6 py-4 font-medium text-xs uppercase tracking-widest text-muted-foreground hidden md:table-cell">Telefon</th>
@@ -287,15 +422,15 @@ function GuestsTab({ eventId }: { eventId: number }) {
                 <th className="px-6 py-4" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/30">
+            <tbody className="divide-y divide-white/5">
               {filtered.map((guest) => (
-                <tr key={guest.id} className="hover:bg-muted/10 transition-colors">
-                  <td className="px-6 py-4 font-serif text-base">
+                <tr key={guest.id} className="hover:bg-white/[0.02] transition-colors">
+                  <td className="px-6 py-4 font-serif text-base text-foreground">
                     {guest.firstName} {guest.lastName}
                   </td>
                   <td className="px-6 py-4 text-muted-foreground font-light hidden md:table-cell">{guest.phone || "—"}</td>
                   <td className="px-6 py-4 hidden sm:table-cell">
-                    <span className="text-[10px] uppercase tracking-wider bg-muted/50 text-muted-foreground px-2 py-1 rounded-none border border-border/50">
+                    <span className="text-[10px] uppercase tracking-wider bg-white/5 text-muted-foreground px-2.5 py-1 rounded-md border border-white/5">
                       {CATEGORY_LABELS[guest.category] || guest.category}
                     </span>
                   </td>
@@ -305,12 +440,12 @@ function GuestsTab({ eventId }: { eventId: number }) {
                       value={guest.status}
                       onValueChange={(val) => handleStatusChange(guest.id, val)}
                     >
-                      <SelectTrigger className="h-8 w-32 text-xs border-0 bg-transparent p-0">
-                        <span className={cn("text-[10px] uppercase tracking-wider px-2 py-1 rounded-none font-medium", STATUS_COLORS[guest.status])}>
+                      <SelectTrigger className="h-8 w-32 text-xs border-0 bg-transparent p-0 focus:ring-0">
+                        <span className={cn("text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md font-medium", STATUS_COLORS[guest.status])}>
                           {STATUS_LABELS[guest.status] || guest.status}
                         </span>
                       </SelectTrigger>
-                      <SelectContent className="rounded-none border-border">
+                      <SelectContent className="rounded-xl border-white/10 bg-background/95 backdrop-blur-xl">
                         {Object.entries(STATUS_LABELS).map(([v, l]) => (
                           <SelectItem key={v} value={v} className="text-[10px] uppercase tracking-wider">{l}</SelectItem>
                         ))}
@@ -321,7 +456,7 @@ function GuestsTab({ eventId }: { eventId: number }) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-none"
+                      className="h-8 w-8 text-muted-foreground hover:text-white hover:bg-destructive/80 rounded-lg transition-colors"
                       onClick={() => handleDelete(guest.id)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -376,40 +511,40 @@ function TablesTab({ eventId }: { eventId: number }) {
       <div className="flex justify-end">
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90 text-white rounded-none uppercase tracking-widest text-xs h-10 px-6">
+            <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl uppercase tracking-widest text-xs h-11 px-6 shadow-[0_0_20px_rgba(217,56,94,0.3)] transition-all hover:shadow-[0_0_30px_rgba(217,56,94,0.5)]">
               <Plus className="mr-2 h-4 w-4" /> Shto Tavolinë
             </Button>
           </DialogTrigger>
-          <DialogContent className="rounded-none border-border">
+          <DialogContent className="border-white/10 bg-background/90 backdrop-blur-2xl rounded-2xl">
             <DialogHeader>
-              <DialogTitle className="font-serif">Shto Tavolinë</DialogTitle>
+              <DialogTitle className="font-serif text-xl">Shto Tavolinë</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label className="text-xs uppercase tracking-widest text-muted-foreground">Emri *</Label>
-                <Input className="rounded-none border-border bg-muted/10" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Tavolina 1" />
+                <Input className="rounded-xl border-white/10 bg-black/20 focus-visible:ring-primary/50" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Tavolina 1" />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label className="text-xs uppercase tracking-widest text-muted-foreground">Forma</Label>
                   <Select value={form.shape} onValueChange={v => setForm(f => ({ ...f, shape: v }))}>
-                    <SelectTrigger className="rounded-none border-border bg-muted/10"><SelectValue /></SelectTrigger>
-                    <SelectContent className="rounded-none border-border">
+                    <SelectTrigger className="rounded-xl border-white/10 bg-black/20 focus:ring-primary/50"><SelectValue /></SelectTrigger>
+                    <SelectContent className="border-white/10 bg-background/95 backdrop-blur-xl">
                       {Object.entries(SHAPE_LABELS).map(([v, l]) => (
                         <SelectItem key={v} value={v}>{l}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label className="text-xs uppercase tracking-widest text-muted-foreground">Kapaciteti</Label>
-                  <Input className="rounded-none border-border bg-muted/10" type="number" min="1" max="50" value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: e.target.value }))} />
+                  <Input className="rounded-xl border-white/10 bg-black/20 focus-visible:ring-primary/50" type="number" min="1" max="50" value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: e.target.value }))} />
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" className="rounded-none text-xs uppercase tracking-widest" onClick={() => setAddOpen(false)}>Anulo</Button>
-              <Button onClick={handleAdd} disabled={!form.name || createTable.isPending} className="bg-primary hover:bg-primary/90 text-white rounded-none text-xs uppercase tracking-widest">
+              <Button variant="outline" className="rounded-xl border-white/10 hover:bg-white/5" onClick={() => setAddOpen(false)}>Anulo</Button>
+              <Button onClick={handleAdd} disabled={!form.name || createTable.isPending} className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-[0_0_15px_rgba(217,56,94,0.3)]">
                 {createTable.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Shto
               </Button>
@@ -420,40 +555,43 @@ function TablesTab({ eventId }: { eventId: number }) {
 
       {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 rounded-none" />)}
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 rounded-2xl glass" />)}
         </div>
       ) : tables.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center border border-border/50 rounded-none bg-card/20">
-          <LayoutGrid className="h-8 w-8 text-primary/40 mb-4" />
-          <p className="text-muted-foreground font-light italic font-serif">Nuk ka tavolina. Shtoni tavolinën e parë.</p>
+        <div className="flex flex-col items-center justify-center py-20 text-center border border-white/5 rounded-2xl glass shadow-xl mt-8">
+          <div className="rounded-full bg-white/5 p-6 mb-6 border border-white/10">
+            <LayoutGrid className="h-8 w-8 text-primary/40" />
+          </div>
+          <p className="text-muted-foreground font-light text-lg">Nuk ka tavolina. Shtoni tavolinën e parë.</p>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {tables.map((table) => {
             const s = getStatus(table);
             return (
-              <Card key={table.id} className="border-border/50 bg-card/40 rounded-none shadow-none hover:border-primary/30 transition-colors">
-                <CardHeader className="pb-4 border-b border-border/30">
+              <Card key={table.id} className="glass border-white/5 rounded-2xl shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[40px] rounded-full pointer-events-none" />
+                <CardHeader className="pb-4 border-b border-white/5 bg-white/[0.02] relative z-10">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="font-serif text-lg">{table.name}</CardTitle>
+                    <CardTitle className="font-serif text-xl text-foreground">{table.name}</CardTitle>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-none"
+                      className="h-8 w-8 text-muted-foreground hover:text-white hover:bg-destructive/80 rounded-lg transition-colors"
                       onClick={() => deleteTable.mutate({ eventId, tableId: table.id }, { onSuccess: invalidate })}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4 pt-6">
+                <CardContent className="space-y-4 pt-6 relative z-10">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground font-light">{SHAPE_LABELS[table.shape]}</span>
-                    <span className={cn("text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-none font-medium", s.color)}>{s.label}</span>
+                    <span className={cn("text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md font-medium border border-white/5", s.color.replace('bg-', 'bg-').replace('text-', 'text-'))}>{s.label}</span>
                   </div>
-                  <div className="w-full bg-muted/30 rounded-none h-1.5 overflow-hidden">
+                  <div className="w-full bg-black/40 border border-white/5 rounded-full h-2 overflow-hidden">
                     <div
-                      className="bg-primary h-full transition-all"
+                      className="bg-gradient-to-r from-primary/60 to-primary h-full transition-all shadow-[0_0_10px_rgba(217,56,94,0.5)]"
                       style={{ width: `${Math.min(100, (table.currentCount / table.capacity) * 100)}%` }}
                     />
                   </div>
