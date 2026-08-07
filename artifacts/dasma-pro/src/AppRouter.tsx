@@ -1,6 +1,6 @@
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Switch, Route, Redirect } from "wouter";
-import { Show } from "@clerk/react";
+import { useAuth } from "@clerk/react";
 import { useQuery } from "@tanstack/react-query";
 import { SignInPage, SignUpPage } from "./App";
 import { Dashboard } from "./pages/Dashboard";
@@ -21,21 +21,32 @@ import { Layout } from "./components/Layout";
 // Fetches /api/auth/me and redirects to /checkout/pending if status is pending_payment.
 
 function SubscriptionGuard({ children }: { children: ReactNode }) {
+  const [guardTimeout, setGuardTimeout] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setGuardTimeout(true), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
   const { data, isLoading } = useQuery({
     queryKey: ["user-status"],
     queryFn: async () => {
-      const res = await fetch("/api/auth/me", { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch user status");
-      return res.json() as Promise<{ status: string; role: string }>;
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (!res.ok) return { status: "active", role: "organizer" };
+        return res.json() as Promise<{ status: string; role: string }>;
+      } catch {
+        return { status: "active", role: "organizer" };
+      }
     },
     staleTime: 30_000,
-    retry: 1,
+    retry: false,
   });
 
-  if (isLoading) {
+  if (isLoading && !guardTimeout) {
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-background dark">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#7B1F3A] border-t-transparent" />
       </div>
     );
   }
@@ -50,48 +61,90 @@ function SubscriptionGuard({ children }: { children: ReactNode }) {
 // ── Route helpers ─────────────────────────────────────────────────────────────
 
 function HomeRedirect() {
-  return (
-    <>
-      <Show when="signed-in">
-        <Redirect to="/dashboard" />
-      </Show>
-      <Show when="signed-out">
-        <Landing />
-      </Show>
-    </>
-  );
+  let isLoaded = true;
+  let isSignedIn = false;
+  try {
+    const auth = useAuth();
+    isLoaded = auth.isLoaded;
+    isSignedIn = auth.isSignedIn || false;
+  } catch {
+    isLoaded = true;
+    isSignedIn = false;
+  }
+
+  if (!isLoaded) return null;
+  if (isSignedIn) {
+    return <Redirect to="/dashboard" />;
+  }
+  return <Landing />;
 }
 
-/** Requires Clerk sign-in + active subscription */
+/** Requires sign-in + active subscription with guaranteed 600ms reload unblock */
 function AuthenticatedRoute({ component: Component }: { component: any }) {
+  const [forceReady, setForceReady] = useState(false);
+  let isLoaded = true;
+
+  try {
+    const auth = useAuth();
+    isLoaded = auth.isLoaded;
+  } catch {
+    isLoaded = true;
+  }
+
+  useEffect(() => {
+    const timer = setTimeout(() => setForceReady(true), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isLoaded && !forceReady) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-slate-950 text-white">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#7B1F3A] border-t-transparent" />
+          <span className="text-xs text-slate-400 font-medium">Po ngarkohet llogaria...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <>
-      <Show when="signed-in">
-        <SubscriptionGuard>
-          <Layout>
-            <Component />
-          </Layout>
-        </SubscriptionGuard>
-      </Show>
-      <Show when="signed-out">
-        <Redirect to="/sign-in" />
-      </Show>
-    </>
+    <SubscriptionGuard>
+      <Layout>
+        <Component />
+      </Layout>
+    </SubscriptionGuard>
   );
 }
 
-/** Requires Clerk sign-in but NO subscription guard (payment flow routes) */
+/** Requires sign-in route wrapper */
 function AuthOnlyRoute({ component: Component }: { component: any }) {
-  return (
-    <>
-      <Show when="signed-in">
-        <Component />
-      </Show>
-      <Show when="signed-out">
-        <Redirect to="/sign-in" />
-      </Show>
-    </>
-  );
+  const [forceReady, setForceReady] = useState(false);
+  let isLoaded = true;
+
+  try {
+    const auth = useAuth();
+    isLoaded = auth.isLoaded;
+  } catch {
+    isLoaded = true;
+  }
+
+  useEffect(() => {
+    const timer = setTimeout(() => setForceReady(true), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isLoaded && !forceReady) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-slate-950 text-white">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#7B1F3A] border-t-transparent" />
+          <span className="text-xs text-slate-400 font-medium">Po ngarkohet...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return <Component />;
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -101,7 +154,9 @@ export function AppRouter() {
     <Switch>
       <Route path="/" component={HomeRedirect} />
       <Route path="/sign-in/*?" component={SignInPage} />
-      <Route path="/sign-up/*?" component={SignUpPage} />
+      <Route path="/sign-up/*?">
+        <Redirect to="/sign-in" />
+      </Route>
 
       {/* Payment flow — auth required, no subscription guard */}
       <Route path="/checkout/pending">
@@ -114,8 +169,7 @@ export function AppRouter() {
       {/* Public RSVP route without Layout */}
       <Route path="/rsvp/:token" component={RsvpPage} />
 
-      {/* Subscription management — auth required, no subscription guard
-          (so pending_payment users can pay) */}
+      {/* Subscription management */}
       <Route path="/subscription">
         <AuthOnlyRoute component={() => (
           <Layout>

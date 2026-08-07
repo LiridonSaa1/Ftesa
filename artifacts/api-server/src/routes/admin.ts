@@ -129,7 +129,7 @@ router.get("/admin/events", requireAuth, requireAdmin, async (req, res): Promise
     .limit(limit).offset(offset);
   const withGuests = await Promise.all(rows.map(async r => {
     const [{ value: guestCount }] = await db.select({ value: count() }).from(guestsTable).where(eq(guestsTable.eventId, r.id));
-    return { ...r, date: r.date?.toISOString() ?? null, createdAt: r.createdAt?.toISOString() ?? null, guestCount: Number(guestCount) };
+    return { ...r, date: r.date ?? null, createdAt: r.createdAt?.toISOString() ?? null, guestCount: Number(guestCount) };
   }));
   res.json({ events: withGuests, total: Number(total), page, limit });
 });
@@ -223,5 +223,194 @@ router.get("/admin/payments", requireAuth, requireAdmin, async (req, res): Promi
   });
 });
 
+// ── Admin: In-memory store for Templates, Custom Requests, Categories, Settings, Notifications ──
+
+interface CustomRequest {
+  id: string;
+  userName: string;
+  userEmail: string;
+  phone: string;
+  eventCount: string;
+  guestEstimate: string;
+  notes: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+}
+
+interface TemplateItem {
+  id: string;
+  name: string;
+  code: string;
+  description: string;
+  enabled: boolean;
+  category: string;
+}
+
+interface CategoryItem {
+  id: string;
+  type: "event" | "guest";
+  name: string;
+  code: string;
+}
+
+interface PlatformSettingsData {
+  platformName: string;
+  logoUrl: string;
+  paddleEnvironment: string;
+  paddleClientToken: string;
+  googleMapsApiKey: string;
+  emailSmtpHost: string;
+  emailSmtpPort: string;
+  emailFrom: string;
+  whatsappEnabled: boolean;
+  whatsappSenderNumber: string;
+}
+
+let mockCustomRequests: CustomRequest[] = [
+  {
+    id: "cr-1",
+    userName: "Agon Krasniqi",
+    userEmail: "agon@example.com",
+    phone: "+383 49 123 456",
+    eventCount: "15-20 / vit",
+    guestEstimate: "500+",
+    notes: "Kërkojmë White Label dhe mbështetje prioritare për agjencinë tonë të eventeve.",
+    status: "pending",
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+  },
+  {
+    id: "cr-2",
+    userName: "Majlinda Kelmendi",
+    userEmail: "majlinda@example.com",
+    phone: "+383 44 987 654",
+    eventCount: "5 / vit",
+    guestEstimate: "300",
+    notes: "Nevoitet integrim me WhatsApp API për dërgim të automatizuar.",
+    status: "approved",
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+  },
+];
+
+let mockTemplates: TemplateItem[] = [
+  { id: "t-1", name: "Klasike Elegant", code: "classic", description: "Dizajn tradicional dhe elegant me tone ari", enabled: true, category: "Dasmë" },
+  { id: "t-2", name: "Moderne Minimale", code: "modern", description: "Stil modern me tipografi me vija të pastra", enabled: true, category: "Gjeneral" },
+  { id: "t-3", name: "Florale Romantike", code: "floral", description: "Ornamete me lule dhe ngjyra të ngrohta", enabled: true, category: "Dasmë" },
+  { id: "t-4", name: "Minimale Dark", code: "minimal", description: "Pamje luksoze me prapavijë të errët", enabled: true, category: "Fejesë" },
+  { id: "t-5", name: "Luks Mbretëror", code: "luxury", description: "Elemente luksoze me detaje metalike", enabled: false, category: "VIP" },
+];
+
+let mockCategories: CategoryItem[] = [
+  { id: "c-1", type: "event", name: "Dasmë", code: "wedding" },
+  { id: "c-2", type: "event", name: "Ditëlindje", code: "birthday" },
+  { id: "c-3", type: "event", name: "Fejesë", code: "engagement" },
+  { id: "c-4", type: "event", name: "Konferencë", code: "conference" },
+  { id: "c-5", type: "guest", name: "Familje", code: "family" },
+  { id: "c-6", type: "guest", name: "Shoqëri", code: "friends" },
+  { id: "c-7", type: "guest", name: "Kolegë", code: "colleagues" },
+  { id: "c-8", type: "guest", name: "Tjetër", code: "other" },
+];
+
+let mockSettings: PlatformSettingsData = {
+  platformName: "NoaEvent",
+  logoUrl: "/assets/logo.png",
+  paddleEnvironment: "sandbox",
+  paddleClientToken: "test_client_token_sample",
+  googleMapsApiKey: "AIzaSy_Sample_Google_Maps_Key",
+  emailSmtpHost: "smtp.mailtrap.io",
+  emailSmtpPort: "587",
+  emailFrom: "info@noaevent.com",
+  whatsappEnabled: true,
+  whatsappSenderNumber: "+38349000111",
+};
+
+// ── Custom requests ──
+router.get("/admin/custom-requests", requireAuth, requireAdmin, async (_req, res): Promise<void> => {
+  res.json(mockCustomRequests);
+});
+
+router.patch("/admin/custom-requests/:id", requireAuth, requireAdmin, async (req, res): Promise<void> => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const { status } = req.body;
+  const item = mockCustomRequests.find(r => r.id === id);
+  if (!item) { res.status(404).json({ error: "Not found" }); return; }
+  item.status = status;
+  res.json(item);
+});
+
+// ── Templates ──
+router.get("/admin/templates", requireAuth, requireAdmin, async (_req, res): Promise<void> => {
+  res.json(mockTemplates);
+});
+
+router.post("/admin/templates", requireAuth, requireAdmin, async (req, res): Promise<void> => {
+  const { name, code, description, category } = req.body;
+  const newT: TemplateItem = {
+    id: `t-${Date.now()}`,
+    name: name || "Template i ri",
+    code: code || "custom_template",
+    description: description || "",
+    enabled: true,
+    category: category || "Gjeneral",
+  };
+  mockTemplates.push(newT);
+  res.status(201).json(newT);
+});
+
+router.patch("/admin/templates/:id", requireAuth, requireAdmin, async (req, res): Promise<void> => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const item = mockTemplates.find(t => t.id === id);
+  if (!item) { res.status(404).json({ error: "Not found" }); return; }
+  if (typeof req.body.enabled === "boolean") item.enabled = req.body.enabled;
+  if (req.body.name) item.name = req.body.name;
+  if (req.body.description) item.description = req.body.description;
+  res.json(item);
+});
+
+router.delete("/admin/templates/:id", requireAuth, requireAdmin, async (req, res): Promise<void> => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  mockTemplates = mockTemplates.filter(t => t.id !== id);
+  res.json({ success: true });
+});
+
+// ── Categories ──
+router.get("/admin/categories", requireAuth, requireAdmin, async (_req, res): Promise<void> => {
+  res.json(mockCategories);
+});
+
+router.post("/admin/categories", requireAuth, requireAdmin, async (req, res): Promise<void> => {
+  const { type, name, code } = req.body;
+  const newC: CategoryItem = {
+    id: `c-${Date.now()}`,
+    type: type || "event",
+    name: name || "Kategori e re",
+    code: code || `code_${Date.now()}`,
+  };
+  mockCategories.push(newC);
+  res.status(201).json(newC);
+});
+
+router.delete("/admin/categories/:id", requireAuth, requireAdmin, async (req, res): Promise<void> => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  mockCategories = mockCategories.filter(c => c.id !== id);
+  res.json({ success: true });
+});
+
+// ── Notifications ──
+router.post("/admin/notifications/send", requireAuth, requireAdmin, async (req, res): Promise<void> => {
+  const { subject, message, targetRole } = req.body;
+  res.json({ success: true, sentCount: 15, subject, targetRole });
+});
+
+// ── Platform Settings ──
+router.get("/admin/settings", requireAuth, requireAdmin, async (_req, res): Promise<void> => {
+  res.json(mockSettings);
+});
+
+router.patch("/admin/settings", requireAuth, requireAdmin, async (req, res): Promise<void> => {
+  mockSettings = { ...mockSettings, ...req.body };
+  res.json(mockSettings);
+});
+
 export default router;
+
 

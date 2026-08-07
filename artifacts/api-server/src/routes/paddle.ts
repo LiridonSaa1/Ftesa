@@ -38,14 +38,20 @@ function planFromPriceId(priceId: string): "basic" | "pro" | "custom" {
 
 // ── GET /paddle/config — public config for the frontend ──────────────────────
 
-router.get("/paddle/config", requireAuth, (req: Request, res: Response): void => {
+router.get("/paddle/config", (_req: Request, res: Response): void => {
   res.json({
-    clientToken: process.env.PADDLE_CLIENT_TOKEN ?? "",
-    priceIdBasic: process.env.PADDLE_PRICE_ID_BASIC ?? "",
-    priceIdPro: process.env.PADDLE_PRICE_ID_PRO ?? "",
+    clientToken: process.env.PADDLE_CLIENT_TOKEN ?? "test_1d2d981b0be56b45f26cb550561",
+    priceIdBasic: process.env.PADDLE_PRICE_ID_BASIC ?? "pri_01kzf5pjvpgfcvhada26ncept1",
+    priceIdPro: process.env.PADDLE_PRICE_ID_PRO ?? "pri_01kzchac3d17z4a3bkr2wz0sph",
+    priceIdCustom: process.env.PADDLE_PRICE_ID_CUSTOM ?? "pri_01kzf6vrfc67pzxzrx9b4195gh",
     environment: process.env.PADDLE_ENVIRONMENT ?? "sandbox",
   });
 });
+
+
+
+
+
 
 // ── POST /paddle/webhook — Paddle sends events here ──────────────────────────
 // express.raw() must be applied before express.json() for this path (see app.ts)

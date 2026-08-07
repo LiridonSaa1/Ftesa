@@ -9,8 +9,11 @@ import { Link } from "wouter";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
   MapPin, Mail, Heart, Facebook, Instagram, Check,
-  ChevronLeft, ChevronRight, Star,
+  ChevronLeft, ChevronRight, Star, Play, Pause, Volume2, VolumeX, Film, Sparkles, Globe,
 } from "lucide-react";
+import { PlanRegistrationModal, PlanKey } from "../components/PlanRegistrationModal";
+import { useLanguage, LanguageSelector } from "@/lib/i18n";
+
 
 /* ─── Palette (exact Gademan) ──────────────────────────── */
 const WINE      = "#7B1F3A";
@@ -52,7 +55,8 @@ function FadeUp({
 /* ═══════════════════════════════════════════════════════════
    TOP BAR — exact Gademan dark info bar
 ═══════════════════════════════════════════════════════════ */
-function TopBar() {
+function TopBar({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => void }) {
+  const { t } = useLanguage();
   return (
     <div
       style={{
@@ -84,18 +88,19 @@ function TopBar() {
       </div>
       {/* Right */}
       <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-        <Link href="/sign-up">
-          <span style={{ cursor: "pointer", transition: "color .15s" }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = WHITE)}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.72)")}>
-            Bëhu Klient?
-          </span>
-        </Link>
+        <span
+          onClick={() => onOpenModal?.("pro")}
+          style={{ cursor: "pointer", transition: "color .15s" }}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = WHITE)}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.72)")}
+        >
+          {t("nav.be_client", "Bëhu Klient?")}
+        </span>
         <Link href="/sign-in">
           <span style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "color .15s" }}
             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = WHITE)}
             onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.72)")}>
-            <Heart size={12} strokeWidth={1.8} /> Llogaria
+            <Heart size={12} strokeWidth={1.8} /> {t("nav.account", "Llogaria")}
           </span>
         </Link>
         <Facebook size={12} strokeWidth={1.8} style={{ cursor: "pointer", opacity: 0.72 }} />
@@ -105,6 +110,7 @@ function TopBar() {
   );
 }
 
+
 /* ═══════════════════════════════════════════════════════════
    NAVBAR — pixel-perfect Gademan header
    • WHITE bg, 100px tall
@@ -112,6 +118,7 @@ function TopBar() {
    • Nav links centered — dark, medium weight, spaced
    • "Bëhu Klient?" pill button RIGHT — wine bg, white text
 ═══════════════════════════════════════════════════════════ */
+
 const NAV_LINKS = [
   { href: "#home",     label: "HOME"      },
   { href: "#services", label: "SHËRBIMET" },
@@ -131,15 +138,55 @@ function StampLogo() {
   );
 }
 
-function Navbar() {
+function Navbar({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => void }) {
   const [active, setActive] = useState("#home");
   const [scrolled, setScrolled] = useState(false);
+  const { t } = useLanguage();
+
+  const navLinks = [
+    { href: "#home",     label: t("nav.home", "HOME").toUpperCase()      },
+    { href: "#services", label: t("nav.services", "SHËRBIMET").toUpperCase() },
+    { href: "#hall",     label: t("nav.events", "SALLA").toUpperCase()     },
+    { href: "#contact",  label: t("nav.contact", "KONTAKT").toUpperCase()   },
+    { href: "#order",    label: t("nav.pricing", "ÇMIMET").toUpperCase()    },
+  ];
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 2);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 2);
+
+      const sections = navLinks.map(link => link.href.replace("#", ""));
+      const scrollPos = window.scrollY + 120;
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sections[i]);
+        if (el && el.offsetTop <= scrollPos) {
+          setActive(`#${sections[i]}`);
+          break;
+        }
+      }
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [navLinks]);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    setActive(href);
+    const targetId = href.replace("#", "");
+    const element = document.getElementById(targetId);
+    if (element) {
+      const offset = 85;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+  };
 
   return (
     <div
@@ -181,23 +228,23 @@ function Navbar() {
             gap: 40,
           }}
         >
-          {NAV_LINKS.map(({ href, label }) => {
+          {navLinks.map(({ href, label }) => {
             const isActive = active === href;
             return (
               <a
                 key={href}
                 href={href}
-                onClick={() => setActive(href)}
+                onClick={(e) => handleNavClick(e, href)}
                 style={{
                   fontSize: 13.5, fontWeight: 600, letterSpacing: "0.07em",
-                  color: "#3a2020",
+                  color: isActive ? WINE : "#3a2020",
                   textDecoration: isActive ? "underline" : "none",
                   textUnderlineOffset: 6, textDecorationThickness: "2px",
-                  textDecorationColor: "#3a2020",
-                  cursor: "pointer", whiteSpace: "nowrap", transition: "color .15s",
+                  textDecorationColor: WINE,
+                  cursor: "pointer", whiteSpace: "nowrap", transition: "all .2s ease",
                 }}
                 onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = WINE)}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "#3a2020")}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = isActive ? WINE : "#3a2020")}
               >
                 {label}
               </a>
@@ -205,9 +252,11 @@ function Navbar() {
           })}
         </nav>
 
-        {/* ── "Bëhu Klient?" — pill button, wine bg, white text ── */}
-        <Link href="/sign-up">
-          <motion.span
+        {/* ── "Bëhu Klient?" — pill button ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <LanguageSelector />
+          <motion.button
+            onClick={() => onOpenModal?.("pro")}
             whileHover={{ backgroundColor: WINE_DARK }}
             whileTap={{ scale: 0.97 }}
             style={{
@@ -222,16 +271,18 @@ function Navbar() {
               cursor: "pointer",
               whiteSpace: "nowrap",
               flexShrink: 0,
+              border: "none",
               transition: "background .18s",
             }}
           >
-            Bëhu Klient?
-          </motion.span>
-        </Link>
+            {t("nav.be_client", "Bëhu Klient?")}
+          </motion.button>
+        </div>
       </div>
     </div>
   );
 }
+
 
 /* ═══════════════════════════════════════════════════════════
    HERO CAROUSEL — wine bg, text LEFT, image RIGHT
@@ -390,7 +441,7 @@ function Hero() {
               {HERO_SLIDES[current].sub}
             </p>
 
-            <Link href="/sign-up">
+            <Link href="/sign-in">
               <motion.span
                 whileHover={{ backgroundColor: WHITE, color: WINE }}
                 whileTap={{ scale: 0.97 }}
@@ -492,27 +543,60 @@ const PILLARS = [
     num: "01",
     title: "Cilësi e Lartë & Shije Konstante",
     body: "Çdo detaj planifikohet me kujdes ekstrem — nga ftesat deri tek vendosja e mysafirëve.",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-wedding-table-setup-with-flowers-and-candles-42291-large.mp4",
+    poster: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=90",
   },
   {
     num: "02",
     title: "Higjenë dhe Profesionalizëm",
     body: "Punojmë me standarde strikte dhe teknologji moderne për një event pa asnjë problem.",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-decor-designer-arranging-wedding-flowers-42292-large.mp4",
+    poster: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=900&q=90",
   },
   {
     num: "03",
     title: "Personalizim & Orientim kah Klienti",
     body: "Besojmë në transparencë dhe bashkëpunim — çdo organizator mund të mbështetet tek ne.",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-newlyweds-slow-dancing-at-their-wedding-reception-42289-large.mp4",
+    poster: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=900&q=90",
   },
   {
     num: "04",
     title: "Pasion për Artin e Eventit",
     body: "Dashuria jonë për evente të veçanta pasqyrohet në çdo produkt — i sinqertë, artizanal dhe me histori.",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-wedding-couple-walking-out-of-the-church-41584-large.mp4",
+    poster: "https://images.unsplash.com/photo-1519741497674-611481863552?w=900&q=90",
   },
 ];
 
 function WelcomeSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, { once: false, margin: "-100px" });
+  const [activePillarIndex, setActivePillarIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const activePillar = PILLARS[activePillarIndex];
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        videoRef.current.play();
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
 
   return (
     <section
@@ -535,26 +619,136 @@ function WelcomeSection() {
         minHeight: 720,
       }}>
 
-        {/* ── LEFT: Layered image composition ── */}
-        <div style={{ position: "relative", overflow: "hidden", minHeight: 720 }}>
-          {/* Main full-bleed image */}
+        {/* ── LEFT: Interactive Video Player composition ── */}
+        <div style={{ position: "relative", overflow: "hidden", minHeight: 720, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {/* Main video element with background container */}
           <motion.div
-            initial={{ scale: 1.08 }}
-            animate={inView ? { scale: 1 } : { scale: 1.08 }}
+            initial={{ scale: 1.05 }}
+            animate={inView ? { scale: 1 } : { scale: 1.05 }}
             transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-            style={{ position: "absolute", inset: 0 }}
+            style={{ position: "absolute", inset: 0, background: "#110509" }}
           >
-            <img
-              src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=90"
-              alt="Dasma me dashuri"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-            {/* Gradient overlay right side for blending */}
+            <AnimatePresence mode="wait">
+              <motion.video
+                key={activePillar.videoUrl}
+                ref={videoRef}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6 }}
+                src={activePillar.videoUrl}
+                poster={activePillar.poster}
+                autoPlay
+                loop
+                muted={isMuted}
+                playsInline
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            </AnimatePresence>
+
+            {/* Gradient overlays for aesthetic depth and contrast */}
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "linear-gradient(to bottom, rgba(26,10,16,0.4) 0%, transparent 35%, transparent 65%, rgba(26,10,16,0.6) 100%)",
+            }} />
             <div style={{
               position: "absolute", inset: 0,
               background: "linear-gradient(to right, transparent 55%, rgba(250,248,245,0.95) 100%)",
             }} />
           </motion.div>
+
+          {/* Top Video Indicator Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            style={{
+              position: "absolute", top: 32, left: 32, zIndex: 10,
+              display: "flex", alignItems: "center", gap: 10,
+              background: "rgba(26, 10, 16, 0.65)",
+              backdropFilter: "blur(12px)",
+              padding: "10px 18px", borderRadius: 30,
+              border: "1px solid rgba(255,255,255,0.18)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+            }}
+          >
+            <span style={{
+              display: "inline-flex", width: 10, height: 10, borderRadius: "50%",
+              background: WINE, position: "relative",
+            }}>
+              <span style={{
+                position: "absolute", inset: -3, borderRadius: "50%",
+                background: WINE, opacity: 0.6, animation: "ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite"
+              }} />
+            </span>
+            <Film size={14} color="#EAA88F" />
+            <span style={{ fontSize: 12, fontWeight: 700, color: WHITE, letterSpacing: "0.04em" }}>
+              {activePillar.num}. {activePillar.title}
+            </span>
+          </motion.div>
+
+          {/* Video Control Buttons Overlay */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={inView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            style={{
+              position: "absolute", top: 32, right: 32, zIndex: 10,
+              display: "flex", gap: 10,
+            }}
+          >
+            <button
+              onClick={togglePlay}
+              title={isPlaying ? "Pauzo videon" : "Luaj videon"}
+              style={{
+                width: 42, height: 42, borderRadius: "50%",
+                background: "rgba(255, 255, 255, 0.2)",
+                backdropFilter: "blur(12px)",
+                border: "1px solid rgba(255,255,255,0.3)",
+                color: WHITE, display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", transition: "all 0.2s ease",
+              }}
+            >
+              {isPlaying ? <Pause size={18} /> : <Play size={18} style={{ marginLeft: 2 }} />}
+            </button>
+            <button
+              onClick={toggleMute}
+              title={isMuted ? "Aktivizo zërin" : "Çaktivizo zërin"}
+              style={{
+                width: 42, height: 42, borderRadius: "50%",
+                background: "rgba(255, 255, 255, 0.2)",
+                backdropFilter: "blur(12px)",
+                border: "1px solid rgba(255,255,255,0.3)",
+                color: WHITE, display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", transition: "all 0.2s ease",
+              }}
+            >
+              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            </button>
+          </motion.div>
+
+          {/* Video Switcher Tabs at Bottom of Video */}
+          <div style={{
+            position: "absolute", bottom: 130, left: 40, zIndex: 10,
+            display: "flex", gap: 8,
+          }}>
+            {PILLARS.map((p, i) => (
+              <button
+                key={p.num}
+                onClick={() => setActivePillarIndex(i)}
+                style={{
+                  padding: "6px 12px", borderRadius: 20,
+                  fontSize: 11, fontWeight: 700,
+                  background: activePillarIndex === i ? WINE : "rgba(255,255,255,0.25)",
+                  color: WHITE, border: "none", cursor: "pointer",
+                  backdropFilter: "blur(8px)",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                Pika {p.num}
+              </button>
+            ))}
+          </div>
 
           {/* Floating stats badge — bottom left */}
           <motion.div
@@ -562,14 +756,14 @@ function WelcomeSection() {
             animate={inView ? { opacity: 1, y: 0, x: 0 } : {}}
             transition={{ delay: 0.5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             style={{
-              position: "absolute", bottom: 48, left: 40,
+              position: "absolute", bottom: 44, left: 40, zIndex: 10,
               background: WHITE,
               borderRadius: 16,
-              padding: "20px 28px",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.14)",
+              padding: "16px 24px",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
               border: `1px solid rgba(123,31,58,0.12)`,
               backdropFilter: "blur(8px)",
-              display: "flex", gap: 32,
+              display: "flex", gap: 28,
             }}
           >
             {[
@@ -584,51 +778,25 @@ function WelcomeSection() {
                 transition={{ delay: 0.65 + i * 0.1, duration: 0.5 }}
                 style={{ textAlign: "center" }}
               >
-                <p style={{ fontSize: 22, fontWeight: 900, color: WINE, lineHeight: 1.1, letterSpacing: "-0.02em" }}>{s.val}</p>
-                <p style={{ fontSize: 11, color: MUTED, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 3 }}>{s.label}</p>
+                <p style={{ fontSize: 20, fontWeight: 900, color: WINE, lineHeight: 1.1, letterSpacing: "-0.02em" }}>{s.val}</p>
+                <p style={{ fontSize: 10, color: MUTED, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>{s.label}</p>
               </motion.div>
             ))}
           </motion.div>
-
-          {/* Decorative wine ring — top right of image */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.6, rotate: -30 }}
-            animate={inView ? { opacity: 1, scale: 1, rotate: 0 } : {}}
-            transition={{ delay: 0.3, duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              position: "absolute", top: 36, right: 28,
-              width: 100, height: 100,
-              borderRadius: "50%",
-              border: `2.5px solid ${WINE}`,
-              opacity: 0.25,
-            }}
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.6, rotate: 30 }}
-            animate={inView ? { opacity: 1, scale: 1, rotate: 0 } : {}}
-            transition={{ delay: 0.4, duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              position: "absolute", top: 56, right: 48,
-              width: 60, height: 60,
-              borderRadius: "50%",
-              border: `1.5px solid ${WINE}`,
-              opacity: 0.18,
-            }}
-          />
         </div>
 
-        {/* ── RIGHT: Text content ── */}
+        {/* ── RIGHT: Text content & Interactive Pillars ── */}
         <div style={{
           padding: "96px 72px 96px 64px",
           display: "flex", flexDirection: "column", justifyContent: "center",
           background: CREAM,
         }}>
 
-          {/* Eyebrow */}
+          {/* Badge */}
           <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ delay: 0.2, duration: 0.6 }}
             style={{
               fontSize: 11, fontWeight: 800, letterSpacing: "0.22em",
               color: WINE, textTransform: "uppercase", marginBottom: 20,
@@ -636,27 +804,22 @@ function WelcomeSection() {
             }}
           >
             <span style={{ display: "inline-block", width: 32, height: 1.5, background: WINE }} />
-            FILOZOFIA JONË
+            {t("welcome.badge", "MIRË SE VENI NË NOAEVENT")}
           </motion.p>
 
-          {/* Heading — word-by-word reveal */}
+          {/* Heading */}
           <div style={{ marginBottom: 28, overflow: "hidden" }}>
-            {["Dasma me dashuri,", "profesionalizëm", "dhe ingredientë të pastër."].map((line, li) => (
-              <div key={li} style={{ overflow: "hidden" }}>
-                <motion.p
-                  initial={{ y: "110%", opacity: 0 }}
-                  animate={inView ? { y: "0%", opacity: 1 } : {}}
-                  transition={{ delay: 0.1 + li * 0.12, duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-                  style={{
-                    fontSize: li === 0 ? "clamp(1.7rem, 2.6vw, 2.45rem)" : "clamp(1.7rem, 2.6vw, 2.45rem)",
-                    fontWeight: 900, color: DARK, lineHeight: 1.18,
-                    fontStyle: li === 2 ? "italic" : "normal",
-                  }}
-                >
-                  {line}
-                </motion.p>
-              </div>
-            ))}
+            <motion.h2
+              initial={{ y: "110%", opacity: 0 }}
+              animate={inView ? { y: "0%", opacity: 1 } : {}}
+              transition={{ delay: 0.3, duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                fontSize: "clamp(1.7rem, 2.6vw, 2.45rem)",
+                fontWeight: 900, color: DARK, lineHeight: 1.18,
+              }}
+            >
+              {t("welcome.title", "Salla & Ftesa Digjitale me Elegancë dhe Precizion")}
+            </motion.h2>
           </div>
 
           {/* Description */}
@@ -666,57 +829,73 @@ function WelcomeSection() {
             transition={{ delay: 0.45, duration: 0.8 }}
             style={{ color: MUTED, lineHeight: 1.85, fontSize: 15, marginBottom: 40 }}
           >
-            Ne ofrojmë shërbime dasme dhe eventech premium. Gjithmonë me materiale dhe procese
-            autentike, pa shtesa të panevojshme — kështu mbetet shija e pastër, e plotë dhe reale.
+            {t("welcome.desc", "Platforma më me përvojë në Kosovë dhe rajon për organizimin e dasmave dhe ngjarjeve festive. Kurseni orë pune dhe organizoni sallën tuaj pa asnjë gabim.")}
           </motion.p>
 
-          {/* Numbered pillars */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 0, marginBottom: 44 }}>
-            {PILLARS.map((p, i) => (
-              <motion.div
-                key={p.num}
-                initial={{ opacity: 0, x: 28 }}
-                animate={inView ? { opacity: 1, x: 0 } : {}}
-                transition={{ delay: 0.5 + i * 0.1, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-                style={{ display: "flex", gap: 20, paddingBottom: 24, position: "relative" }}
-              >
-                {/* Number + vertical line */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-                  <div style={{
-                    width: 40, height: 40, borderRadius: "50%",
-                    border: `1.5px solid ${WINE}`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 11, fontWeight: 800, color: WINE,
-                    letterSpacing: "0.05em", flexShrink: 0,
-                    background: "rgba(123,31,58,0.05)",
-                  }}>
-                    {p.num}
+          {/* Numbered pillars (Clickable & interactive with video) */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 44 }}>
+            {PILLARS.map((p, i) => {
+              const isActive = activePillarIndex === i;
+              const pillarTitleKey = i === 0 ? "welcome.f1_title" : i === 1 ? "welcome.f2_title" : i === 2 ? "welcome.f3_title" : "services.s1_title";
+              const pillarDescKey = i === 0 ? "welcome.f1_desc" : i === 1 ? "welcome.f2_desc" : i === 2 ? "welcome.f3_desc" : "services.s1_desc";
+              return (
+                <motion.div
+                  key={p.num}
+                  onClick={() => setActivePillarIndex(i)}
+                  initial={{ opacity: 0, x: 28 }}
+                  animate={inView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ delay: 0.5 + i * 0.1, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                  style={{
+                    display: "flex", gap: 20, padding: "14px 18px", borderRadius: 12,
+                    position: "relative", cursor: "pointer",
+                    background: isActive ? "rgba(123,31,58,0.06)" : "transparent",
+                    border: `1px solid ${isActive ? "rgba(123,31,58,0.25)" : "transparent"}`,
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  {/* Number + vertical line */}
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: "50%",
+                      border: `1.5px solid ${WINE}`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 11, fontWeight: 800,
+                      color: isActive ? WHITE : WINE,
+                      letterSpacing: "0.05em", flexShrink: 0,
+                      background: isActive ? WINE : "rgba(123,31,58,0.05)",
+                      boxShadow: isActive ? `0 4px 14px ${WINE}40` : "none",
+                      transition: "all 0.3s ease",
+                    }}>
+                      {p.num}
+                    </div>
                   </div>
-                  {/* connector line */}
-                  {i < PILLARS.length - 1 && (
-                    <motion.div
-                      initial={{ scaleY: 0 }}
-                      animate={inView ? { scaleY: 1 } : {}}
-                      transition={{ delay: 0.7 + i * 0.1, duration: 0.4 }}
-                      style={{
-                        width: 1, flex: 1, minHeight: 20,
-                        background: `linear-gradient(to bottom, ${WINE}40, transparent)`,
-                        transformOrigin: "top",
-                        marginTop: 4,
-                      }}
-                    />
-                  )}
-                </div>
 
-                {/* Text */}
-                <div style={{ paddingTop: 8 }}>
-                  <p style={{ fontWeight: 800, fontSize: 13.5, color: DARK, marginBottom: 4, letterSpacing: "0.01em" }}>
-                    {p.title}
-                  </p>
-                  <p style={{ fontSize: 13.5, color: MUTED, lineHeight: 1.72 }}>{p.body}</p>
-                </div>
-              </motion.div>
-            ))}
+                  {/* Text */}
+                  <div style={{ paddingTop: 4, flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <p style={{
+                        fontWeight: 800, fontSize: 14,
+                        color: isActive ? WINE : DARK,
+                        marginBottom: 4, letterSpacing: "0.01em",
+                        transition: "color 0.3s ease",
+                      }}>
+                        {t(pillarTitleKey, p.title)}
+                      </p>
+                      {isActive && (
+                        <span style={{
+                          display: "inline-flex", alignItems: "center", gap: 4,
+                          fontSize: 10, fontWeight: 700, color: WINE,
+                          background: "rgba(123,31,58,0.1)", padding: "2px 8px", borderRadius: 10,
+                        }}>
+                          <Play size={10} fill={WINE} /> Video
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: 13.5, color: MUTED, lineHeight: 1.72 }}>{t(pillarDescKey, p.body)}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* CTA */}
@@ -726,7 +905,7 @@ function WelcomeSection() {
             transition={{ delay: 1.0, duration: 0.6 }}
             style={{ display: "flex", gap: 16, alignItems: "center" }}
           >
-            <Link href="/sign-up">
+            <Link href="/sign-in">
               <motion.span
                 whileHover={{ scale: 1.04, backgroundColor: WINE_DARK }}
                 whileTap={{ scale: 0.97 }}
@@ -744,7 +923,7 @@ function WelcomeSection() {
                   boxShadow: `0 8px 24px rgba(123,31,58,0.28)`,
                 }}
               >
-                Bëhu Klient?
+                {t("nav.be_client", "Bëhu Klient?")}
               </motion.span>
             </Link>
             <Link href="/sign-in">
@@ -757,7 +936,7 @@ function WelcomeSection() {
                   transition: "color .2s",
                 }}
               >
-                Hyr në llogari →
+                {t("nav.account", "Llogaria")} →
               </motion.span>
             </Link>
           </motion.div>
@@ -879,7 +1058,7 @@ function ServiceCard({ slide, isActive }: { slide: typeof SERVICE_SLIDES[0]; isA
         <p style={{ color: MUTED, fontSize: 14, lineHeight: 1.72, marginBottom: 20 }}>
           {slide.desc}
         </p>
-        <Link href="/sign-up">
+        <Link href="/sign-in">
           <motion.span
             whileHover={{ backgroundColor: WINE, color: WHITE }}
             style={{
@@ -906,8 +1085,9 @@ function ServiceCard({ slide, isActive }: { slide: typeof SERVICE_SLIDES[0]; isA
 
 /* ─── Services Section with full-width drag slider ─────── */
 function ServicesSection() {
-  const total = SERVICE_SLIDES.length;
+  const { t } = useLanguage();
   const [active, setActive] = useState(0);
+  const total = SERVICE_SLIDES.length;
   const trackRef = useRef<HTMLDivElement>(null);
   const CARD_W = 420;
   const GAP = 28;
@@ -944,14 +1124,13 @@ function ServicesSection() {
       <FadeUp>
         <div style={{ textAlign: "center", marginBottom: 56, maxWidth: 680, margin: "0 auto 56px", padding: "0 32px" }}>
           <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", color: WINE, textTransform: "uppercase", marginBottom: 14 }}>
-            SHËRBIMET TONA
+            {t("services.badge", "SHËRBIMET TONA")}
           </p>
           <h2 style={{ fontWeight: 900, fontSize: "clamp(2rem, 3.5vw, 2.9rem)", color: DARK, marginBottom: 18 }}>
-            Shërbimet
+            {t("services.title", "Gjithçka që ju nevojitet për një event të përsosur")}
           </h2>
           <p style={{ color: MUTED, lineHeight: 1.85, fontSize: 15 }}>
-            Lërini zemrën tuaj të flasë dhe ne do të kujdesemi për çdo detaj të ditës suaj të veçantë.
-            Punojmë ekskluzivisht me teknologji moderne, pa kompromise të cilësisë.
+            {t("services.s1_desc", "Dizajnoni sallën tuaj vizuale me tavolina rrethore, katrore, pista vallëzimi, skenën dhe caktimin e mysafirëve.")}
           </p>
         </div>
       </FadeUp>
@@ -1045,11 +1224,12 @@ function ServicesSection() {
    HALL / PREPARATION — text LEFT + image RIGHT (Gademan "Bereiding")
 ═══════════════════════════════════════════════════════════ */
 function HallSection() {
+  const { t } = useLanguage();
   const features = [
-    "Vizualizim 2D i sallës në kohë reale",
-    "Menaxhim i kapacitetit dhe vendosjeve",
-    "Kategorizim VIP, Familje & Shoqëri",
-    "Eksport automatik i planit",
+    t("services.s1_title", "Vizualizim 2D i sallës në kohë reale"),
+    t("welcome.f1_title", "Menaxhim i kapacitetit dhe vendosjeve"),
+    t("welcome.f1_desc", "Kategorizim VIP, Familje & Shoqëri"),
+    t("services.s4_title", "Eksport automatik i planit"),
   ];
   return (
     <section id="hall" style={{ background: CREAM, padding: "96px 0" }}>
@@ -1067,7 +1247,7 @@ function HallSection() {
         {/* Left: text */}
         <FadeUp>
           <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: WINE, textTransform: "uppercase", marginBottom: 12 }}>
-            HALL DESIGNER
+            {t("hall.badge", "HALL DESIGNER 2D")}
           </p>
           <h2
             style={{
@@ -1080,10 +1260,10 @@ function HallSection() {
               marginBottom: 24,
             }}
           >
-            KRIJONI PLANIN<br />E SALLËS
+            {t("hall.title", "Planifikoni ulëset dhe strukturën e sallës suaj në detaje")}
           </h2>
           <p style={{ color: MUTED, lineHeight: 1.85, marginBottom: 28, fontSize: 15 }}>
-            Salla e dasmës suaj është kanavaca jonë. Ndërtoni planimetrinë vizuale, vendosni tavolinat me drag & drop dhe ulni çdo mysafir me saktësi dhe elegancë.
+            {t("hall.desc", "Me Hall Designer interactive ju ndërtoni sallën tuaj me tavolina, skenë, bar, dhe vendosni mysafirët në çdo karrige.")}
           </p>
           <ul style={{ listStyle: "none", padding: 0, marginBottom: 36 }}>
             {features.map((item, i) => (
@@ -1113,7 +1293,7 @@ function HallSection() {
               </motion.li>
             ))}
           </ul>
-          <Link href="/sign-up">
+          <Link href="/sign-in">
             <motion.span
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
@@ -1157,6 +1337,151 @@ function HallSection() {
         </FadeUp>
       </div>
     </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INTERACTIVE SAVINGS CALCULATOR
+═══════════════════════════════════════════════════════════ */
+function EventSavingsCalculator({ onOpenModal }: { onOpenModal: (plan?: PlanKey) => void }) {
+  const { t } = useLanguage();
+  const [guests, setGuests] = useState(250);
+
+  const printSaved = Math.round(guests * 1.6);
+  const hoursSaved = Math.round(guests * 0.12);
+
+  return (
+    <section style={{ background: WHITE, padding: "80px 0", borderTop: "1px solid #ede8e2", borderBottom: "1px solid #ede8e2" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px" }}>
+        <FadeUp>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: WINE, textTransform: "uppercase", marginBottom: 12 }}>
+              {t("calc.badge", "INTERAKTIVE · KURSIMI I KOSTOS DHE KOHËS")}
+            </p>
+            <h2 style={{ fontWeight: 900, fontSize: "clamp(1.6rem, 2.8vw, 2.4rem)", color: DARK, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              {t("calc.title", "Llogaritni sa kurseni me NoaEvent")}
+            </h2>
+            <p style={{ color: MUTED, fontSize: 15, marginTop: 8 }}>
+              {t("calc.subtitle", "Zgjidhni numrin e parashikuar të mysafirëve për të parë kursimin e menjëhershëm")}
+            </p>
+          </div>
+        </FadeUp>
+
+        <div style={{ background: CREAM, borderRadius: 16, padding: "40px 48px", border: "1px solid #eae3d9", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center" }}>
+          <div>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: DARK, marginBottom: 16, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              {t("calc.guests", "Numri i Mysafirëve")}: <span style={{ color: WINE, fontSize: 24, fontWeight: 900, marginLeft: 8 }}>{guests}</span>
+            </label>
+            <input
+              type="range"
+              min={50}
+              max={600}
+              step={10}
+              value={guests}
+              onChange={e => setGuests(Number(e.target.value))}
+              style={{ width: "100%", accentColor: WINE, height: 8, borderRadius: 4, cursor: "pointer", marginBottom: 24 }}
+            />
+            
+            {/* Diaspora Multi-language note */}
+            <div style={{ background: WHITE, padding: "16px 20px", borderRadius: 12, border: "1px solid #e8e2d8", display: "flex", alignItems: "center", gap: 14 }}>
+              <Globe size={24} color={WINE} />
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: DARK, margin: 0 }}>{t("calc.diaspora_title", "Ftesa Shumëgjuhëshe për Diasporën")}</p>
+                <p style={{ fontSize: 12, color: MUTED, margin: "2px 0 0 0" }}>{t("calc.diaspora_desc", "Dërgoni ftesat në Shqip 🇦🇱, Gjermanisht 🇩🇪, Anglisht 🇬🇧 apo Frëngjisht 🇫🇷 me 1-klik në WhatsApp.")}</p>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            <div style={{ background: WHITE, padding: "24px 20px", borderRadius: 14, border: "1px solid #e8e2d8", textAlign: "center" }}>
+              <p style={{ fontSize: 10, fontWeight: 800, color: MUTED, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{t("calc.print_savings", "KURSIMI I SHTYPIT")}</p>
+              <p style={{ fontSize: 32, fontWeight: 900, color: WINE, margin: 0 }}>€{printSaved}+</p>
+              <p style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>{t("calc.in_printing", "në letra & printime")}</p>
+            </div>
+
+            <div style={{ background: WHITE, padding: "24px 20px", borderRadius: 14, border: "1px solid #e8e2d8", textAlign: "center" }}>
+              <p style={{ fontSize: 10, fontWeight: 800, color: MUTED, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{t("calc.time_saved", "KOHË E KURSYESHME")}</p>
+              <p style={{ fontSize: 32, fontWeight: 900, color: DARK, margin: 0 }}>{hoursSaved} h</p>
+              <p style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>{t("calc.in_rsvp", "në telefonata RSVP")}</p>
+            </div>
+
+            <div style={{ background: WHITE, padding: "20px 20px", borderRadius: 14, border: "1px solid #e8e2d8", textAlign: "center", gridColumn: "span 2" }}>
+              <p style={{ fontSize: 10, fontWeight: 800, color: MUTED, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>{t("calc.accuracy", "SAKTËSIA E SALLËS & USHQIMIT")}</p>
+              <p style={{ fontSize: 24, fontWeight: 900, color: "#15803d", margin: 0 }}>{t("calc.accuracy_val", "100% Saktësi")}</p>
+              <p style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{t("calc.accuracy_sub", "me Hall Designer & QR Check-in në hyrje")}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FLOATING STICKY CTA BAR
+═══════════════════════════════════════════════════════════ */
+function FloatingCtaBar({ onOpenModal }: { onOpenModal: (plan?: PlanKey) => void }) {
+  const { t } = useLanguage();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setVisible(window.scrollY > 450);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <motion.div
+      initial={{ y: 80, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: 80, opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      style={{
+        position: "fixed",
+        bottom: 24,
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 99,
+        background: DARK,
+        color: WHITE,
+        padding: "12px 28px",
+        borderRadius: 50,
+        boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
+        display: "flex",
+        alignItems: "center",
+        gap: 20,
+        border: "1px solid rgba(255,255,255,0.15)",
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.02em" }}>
+        {t("float.title", "✨ Planifikoni Dasmën tuaj me NoaEvent")}
+      </span>
+
+      <button
+        onClick={() => onOpenModal("pro")}
+        style={{
+          background: WINE,
+          color: WHITE,
+          border: "none",
+          padding: "8px 20px",
+          borderRadius: 25,
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: "0.04em",
+          cursor: "pointer",
+          transition: "transform .15s",
+        }}
+        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = "scale(1.05)")}
+        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.transform = "scale(1)")}
+      >
+        {t("float.btn", "Bëhu Klient")}
+      </button>
+    </motion.div>
   );
 }
 
@@ -1273,41 +1598,54 @@ function Testimonials() {
 const PLANS = [
   {
     name: "Basic",
-    planKey: "basic",
-    price: "€10",
+    planKey: "basic" as PlanKey,
+    price: "€14.99",
     period: "/muaj",
     tag: null,
-    events: "1 event aktiv",
+    events: "1 organizim (1 event)",
     img: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=70",
-    perks: ["1 organizim (1 event)", "Menaxhim mysafirësh", "Ftesa digjitale", "QR Check-in", "Support me email"],
+    perks: ["1 organizim (1 event)", "Menaxhim mysafirësh", "Ftesa digjitale me QR Code", "RSVP me kohë reale", "Support me email"],
     featured: false,
   },
   {
     name: "Pro",
-    planKey: "pro",
-    price: "€50",
+    planKey: "pro" as PlanKey,
+    price: "€29.99",
     period: "/muaj",
     tag: "Më i Popullarizuar",
-    events: "Deri 11 organizime",
+    events: "3 organizime (3 evente)",
     img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=70",
-    perks: ["Deri në 11 organizime", "Hall Designer Premium", "RSVP automatik", "Priority support 24/7", "Eksport CSV/Excel"],
+    perks: ["Deri në 3 organizime", "Hall Designer (Dizajnimi i Sallës 2D/3D)", "Ftesa me Audio & Video", "Eksport CSV / Excel / PDF", "Priority support 24/7"],
     featured: true,
+  },
+  {
+    name: "Enterprise / Salla",
+    planKey: "custom" as PlanKey,
+    price: "€79.99",
+    period: "/muaj",
+    tag: "Pakufizuar",
+    events: "Evente të pakufizuara",
+    img: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=70",
+    perks: ["Evente të pakufizuara (Unlimited)", "Branding i Sallës / Agjencisë", "Multi-user role & permissions", "Domain i personalizuar", "Menaxher personal i përkushtuar"],
+    featured: false,
   },
 ];
 
-function PricingSection() {
+
+function PricingSection({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => void }) {
+  const { t } = useLanguage();
   return (
     <section id="order" style={{ background: CREAM, padding: "96px 0" }}>
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
         <FadeUp>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
-            <h2 style={{ fontWeight: 900, fontSize: "clamp(2rem, 3.5vw, 2.9rem)", color: DARK, marginBottom: 14 }}>Çmimet</h2>
+            <h2 style={{ fontWeight: 900, fontSize: "clamp(2rem, 3.5vw, 2.9rem)", color: DARK, marginBottom: 14 }}>{t("pricing.title", "Paketat & Çmimet")}</h2>
             <p style={{ color: MUTED, maxWidth: 520, margin: "0 auto", lineHeight: 1.8 }}>
-              Një investim i vogël për qetësi mendore në ditën tuaj më të madhe.
+              {t("pricing.subtitle", "Zgjidhni paketën e duhur për të aktivizuar llogarinë tuaj dhe për të përfituar nga të gjitha meçet tona.")}
             </p>
           </div>
         </FadeUp>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, maxWidth: 920, margin: "0 auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 28, maxWidth: 1140, margin: "0 auto" }}>
           {PLANS.map((p, i) => (
             <FadeUp key={p.name} delay={i * 0.12}>
               <div
@@ -1315,8 +1653,13 @@ function PricingSection() {
                   position: "relative",
                   background: WHITE,
                   border: `2px solid ${p.featured ? WINE : "#e5e0d8"}`,
+                  borderRadius: 12,
                   overflow: "hidden",
                   transition: "transform .25s, box-shadow .25s",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  height: "100%",
                 }}
                 onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(-6px)"; el.style.boxShadow = "0 14px 36px rgba(0,0,0,0.09)"; }}
                 onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(0)"; el.style.boxShadow = "none"; }}
@@ -1325,52 +1668,55 @@ function PricingSection() {
                   <div style={{
                     position: "absolute", top: 16, right: 16,
                     background: WINE, color: WHITE, fontSize: 10, fontWeight: 700,
-                    letterSpacing: "0.1em", padding: "4px 12px", textTransform: "uppercase", borderRadius: 2,
+                    letterSpacing: "0.1em", padding: "4px 12px", textTransform: "uppercase", borderRadius: 4, zIndex: 2,
                   }}>
-                    {p.tag}
+                    {p.featured ? t("pricing.popular", p.tag) : p.tag}
                   </div>
                 )}
-                <div style={{ height: 150, overflow: "hidden" }}>
+                <div style={{ height: 140, overflow: "hidden" }}>
                   <img src={p.img} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
-                <div style={{ padding: 36 }}>
-                  <h3 style={{ fontWeight: 900, fontSize: 22, color: DARK, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{p.name}</h3>
-                  <p style={{ fontSize: 11, color: MUTED, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>{p.events}</p>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 24 }}>
-                    <span style={{ fontSize: 42, fontWeight: 900, color: DARK, letterSpacing: "-0.02em" }}>{p.price}</span>
-                    <span style={{ fontSize: 14, color: MUTED }}>{p.period}</span>
+                <div style={{ padding: 32, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+
+                  <div>
+                    <h3 style={{ fontWeight: 900, fontSize: 22, color: DARK, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{p.name}</h3>
+                    <p style={{ fontSize: 11, color: MUTED, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 16 }}>
+                      {p.planKey === "basic" ? t("pricing.basic", p.events) : p.planKey === "pro" ? t("pricing.pro", p.events) : t("pricing.custom", p.events)}
+                    </p>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 20 }}>
+                      <span style={{ fontSize: 38, fontWeight: 900, color: DARK, letterSpacing: "-0.02em" }}>{p.price}</span>
+                      <span style={{ fontSize: 13, color: MUTED }}>{p.period}</span>
+                    </div>
+                    <ul style={{ listStyle: "none", padding: 0, marginBottom: 28 }}>
+                      {p.perks.map(perk => (
+                        <li key={perk} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, fontSize: 13.5, color: DARK }}>
+                          <Check size={14} color={WINE} strokeWidth={2.5} /> {perk}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <ul style={{ listStyle: "none", padding: 0, marginBottom: 28 }}>
-                    {p.perks.map(perk => (
-                      <li key={perk} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, fontSize: 14, color: DARK }}>
-                        <Check size={14} color={WINE} strokeWidth={2.5} /> {perk}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href="/sign-up"
-                    onClick={() => localStorage.setItem("paddle_selected_plan", p.planKey)}
+                  <motion.button
+                    onClick={() => onOpenModal?.(p.planKey)}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      width: "100%",
+                      textAlign: "center",
+                      padding: "13px",
+                      fontWeight: 800,
+                      fontSize: 13,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      cursor: "pointer",
+                      borderRadius: 8,
+                      background: p.featured ? WINE : "transparent",
+                      color: p.featured ? WHITE : WINE,
+                      border: `2px solid ${WINE}`,
+                      transition: "all .18s",
+                    }}
                   >
-                    <motion.span
-                      whileHover={{ scale: 1.03 }}
-                      style={{
-                        display: "block",
-                        textAlign: "center",
-                        padding: "13px",
-                        fontWeight: 700,
-                        fontSize: 13,
-                        letterSpacing: "0.07em",
-                        cursor: "pointer",
-                        borderRadius: 4,
-                        background: p.featured ? WINE : "transparent",
-                        color: p.featured ? WHITE : WINE,
-                        border: `2px solid ${WINE}`,
-                        transition: "all .18s",
-                      }}
-                    >
-                      {p.featured ? "Fillo Me Pro" : "Fillo Me Basic"}
-                    </motion.span>
-                  </Link>
+                    {t("pricing.btn", "CHOOSE PLAN")}
+                  </motion.button>
                 </div>
               </div>
             </FadeUp>
@@ -1382,10 +1728,86 @@ function PricingSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   FAQ SECTION — elegant accordion
+═══════════════════════════════════════════════════════════ */
+const FAQS = [
+  { q: "Si funksionon QR Code check-in në hyrje të eventit?", a: "Secili mysafir merr një QR code unik me ftesën e tij digjitale. Në hyrje të sallës, ju ose stafi mund ta skenoni me telefon për të gjetur menjëherë emrin dhe tavolinën e caktuar per atë mysafir." },
+  { q: "A mund t'i dërgoj ftesat me WhatsApp dhe Email?", a: "Po, platforma gjeneron një link individual dhe mesazh të parapërgatitur në shqip me 1-klik për WhatsApp, si dhe mundëson dërgimin masiv me email." },
+  { q: "Si funksionon Hall Designer per rregullimin e sallës?", a: "Me Hall Designer ju ndërtoni sallën tuaj vizuale me tavolina rrethore, katrore, pista vallëzimi, skenën, DJ, etj., dhe mund të caktoni se kush ulet te cila tavolinë." },
+  { q: "Si mund t'i provoj shërbimet e NoaEvent?", a: "Ju mund të regjistroheni lehtësisht dhe të zgjidhni paketën tuaj të preferuar me qasje të menjëhershme në platformë." },
+
+  { q: "Çfarë ndodh nëse kam mysafirë nga diaspora?", a: "Ftesat digjitale mbështesin shumë gjuhë (Shqip, Gjermanisht, Anglisht), në mënyrë që mysafirët tuaj jashtë vendit ta kuptojnë dhe konfirmojnë ftesën me lehtësi." },
+];
+
+function FaqSection() {
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
+
+  return (
+    <section style={{ background: WHITE, padding: "88px 0", borderTop: "1px solid #ede8e2" }}>
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "0 32px" }}>
+        <FadeUp>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: WINE, textTransform: "uppercase", marginBottom: 12 }}>
+              PYETJET MË TË SHPESHTA
+            </p>
+            <h2 style={{ fontWeight: 900, fontSize: "clamp(1.8rem, 3vw, 2.5rem)", color: DARK, textTransform: "uppercase" }}>
+              Pyetje & Përgjigje
+            </h2>
+          </div>
+        </FadeUp>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {FAQS.map((faq, i) => (
+            <div
+              key={i}
+              style={{
+                background: CREAM,
+                borderRadius: 12,
+                border: "1px solid #eae3d9",
+                overflow: "hidden",
+                transition: "all .2s",
+              }}
+            >
+              <button
+                onClick={() => setOpenIdx(openIdx === i ? null : i)}
+                style={{
+                  width: "100%",
+                  padding: "20px 24px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: DARK,
+                }}
+              >
+                <span>{faq.q}</span>
+                <span style={{ fontSize: 20, color: WINE, fontWeight: 300, transition: "transform .2s", transform: openIdx === i ? "rotate(45deg)" : "rotate(0)" }}>+</span>
+              </button>
+              {openIdx === i && (
+                <div style={{ padding: "0 24px 20px 24px", fontSize: 14, color: MUTED, lineHeight: 1.8, borderTop: "1px solid #eae3d9", paddingTop: 16 }}>
+                  {faq.a}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+/* ═══════════════════════════════════════════════════════════
    FOOTER — photo strip + wine subscribe box + white info grid
    (exact Gademan footer: 3-layer footer)
 ═══════════════════════════════════════════════════════════ */
 function Footer() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   return (
     <footer id="contact">
@@ -1436,9 +1858,7 @@ function Footer() {
                 fontStyle: "italic",
               }}
             >
-              Regjistrohu Sot<br />
-              dhe Kurseni 20%<br />
-              Në Planin e Parë
+              {t("footer.sub_title", "Abonohu Sot dhe Kurseni 20% Në Planin e Parë")}
             </h3>
           </div>
           {/* Right: input + button */}
@@ -1447,7 +1867,7 @@ function Footer() {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="Shkruani Adresën Email"
+              placeholder={t("footer.sub_placeholder", "Shkruani Adresën Email")}
               style={{
                 width: "100%",
                 padding: "14px 18px",
@@ -1475,7 +1895,7 @@ function Footer() {
               onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "0.88")}
               onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
             >
-              Regjistrohu Tani
+              Abonohu Tani
             </button>
           </div>
         </div>
@@ -1557,17 +1977,36 @@ function Footer() {
    MAIN EXPORT
 ═══════════════════════════════════════════════════════════ */
 export function Landing() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<PlanKey>("pro");
+
+  const handleOpenModal = (plan: PlanKey = "pro") => {
+    setSelectedPlan(plan);
+    setModalOpen(true);
+  };
+
   return (
     <div style={{ background: WHITE, color: DARK, fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
-      <TopBar />
-      <Navbar />
+      <TopBar onOpenModal={handleOpenModal} />
+      <Navbar onOpenModal={handleOpenModal} />
       <Hero />
       <WelcomeSection />
       <ServicesSection />
       <HallSection />
+      <EventSavingsCalculator onOpenModal={handleOpenModal} />
       <Testimonials />
-      <PricingSection />
+      <PricingSection onOpenModal={handleOpenModal} />
+      <FaqSection />
       <Footer />
+
+      <FloatingCtaBar onOpenModal={handleOpenModal} />
+
+      <PlanRegistrationModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        initialPlanKey={selectedPlan}
+      />
     </div>
   );
 }
+

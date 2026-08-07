@@ -6,3 +6,5 @@ export * from "./hall_layouts";
 export * from "./invitations";
 export * from "./subscriptions";
 export * from "./payments";
+export * from "./plans";
+

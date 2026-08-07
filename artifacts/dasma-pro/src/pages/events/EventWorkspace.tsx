@@ -1,8 +1,10 @@
 import { useState, useRef } from "react";
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { HallDesigner } from "@/components/HallDesigner";
 import {
   useGetEvent,
+  useUpdateEvent,
+  useDeleteEvent,
   useGetDashboardStats,
   useListGuests,
   useCreateGuest,
@@ -20,6 +22,7 @@ import {
   getListTablesQueryKey,
   getGetDashboardStatsQueryKey,
   getGetInvitationQueryKey,
+  getGetEventQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -39,10 +42,22 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   ArrowLeft, Users, LayoutGrid, Mail, QrCode, BarChart3,
   Plus, Trash2, Pencil, Search, Loader2, CheckCircle2,
   X, CircleDot, UserCheck, UserX, Clock, Send, Map,
-  Download, Upload, Share2
+  Download, Upload, Share2, Printer, FileSpreadsheet, FileText,
+  Copy, ExternalLink, MessageCircle
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "@/hooks/use-toast";
@@ -127,7 +142,10 @@ function GuestsTab({ eventId, eventName }: { eventId: number; eventName: string 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
   const [addOpen, setAddOpen] = useState(false);
+  const [editGuest, setEditGuest] = useState<any | null>(null);
+  const [qrGuest, setQrGuest] = useState<any | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [previewData, setPreviewData] = useState<any[]>([]);
 
@@ -139,10 +157,10 @@ function GuestsTab({ eventId, eventName }: { eventId: number; eventName: string 
 
   const [form, setForm] = useState({
     firstName: "", lastName: "", phone: "", email: "",
-    partySize: "1", category: "family",
+    partySize: "1", category: "family", notes: "",
   });
 
-  const resetForm = () => setForm({ firstName: "", lastName: "", phone: "", email: "", partySize: "1", category: "family" });
+  const resetForm = () => setForm({ firstName: "", lastName: "", phone: "", email: "", partySize: "1", category: "family", notes: "" });
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: getListGuestsQueryKey(eventId) });
@@ -157,6 +175,42 @@ function GuestsTab({ eventId, eventName }: { eventId: number; eventName: string 
         onError: () => toast({ title: "Gabim", variant: "destructive" }),
       }
     );
+  };
+
+  const handleEditSave = () => {
+    if (!editGuest) return;
+    updateGuest.mutate(
+      {
+        eventId,
+        guestId: editGuest.id,
+        data: {
+          firstName: form.firstName,
+          lastName: form.lastName,
+          phone: form.phone,
+          email: form.email,
+          partySize: Number(form.partySize),
+          category: form.category as any,
+          notes: form.notes,
+        },
+      },
+      {
+        onSuccess: () => { invalidate(); setEditGuest(null); resetForm(); toast({ title: "Mysafiri u përditësua!" }); },
+        onError: () => toast({ title: "Gabim", variant: "destructive" }),
+      }
+    );
+  };
+
+  const openEdit = (g: any) => {
+    setEditGuest(g);
+    setForm({
+      firstName: g.firstName,
+      lastName: g.lastName,
+      phone: g.phone || "",
+      email: g.email || "",
+      partySize: String(g.partySize || 1),
+      category: g.category || "family",
+      notes: g.notes || "",
+    });
   };
 
   const handleStatusChange = (guestId: number, status: string) => {
@@ -174,6 +228,14 @@ function GuestsTab({ eventId, eventName }: { eventId: number; eventName: string 
         onError: () => toast({ title: "Gabim", variant: "destructive" }),
       }
     );
+  };
+
+  const openWhatsApp = (g: any) => {
+    const rsvpUrl = `${window.location.origin}/rsvp/${g.rsvpToken}`;
+    const text = `Përshëndetje ${g.firstName}, Ju jeni të ftuar në ${eventName}. Ju lutem konfirmoni pjesëmarrjen tuaj përmes këtij linku: ${rsvpUrl}`;
+    const cleanPhone = (g.phone || "").replace(/[^0-9]/g, "");
+    const url = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
   };
 
   const exportExcel = () => {
@@ -207,7 +269,6 @@ function GuestsTab({ eventId, eventName }: { eventId: number; eventName: string 
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json(ws);
         
-        // Map columns
         const mappedData = data.map((row: any) => {
           return {
             firstName: row.Emri || row.Name || row.firstName || row.Emri_1 || "I panjohur",
@@ -249,14 +310,15 @@ function GuestsTab({ eventId, eventName }: { eventId: number; eventName: string 
       !search ||
       `${g.firstName} ${g.lastName}`.toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === "all" || g.status === filterStatus;
-    return matchSearch && matchStatus;
+    const matchCategory = filterCategory === "all" || g.category === filterCategory;
+    return matchSearch && matchStatus && matchCategory;
   });
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <div className="relative w-full sm:w-64">
+          <div className="relative w-full sm:w-60">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Kërko mysafir..."
@@ -266,12 +328,23 @@ function GuestsTab({ eventId, eventName }: { eventId: number; eventName: string 
             />
           </div>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-full sm:w-40 rounded-xl border-white/10 bg-black/20 focus:ring-primary/50">
-              <SelectValue />
+            <SelectTrigger className="w-full sm:w-36 rounded-xl border-white/10 bg-black/20 focus:ring-primary/50">
+              <SelectValue placeholder="Statusi" />
             </SelectTrigger>
             <SelectContent className="border-white/10 bg-background/95 backdrop-blur-xl">
-              <SelectItem value="all">Të gjithë</SelectItem>
+              <SelectItem value="all">Të gjitha statuset</SelectItem>
               {Object.entries(STATUS_LABELS).map(([v, l]) => (
+                <SelectItem key={v} value={v}>{l}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <SelectTrigger className="w-full sm:w-36 rounded-xl border-white/10 bg-black/20 focus:ring-primary/50">
+              <SelectValue placeholder="Kategoria" />
+            </SelectTrigger>
+            <SelectContent className="border-white/10 bg-background/95 backdrop-blur-xl">
+              <SelectItem value="all">Të gjitha kategoritë</SelectItem>
+              {Object.entries(CATEGORY_LABELS).map(([v, l]) => (
                 <SelectItem key={v} value={v}>{l}</SelectItem>
               ))}
             </SelectContent>
@@ -350,53 +423,77 @@ function GuestsTab({ eventId, eventName }: { eventId: number; eventName: string 
               </DialogFooter>
             </DialogContent>
           </Dialog>
-
-          {/* Import Preview Dialog */}
-          <Dialog open={importOpen} onOpenChange={setImportOpen}>
-            <DialogContent className="border-white/10 bg-background/90 backdrop-blur-2xl rounded-2xl max-w-2xl">
-              <DialogHeader>
-                <DialogTitle className="font-serif text-xl">Rishiko Importin</DialogTitle>
-              </DialogHeader>
-              <div className="py-4 space-y-4">
-                <p className="text-sm text-muted-foreground">Do të importohen {previewData.length} mysafirë. Ja një pamje e 5 rreshtave të parë:</p>
-                <div className="rounded-xl border border-white/10 overflow-hidden bg-black/20">
-                  <table className="w-full text-sm">
-                    <thead className="bg-white/5 border-b border-white/10">
-                      <tr>
-                        <th className="text-left px-4 py-2 font-medium text-xs text-muted-foreground">Emri</th>
-                        <th className="text-left px-4 py-2 font-medium text-xs text-muted-foreground">Mbiemri</th>
-                        <th className="text-left px-4 py-2 font-medium text-xs text-muted-foreground">Telefoni</th>
-                        <th className="text-left px-4 py-2 font-medium text-xs text-muted-foreground">Personat</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {previewData.slice(0, 5).map((row, i) => (
-                        <tr key={i}>
-                          <td className="px-4 py-2">{row.firstName}</td>
-                          <td className="px-4 py-2">{row.lastName}</td>
-                          <td className="px-4 py-2 text-muted-foreground">{row.phone || "—"}</td>
-                          <td className="px-4 py-2 text-muted-foreground">{row.partySize}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" className="rounded-xl border-white/10 hover:bg-white/5" onClick={() => { setImportOpen(false); setPreviewData([]); }}>Anulo</Button>
-                <Button
-                  onClick={confirmImport}
-                  disabled={importGuests.isPending}
-                  className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-[0_0_15px_rgba(217,56,94,0.3)]"
-                >
-                  {importGuests.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Konfirmo Importin
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
+
+      {/* Edit Guest Dialog */}
+      <Dialog open={!!editGuest} onOpenChange={open => !open && setEditGuest(null)}>
+        <DialogContent className="border-white/10 bg-background/90 backdrop-blur-2xl rounded-2xl">
+          <DialogHeader><DialogTitle className="font-serif text-xl">Ndrysho Mysafirin</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5"><Label className="text-xs uppercase text-muted-foreground">Emri *</Label><Input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} className="rounded-xl border-white/10 bg-black/20" /></div>
+              <div className="space-y-1.5"><Label className="text-xs uppercase text-muted-foreground">Mbiemri *</Label><Input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} className="rounded-xl border-white/10 bg-black/20" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5"><Label className="text-xs uppercase text-muted-foreground">Telefon</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className="rounded-xl border-white/10 bg-black/20" /></div>
+              <div className="space-y-1.5"><Label className="text-xs uppercase text-muted-foreground">Email</Label><Input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="rounded-xl border-white/10 bg-black/20" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5"><Label className="text-xs uppercase text-muted-foreground">Nr. personave</Label><Input type="number" min="1" value={form.partySize} onChange={e => setForm(f => ({ ...f, partySize: e.target.value }))} className="rounded-xl border-white/10 bg-black/20" /></div>
+              <div className="space-y-1.5">
+                <Label className="text-xs uppercase text-muted-foreground">Kategoria</Label>
+                <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
+                  <SelectTrigger className="rounded-xl border-white/10 bg-black/20"><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(CATEGORY_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditGuest(null)} className="rounded-xl border-white/10">Anulo</Button>
+            <Button onClick={handleEditSave} disabled={updateGuest.isPending} className="bg-primary hover:bg-primary/90 text-white rounded-xl">Ruaj</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* QR Code Dialog */}
+      <Dialog open={!!qrGuest} onOpenChange={open => !open && setQrGuest(null)}>
+        <DialogContent className="border-white/10 bg-background/95 backdrop-blur-2xl rounded-2xl text-center max-w-sm">
+          <DialogHeader><DialogTitle className="font-serif text-xl text-center">QR Code & Ftesa</DialogTitle></DialogHeader>
+          {qrGuest && (
+            <div className="space-y-4 py-4 flex flex-col items-center">
+              <p className="font-semibold text-lg font-serif">{qrGuest.firstName} {qrGuest.lastName}</p>
+              <div className="p-4 bg-white rounded-2xl shadow-xl border border-white/20">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`${window.location.origin}/rsvp/${qrGuest.rsvpToken}`)}`}
+                  alt="QR Code"
+                  className="w-44 h-44"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">Përdoreni këtë QR Code gjatë hyrjes në event për check-in të shpejtë.</p>
+              <div className="flex gap-2 w-full pt-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 rounded-xl border-white/10 text-xs"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/rsvp/${qrGuest.rsvpToken}`);
+                    toast({ title: "Linku i RSVP u kopjua!" });
+                  }}
+                >
+                  <Copy className="h-3.5 w-3.5 mr-1" /> Kopjo Linkun
+                </Button>
+                <Button
+                  className="flex-1 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs"
+                  onClick={() => openWhatsApp(qrGuest)}
+                >
+                  <MessageCircle className="h-3.5 w-3.5 mr-1" /> WhatsApp
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {isLoading ? (
         <div className="space-y-3 pt-6">
@@ -419,7 +516,7 @@ function GuestsTab({ eventId, eventName }: { eventId: number; eventName: string 
                 <th className="text-left px-6 py-4 font-medium text-xs uppercase tracking-widest text-muted-foreground hidden sm:table-cell">Kategoria</th>
                 <th className="text-left px-6 py-4 font-medium text-xs uppercase tracking-widest text-muted-foreground hidden sm:table-cell">Personat</th>
                 <th className="text-left px-6 py-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Statusi</th>
-                <th className="px-6 py-4" />
+                <th className="px-6 py-4 text-right">Veprime</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -453,14 +550,36 @@ function GuestsTab({ eventId, eventName }: { eventId: number; eventName: string 
                     </Select>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-white hover:bg-destructive/80 rounded-lg transition-colors"
-                      onClick={() => handleDelete(guest.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost" size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-white hover:bg-white/10 rounded-lg"
+                        title="QR Code" onClick={() => setQrGuest(guest)}
+                      >
+                        <QrCode className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost" size="icon"
+                        className="h-8 w-8 text-green-500 hover:text-green-400 hover:bg-green-500/10 rounded-lg"
+                        title="WhatsApp" onClick={() => openWhatsApp(guest)}
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost" size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-white hover:bg-white/10 rounded-lg"
+                        title="Ndrysho" onClick={() => openEdit(guest)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost" size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-white hover:bg-destructive/80 rounded-lg transition-colors"
+                        title="Fshi" onClick={() => handleDelete(guest.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -469,6 +588,163 @@ function GuestsTab({ eventId, eventName }: { eventId: number; eventName: string 
         </div>
       )}
       <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-4">{filtered.length} mysafirë</p>
+    </div>
+  );
+}
+
+/* ─── RSVP Tab ────────────────────────────────────────────── */
+
+function RsvpTab({ eventId }: { eventId: number }) {
+  const { data: guests = [], isLoading } = useListGuests(eventId);
+  const updateGuest = useUpdateGuest();
+  const qc = useQueryClient();
+
+  const handleStatusChange = (guestId: number, status: string) => {
+    updateGuest.mutate(
+      { eventId, guestId, data: { status: status as any } },
+      { onSuccess: () => {
+        qc.invalidateQueries({ queryKey: getListGuestsQueryKey(eventId) });
+        qc.invalidateQueries({ queryKey: getGetDashboardStatsQueryKey({ eventId }) });
+      }}
+    );
+  };
+
+  const confirmed = guests.filter(g => g.status === "confirmed" || g.status === "checked_in");
+  const declined = guests.filter(g => g.status === "declined");
+  const pending = guests.filter(g => g.status === "pending" || g.status === "invited");
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card className="glass border-green-500/20 bg-green-500/5 p-4 rounded-2xl">
+          <p className="text-xs uppercase font-medium text-green-400">Pranuar / Konfirmuar</p>
+          <p className="text-3xl font-serif font-bold text-foreground mt-1">{confirmed.length}</p>
+        </Card>
+        <Card className="glass border-red-500/20 bg-red-500/5 p-4 rounded-2xl">
+          <p className="text-xs uppercase font-medium text-red-400">Refuzuar</p>
+          <p className="text-3xl font-serif font-bold text-foreground mt-1">{declined.length}</p>
+        </Card>
+        <Card className="glass border-amber-500/20 bg-amber-500/5 p-4 rounded-2xl">
+          <p className="text-xs uppercase font-medium text-amber-400">Në Pritje</p>
+          <p className="text-3xl font-serif font-bold text-foreground mt-1">{pending.length}</p>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="confirmed" className="space-y-4">
+        <TabsList className="bg-black/30">
+          <TabsTrigger value="confirmed" className="text-xs">Konfirmuar ({confirmed.length})</TabsTrigger>
+          <TabsTrigger value="declined" className="text-xs">Refuzuar ({declined.length})</TabsTrigger>
+          <TabsTrigger value="pending" className="text-xs">Në Pritje ({pending.length})</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="confirmed">
+          <GuestSubList guests={confirmed} onStatusChange={handleStatusChange} />
+        </TabsContent>
+        <TabsContent value="declined">
+          <GuestSubList guests={declined} onStatusChange={handleStatusChange} />
+        </TabsContent>
+        <TabsContent value="pending">
+          <GuestSubList guests={pending} onStatusChange={handleStatusChange} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function GuestSubList({ guests, onStatusChange }: { guests: any[]; onStatusChange: (id: number, status: string) => void }) {
+  if (guests.length === 0) {
+    return <div className="p-8 text-center text-sm text-muted-foreground glass rounded-2xl">Nuk ka mysafirë në këtë kategori.</div>;
+  }
+
+  return (
+    <div className="rounded-2xl border border-white/5 overflow-hidden glass">
+      <table className="w-full text-sm">
+        <thead className="bg-white/[0.02] border-b border-white/5">
+          <tr>
+            <th className="text-left px-6 py-3 font-medium text-xs uppercase tracking-widest text-muted-foreground">Emri</th>
+            <th className="text-left px-6 py-3 font-medium text-xs uppercase tracking-widest text-muted-foreground">Telefon</th>
+            <th className="text-left px-6 py-3 font-medium text-xs uppercase tracking-widest text-muted-foreground">Personat</th>
+            <th className="text-left px-6 py-3 font-medium text-xs uppercase tracking-widest text-muted-foreground">Statusi</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-white/5">
+          {guests.map((g) => (
+            <tr key={g.id} className="hover:bg-white/[0.02]">
+              <td className="px-6 py-3 font-serif text-base">{g.firstName} {g.lastName}</td>
+              <td className="px-6 py-3 text-muted-foreground text-xs">{g.phone || "—"}</td>
+              <td className="px-6 py-3 text-muted-foreground text-xs">{g.partySize}</td>
+              <td className="px-6 py-3">
+                <Select value={g.status} onValueChange={(val) => onStatusChange(g.id, val)}>
+                  <SelectTrigger className="h-8 w-32 text-xs border-0 bg-transparent p-0">
+                    <span className={cn("text-[10px] uppercase px-2.5 py-1 rounded-md font-medium", STATUS_COLORS[g.status])}>
+                      {STATUS_LABELS[g.status]}
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>{Object.entries(STATUS_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent>
+                </Select>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ─── Reports Tab ─────────────────────────────────────────── */
+
+function ReportsTab({ eventId, event }: { eventId: number; event: any }) {
+  const { data: guests = [] } = useListGuests(eventId);
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const exportExcel = () => {
+    const dataToExport = guests.map((g, index) => ({
+      "Nr": index + 1,
+      "Emri": g.firstName,
+      "Mbiemri": g.lastName,
+      "Telefoni": g.phone || "",
+      "Email": g.email || "",
+      "Kategoria": CATEGORY_LABELS[g.category] || g.category,
+      "Numri i personave": g.partySize,
+      "Statusi": STATUS_LABELS[g.status] || g.status
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Mysafiret");
+    XLSX.writeFile(workbook, `raport-mysafiret-${event?.name || 'event'}.xlsx`);
+  };
+
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <Card className="glass border-white/5 rounded-2xl">
+        <CardHeader>
+          <CardTitle className="font-serif text-xl flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" /> Raportet & Eksportimi
+          </CardTitle>
+          <CardDescription>Generoni raporte PDF, Excel ose printoni listën e mysafirëve dhe planin e sallës.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-2">
+          <div className="grid grid-cols-2 gap-4">
+            <Button onClick={exportExcel} variant="outline" className="h-20 flex-col gap-2 rounded-2xl border-white/10 hover:bg-white/5">
+              <FileSpreadsheet className="h-6 w-6 text-green-500" />
+              <span className="text-xs uppercase font-medium">Eksporto Excel</span>
+            </Button>
+            <Button onClick={handlePrint} variant="outline" className="h-20 flex-col gap-2 rounded-2xl border-white/10 hover:bg-white/5">
+              <Printer className="h-6 w-6 text-blue-400" />
+              <span className="text-xs uppercase font-medium">Printo / Eksporto PDF</span>
+            </Button>
+          </div>
+
+          <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2 text-xs text-muted-foreground">
+            <p className="font-semibold text-foreground">Informata mbi printimin:</p>
+            <p>Klikimi i butonit "Printo / Eksporto PDF" do të hapë dritaren e printimit të shfletuesit tuaj, ku mund të zgjidhni "Save as PDF" për të ruajtur dokumentin si PDF.</p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -537,7 +813,7 @@ function TablesTab({ eventId }: { eventId: number }) {
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-widest text-muted-foreground">Kapaciteti</Label>
+                  <Label className="text-xs uppercase tracking-widest text-muted-foreground">Kapaciteti (Vendet)</Label>
                   <Input className="rounded-xl border-white/10 bg-black/20 focus-visible:ring-primary/50" type="number" min="1" max="50" value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: e.target.value }))} />
                 </div>
               </div>
@@ -587,7 +863,7 @@ function TablesTab({ eventId }: { eventId: number }) {
                 <CardContent className="space-y-4 pt-6 relative z-10">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground font-light">{SHAPE_LABELS[table.shape]}</span>
-                    <span className={cn("text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md font-medium border border-white/5", s.color.replace('bg-', 'bg-').replace('text-', 'text-'))}>{s.label}</span>
+                    <span className={cn("text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md font-medium border border-white/5", s.color)}>{s.label}</span>
                   </div>
                   <div className="w-full bg-black/40 border border-white/5 rounded-full h-2 overflow-hidden">
                     <div
@@ -625,20 +901,6 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
     showMap: true,
   });
 
-  // Sync form when invitation loads
-  useState(() => {
-    if (invitation) {
-      setForm({
-        coupleName: invitation.coupleName || event?.name || "",
-        message: invitation.message || "",
-        template: invitation.template || "classic",
-        couplePhoto: (invitation as any).couplePhoto || "",
-        showCountdown: invitation.showCountdown ?? true,
-        showMap: invitation.showMap ?? true,
-      });
-    }
-  });
-
   const handleSave = () => {
     saveInvitation.mutate(
       { eventId, data: form as any },
@@ -658,7 +920,7 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
       {
         onSuccess: (result: any) => {
           qc.invalidateQueries({ queryKey: getListGuestsQueryKey(eventId) });
-          toast({ title: `${result.sent || 0} ftesa u dërguan!` });
+          toast({ title: `${result.sent || 0} ftesa u dërguan përmes email!` });
         },
         onError: () => toast({ title: "Gabim gjatë dërgimit", variant: "destructive" }),
       }
@@ -666,22 +928,23 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
   };
 
   const TEMPLATES = [
-    { value: "classic", label: "Klasike" },
-    { value: "modern", label: "Moderne" },
-    { value: "floral", label: "Florale" },
-    { value: "minimal", label: "Minimale" },
+    { value: "classic", label: "Klasike Elegant" },
+    { value: "modern", label: "Moderne Minimale" },
+    { value: "floral", label: "Florale Romantike" },
+    { value: "minimal", label: "Minimale Dark" },
+    { value: "luxury", label: "Luks Mbretëror" },
   ];
 
   return (
     <div className="space-y-8 max-w-xl">
       <Card className="border-border/50 bg-card/40 rounded-none shadow-none">
         <CardHeader className="border-b border-border/30 pb-4">
-          <CardTitle className="font-serif text-xl">Konfiguro Ftesën</CardTitle>
-          <CardDescription className="font-light mt-1">Personalizoni ftesën digjitale për mysafirët tuaj.</CardDescription>
+          <CardTitle className="font-serif text-xl">Konfiguro Ftesën Digjitale</CardTitle>
+          <CardDescription className="font-light mt-1">Personalizoni pamjen dhe mesazhin e ftesës.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 pt-6">
           <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-widest text-muted-foreground">Emri i Çiftit</Label>
+            <Label className="text-xs uppercase tracking-widest text-muted-foreground">Emri i Çiftit / Titulli</Label>
             <Input
               className="rounded-none border-border bg-muted/10"
               value={form.coupleName}
@@ -696,22 +959,12 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
               className="rounded-none border-border bg-muted/10"
               value={form.couplePhoto}
               onChange={e => setForm(f => ({ ...f, couplePhoto: e.target.value }))}
-              placeholder="https://... (link i fotos nga Google Drive, Dropbox, etj.)"
+              placeholder="https://... (link i fotos)"
             />
-            {form.couplePhoto && (
-              <div className="relative mt-2 overflow-hidden rounded-none border border-border/50" style={{ height: 160 }}>
-                <img
-                  src={form.couplePhoto}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                  onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-                />
-              </div>
-            )}
-            <p className="text-[10px] text-muted-foreground">Kjo foto do të shfaqet si hero background në faqen e ftesës digjitale.</p>
           </div>
+
           <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-widest text-muted-foreground">Mesazhi</Label>
+            <Label className="text-xs uppercase tracking-widest text-muted-foreground">Mesazhi i Ftesës</Label>
             <textarea
               className="w-full rounded-none border border-border bg-muted/10 px-3 py-3 text-sm focus-visible:outline-none focus-visible:border-primary resize-none min-h-[120px] font-light leading-relaxed text-foreground"
               value={form.message}
@@ -719,15 +972,17 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
               placeholder="Mesazhi i ftesës..."
             />
           </div>
+
           <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-widest text-muted-foreground">Template</Label>
-            <Select value={form.template} onValueChange={v => setForm(f => ({ ...f, template: v as import("@workspace/api-client-react").InvitationTemplate }))}>
+            <Label className="text-xs uppercase tracking-widest text-muted-foreground">Zgjidh Template</Label>
+            <Select value={form.template} onValueChange={v => setForm(f => ({ ...f, template: v as any }))}>
               <SelectTrigger className="rounded-none border-border bg-muted/10"><SelectValue /></SelectTrigger>
               <SelectContent className="rounded-none border-border">
                 {TEMPLATES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
+
           <div className="flex gap-6 pt-2">
             <label className="flex items-center gap-2 text-xs uppercase tracking-widest cursor-pointer text-muted-foreground">
               <input
@@ -736,7 +991,7 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
                 onChange={e => setForm(f => ({ ...f, showCountdown: e.target.checked }))}
                 className="rounded-none bg-muted/10 border-border accent-primary"
               />
-              Countdown
+              Countdown Timer
             </label>
             <label className="flex items-center gap-2 text-xs uppercase tracking-widest cursor-pointer text-muted-foreground">
               <input
@@ -748,6 +1003,7 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
               Google Maps
             </label>
           </div>
+
           <Button onClick={handleSave} disabled={saveInvitation.isPending} className="w-full bg-primary hover:bg-primary/90 text-white rounded-none uppercase tracking-widest text-xs h-12 mt-4">
             {saveInvitation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Ruaj Ftesën
@@ -757,8 +1013,8 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
 
       <Card className="border-border/50 bg-card/40 rounded-none shadow-none">
         <CardHeader className="border-b border-border/30 pb-4">
-          <CardTitle className="font-serif text-xl">Dërgo Ftesat</CardTitle>
-          <CardDescription className="font-light mt-1">Dërgo link unik RSVP tek çdo mysafir me status "Në pritje".</CardDescription>
+          <CardTitle className="font-serif text-xl">Dërgo Ftesat masive (Email)</CardTitle>
+          <CardDescription className="font-light mt-1">Dërgo ftesën me link unik RSVP tek të gjithë mysafirët në pritje.</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <Button
@@ -769,12 +1025,9 @@ function InvitationTab({ eventId, event }: { eventId: number; event: any }) {
           >
             {sendInvitations.isPending
               ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Duke dërguar...</>
-              : <><Send className="mr-2 h-4 w-4" /> Dërgo Ftesat</>
+              : <><Send className="mr-2 h-4 w-4" /> Dërgo Ftesat me Email</>
             }
           </Button>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-4 text-center">
-            Çdo mysafir do të marrë një link unik RSVP.
-          </p>
         </CardContent>
       </Card>
     </div>
@@ -787,7 +1040,6 @@ function CheckInTab({ eventId }: { eventId: number }) {
   const [query, setQuery] = useState("");
   const [searched, setSearched] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: guests, isLoading, refetch } = useLookupGuest(eventId, { name: query }, {
     query: { enabled: false } as any
   });
@@ -805,9 +1057,9 @@ function CheckInTab({ eventId }: { eventId: number }) {
         <CardHeader className="border-b border-border/30 pb-4">
           <CardTitle className="font-serif text-xl flex items-center gap-3">
             <QrCode className="h-5 w-5 text-primary/70" />
-            Gjetja e Tavolinës
+            Check-in i Mysafirëve
           </CardTitle>
-          <CardDescription className="font-light mt-1">Kërkoni mysafirin me emër ose mbiemër.</CardDescription>
+          <CardDescription className="font-light mt-1">Kërkoni mysafirin me emër ose mbiemër gjatë hyrjes.</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <form onSubmit={handleSearch} className="flex gap-4">
@@ -865,8 +1117,61 @@ function CheckInTab({ eventId }: { eventId: number }) {
 
 export function EventWorkspace() {
   const params = useParams<{ id: string }>();
+  const [, setLocation] = useLocation();
   const eventId = parseInt(params.id, 10);
+  const qc = useQueryClient();
+
   const { data: event, isLoading: eventLoading } = useGetEvent(eventId);
+  const updateEvent = useUpdateEvent();
+  const deleteEvent = useDeleteEvent();
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "", date: "", time: "", venue: "", address: "", description: "", dressCode: "", phoneContact: "", status: "active"
+  });
+
+  const openEditDialog = () => {
+    if (!event) return;
+    setEditForm({
+      name: event.name || "",
+      date: event.date || "",
+      time: event.time || "",
+      venue: event.venue || "",
+      address: event.address || "",
+      description: event.description || "",
+      dressCode: event.dressCode || "",
+      phoneContact: event.phoneContact || "",
+      status: event.status || "active",
+    });
+    setEditOpen(true);
+  };
+
+  const handleEditSave = () => {
+    updateEvent.mutate(
+      { id: eventId, data: editForm as any },
+      {
+        onSuccess: () => {
+          qc.invalidateQueries({ queryKey: getGetEventQueryKey(eventId) });
+          setEditOpen(false);
+          toast({ title: "Eventi u përditësua!" });
+        },
+        onError: () => toast({ title: "Gabim gjatë përditësimit", variant: "destructive" }),
+      }
+    );
+  };
+
+  const handleDeleteEvent = () => {
+    deleteEvent.mutate(
+      { id: eventId },
+      {
+        onSuccess: () => {
+          toast({ title: "Eventi u fshi!" });
+          setLocation("/events");
+        },
+        onError: () => toast({ title: "Gabim gjatë fshirjes", variant: "destructive" }),
+      }
+    );
+  };
 
   if (eventLoading) {
     return (
@@ -889,55 +1194,101 @@ export function EventWorkspace() {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-bottom-4 duration-500">
       {/* Header */}
-      <div className="flex items-start gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/events"><ArrowLeft className="h-5 w-5" /></Link>
-        </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-3xl font-serif font-bold tracking-tight">{event.name}</h1>
-            <Badge variant={event.status === "active" ? "default" : "secondary"} className="capitalize">
-              {event.status}
-            </Badge>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
+        <div className="flex items-start gap-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/events"><ArrowLeft className="h-5 w-5" /></Link>
+          </Button>
+          <div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-3xl font-serif font-bold tracking-tight">{event.name}</h1>
+              <Badge variant={event.status === "active" ? "default" : "secondary"} className="capitalize">
+                {event.status}
+              </Badge>
+            </div>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {format(new Date(event.date), "dd MMMM yyyy")}
+              {event.time && ` · ${event.time}`}
+              {event.venue && ` · ${event.venue}`}
+            </p>
           </div>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {format(new Date(event.date), "dd MMMM yyyy")}
-            {event.time && ` · ${event.time}`}
-            {event.venue && ` · ${event.venue}`}
-          </p>
+        </div>
+
+        <div className="flex items-center gap-2 self-end md:self-center">
+          <Button variant="outline" size="sm" onClick={openEditDialog} className="rounded-xl border-white/10 text-xs">
+            <Pencil className="h-3.5 w-3.5 mr-1" /> Ndrysho Eventin
+          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="rounded-xl border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs">
+                <Trash2 className="h-3.5 w-3.5 mr-1" /> Fshi Eventin
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="border-white/10 bg-background/90 backdrop-blur-2xl rounded-2xl">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Fshi eventin "{event.name}"?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Kjo procedurë është e pakthyeshme. Do të fshihen të gjithë mysafirët, tavolinat dhe ftesat lidhur me këtë event.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="rounded-xl border-white/10">Anulo</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteEvent} className="bg-red-600 hover:bg-red-700 rounded-xl">Po, fshi</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
+      {/* Edit Event Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="border-white/10 bg-background/90 backdrop-blur-2xl rounded-2xl max-w-lg">
+          <DialogHeader><DialogTitle className="font-serif text-xl">Ndrysho Detajet e Eventit</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2 text-xs">
+            <div className="space-y-1"><Label>Emri i Eventit *</Label><Input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} className="rounded-xl border-white/10 bg-black/20" /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1"><Label>Data *</Label><Input type="date" value={editForm.date} onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))} className="rounded-xl border-white/10 bg-black/20" /></div>
+              <div className="space-y-1"><Label>Ora</Label><Input value={editForm.time} onChange={e => setEditForm(f => ({ ...f, time: e.target.value }))} placeholder="19:00" className="rounded-xl border-white/10 bg-black/20" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1"><Label>Vendi (Venue)</Label><Input value={editForm.venue} onChange={e => setEditForm(f => ({ ...f, venue: e.target.value }))} className="rounded-xl border-white/10 bg-black/20" /></div>
+              <div className="space-y-1"><Label>Adresa</Label><Input value={editForm.address} onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))} className="rounded-xl border-white/10 bg-black/20" /></div>
+            </div>
+            <div className="space-y-1"><Label>Statusi</Label>
+              <Select value={editForm.status} onValueChange={v => setEditForm(f => ({ ...f, status: v }))}>
+                <SelectTrigger className="rounded-xl border-white/10 bg-black/20"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="draft">Draft</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="completed">Completed</SelectItem></SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)} className="rounded-xl border-white/10">Anulo</Button>
+            <Button onClick={handleEditSave} disabled={updateEvent.isPending} className="bg-primary hover:bg-primary/90 text-white rounded-xl">Ruaj Ndryshimet</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="bg-muted/60">
-          <TabsTrigger value="overview" className="flex items-center gap-1.5">
-            <BarChart3 className="h-4 w-4" /> Pasqyra
-          </TabsTrigger>
-          <TabsTrigger value="guests" className="flex items-center gap-1.5">
-            <Users className="h-4 w-4" /> Mysafirët
-          </TabsTrigger>
-          <TabsTrigger value="tables" className="flex items-center gap-1.5">
-            <LayoutGrid className="h-4 w-4" /> Tavolinat
-          </TabsTrigger>
-          <TabsTrigger value="invitation" className="flex items-center gap-1.5">
-            <Mail className="h-4 w-4" /> Ftesa
-          </TabsTrigger>
-          <TabsTrigger value="hall" className="flex items-center gap-1.5">
-            <Map className="h-4 w-4" /> Salla
-          </TabsTrigger>
-          <TabsTrigger value="checkin" className="flex items-center gap-1.5">
-            <QrCode className="h-4 w-4" /> Check-in
-          </TabsTrigger>
+        <TabsList className="bg-muted/60 flex-wrap h-auto gap-1">
+          <TabsTrigger value="overview" className="flex items-center gap-1.5"><BarChart3 className="h-4 w-4" /> Pasqyra</TabsTrigger>
+          <TabsTrigger value="guests" className="flex items-center gap-1.5"><Users className="h-4 w-4" /> Mysafirët</TabsTrigger>
+          <TabsTrigger value="tables" className="flex items-center gap-1.5"><LayoutGrid className="h-4 w-4" /> Tavolinat</TabsTrigger>
+          <TabsTrigger value="invitation" className="flex items-center gap-1.5"><Mail className="h-4 w-4" /> Ftesa</TabsTrigger>
+          <TabsTrigger value="hall" className="flex items-center gap-1.5"><Map className="h-4 w-4" /> Hall Designer</TabsTrigger>
+          <TabsTrigger value="rsvp" className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-green-500" /> RSVP</TabsTrigger>
+          <TabsTrigger value="reports" className="flex items-center gap-1.5"><Printer className="h-4 w-4" /> Raportet</TabsTrigger>
+          <TabsTrigger value="checkin" className="flex items-center gap-1.5"><QrCode className="h-4 w-4" /> Check-in</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview"><OverviewTab eventId={eventId} /></TabsContent>
         <TabsContent value="guests"><GuestsTab eventId={eventId} eventName={event?.name ?? ""} /></TabsContent>
         <TabsContent value="tables"><TablesTab eventId={eventId} /></TabsContent>
         <TabsContent value="invitation"><InvitationTab eventId={eventId} event={event} /></TabsContent>
-        <TabsContent value="hall" className="h-[75vh] min-h-[600px]">
-          <HallDesigner eventId={eventId} />
-        </TabsContent>
+        <TabsContent value="hall" className="h-[75vh] min-h-[600px]"><HallDesigner eventId={eventId} /></TabsContent>
+        <TabsContent value="rsvp"><RsvpTab eventId={eventId} /></TabsContent>
+        <TabsContent value="reports"><ReportsTab eventId={eventId} event={event} /></TabsContent>
         <TabsContent value="checkin"><CheckInTab eventId={eventId} /></TabsContent>
       </Tabs>
     </div>

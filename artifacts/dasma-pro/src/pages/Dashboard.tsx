@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/lib/i18n";
 
 const PLAN_META: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
   basic:  { label: "Basic",  icon: <Sparkles className="h-4 w-4" />,   color: "text-amber-500" },
@@ -45,10 +46,12 @@ function KpiCard({
 }
 
 export function Dashboard() {
+  const { t } = useLanguage();
   const { data: overview, isLoading: ovLoading } = useGetDashboardOverview();
   const { data: subscription, isLoading: subLoading } = useGetSubscription();
 
-  const isLoading = ovLoading || subLoading;
+  const isLoading = ovLoading && !overview;
+
 
   const rsvpTotal = ((overview as any)?.totalConfirmed ?? 0) + ((overview as any)?.totalDeclined ?? 0) + ((overview as any)?.totalPending ?? 0);
   const confirmedPct = rsvpTotal > 0 ? Math.round((((overview as any)?.totalConfirmed ?? 0) / rsvpTotal) * 100) : 0;
@@ -77,11 +80,11 @@ export function Dashboard() {
       <div className="flex justify-between items-end border-b border-white/10 pb-6 relative">
         <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary/10 blur-[100px] rounded-full pointer-events-none -translate-y-1/2" />
         <div className="relative z-10">
-          <h1 className="text-4xl font-serif font-medium tracking-tight text-foreground">Pasqyra e Llogarisë</h1>
-          <p className="text-muted-foreground mt-2 font-light text-lg">Mirësevini në NoaEvent. Ja situata aktuale.</p>
+          <h1 className="text-4xl font-serif font-medium tracking-tight text-foreground">{t("dashboard.welcome", "Pasqyra e Llogarisë")}</h1>
+          <p className="text-muted-foreground mt-2 font-light text-lg">NoaEvent Dashboard</p>
         </div>
         <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-xl uppercase tracking-widest text-xs h-11 px-6 shadow-[0_0_20px_rgba(217,56,94,0.3)] transition-all hover:shadow-[0_0_30px_rgba(217,56,94,0.5)] relative z-10">
-          <Link href="/events/new"><Plus className="mr-2 h-4 w-4" /> Krijo Event</Link>
+          <Link href="/events/new"><Plus className="mr-2 h-4 w-4" /> {t("dashboard.create_event", "Krijo Event")}</Link>
         </Button>
       </div>
 

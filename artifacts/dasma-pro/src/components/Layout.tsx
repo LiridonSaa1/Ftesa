@@ -14,7 +14,9 @@ import {
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { useLanguage, LanguageSelector } from "@/lib/i18n";
 
 interface NavItemProps {
   href: string;
@@ -47,18 +49,29 @@ export function Layout({ children }: { children: ReactNode }) {
   const { user } = useUser();
   const { signOut } = useClerk();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
-  const isAdmin = user?.publicMetadata?.role === "admin"; 
+  const { data: me } = useQuery({
+    queryKey: ["user-status"],
+    queryFn: async () => {
+      const res = await fetch("/api/auth/me", { credentials: "include" });
+      if (!res.ok) return null;
+      return res.json() as Promise<{ role: string }>;
+    },
+    staleTime: 30_000,
+  });
+
+  const isAdmin = user?.publicMetadata?.role === "admin" || me?.role === "admin"; 
   
   const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
-    { href: "/events", label: "Eventet e mia", icon: <CalendarDays className="h-4 w-4" /> },
-    { href: "/subscription", label: "Abonimi", icon: <CreditCard className="h-4 w-4" /> },
-    { href: "/settings", label: "Kufizimet", icon: <SettingsIcon className="h-4 w-4" /> },
+    { href: "/dashboard", label: t("nav.dashboard", "Dashboard"), icon: <LayoutDashboard className="h-4 w-4" /> },
+    { href: "/events", label: t("nav.events", "Eventet e mia"), icon: <CalendarDays className="h-4 w-4" /> },
+    { href: "/subscription", label: t("nav.subscription", "Abonimi"), icon: <CreditCard className="h-4 w-4" /> },
+    { href: "/settings", label: t("nav.settings", "Profil & Cilësime"), icon: <SettingsIcon className="h-4 w-4" /> },
   ];
 
   if (isAdmin) {
-    navItems.push({ href: "/admin", label: "Admin Panel", icon: <ShieldCheck className="h-4 w-4" /> });
+    navItems.push({ href: "/admin", label: t("nav.admin", "Admin Panel"), icon: <ShieldCheck className="h-4 w-4" /> });
   }
 
   const SidebarContent = () => (
@@ -67,11 +80,12 @@ export function Layout({ children }: { children: ReactNode }) {
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/10 blur-[120px] rounded-full pointer-events-none" />
       
-      <div className="flex h-20 items-center px-6 relative z-10 border-b border-white/5">
+      <div className="flex h-20 items-center justify-between px-6 relative z-10 border-b border-white/5">
         <Link href="/" className="flex items-center gap-2.5 no-underline">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-serif font-bold text-lg shadow-[0_0_15px_rgba(217,56,94,0.4)]" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)/0.6))" }}>N</div>
           <span className="font-serif font-bold text-xl tracking-wide text-foreground">NoaEvent</span>
         </Link>
+        <LanguageSelector isDark />
       </div>
       
       <div className="flex-1 overflow-auto py-6 relative z-10">
@@ -105,38 +119,39 @@ export function Layout({ children }: { children: ReactNode }) {
           onClick={() => signOut({ redirectUrl: import.meta.env.BASE_URL.replace(/\/$/, "") || "/" })}
         >
           <LogOut className="mr-2 h-4 w-4" />
-          Dil nga llogaria
+          {t("nav.logout", "Dil nga llogaria")}
         </Button>
       </div>
     </div>
   );
 
   return (
-    <div className="grid min-h-[100dvh] w-full md:grid-cols-[280px_1fr] bg-background text-foreground dark">
-      <div className="hidden md:block">
+    <div className="grid h-[100dvh] w-full md:grid-cols-[280px_1fr] overflow-hidden bg-background text-foreground dark">
+      <aside className="hidden md:block h-full overflow-hidden border-r border-border/50 sticky top-0">
         <SidebarContent />
-      </div>
-      <div className="flex flex-col relative z-0">
-        <header className="flex h-16 items-center gap-4 border-b border-border/50 bg-background/60 backdrop-blur-xl px-4 md:hidden sticky top-0 z-50">
-          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="shrink-0 md:hidden hover:bg-white/5">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-72 border-r border-border/50 bg-background/80 backdrop-blur-2xl dark">
-              <SidebarContent />
-            </SheetContent>
-          </Sheet>
-          <div className="w-full flex-1 flex justify-center pr-10">
+      </aside>
+      <div className="flex flex-col h-full overflow-hidden relative z-0">
+        <header className="flex h-16 items-center justify-between border-b border-border/50 bg-background/60 backdrop-blur-xl px-4 md:hidden shrink-0 z-50">
+          <div className="flex items-center gap-2">
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="shrink-0 md:hidden hover:bg-white/5">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-72 border-r border-border/50 bg-background/80 backdrop-blur-2xl dark">
+                <SidebarContent />
+              </SheetContent>
+            </Sheet>
             <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-serif font-bold text-sm shadow-[0_0_10px_rgba(217,56,94,0.4)]" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)/0.6))" }}>N</div>
               <span className="font-serif font-bold text-lg tracking-wide text-foreground">NoaEvent</span>
             </Link>
           </div>
+          <LanguageSelector isDark />
         </header>
-        <main className="flex flex-1 flex-col p-4 md:p-8 lg:p-12 overflow-y-auto relative">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 relative">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.03] pointer-events-none mix-blend-overlay"></div>
           <div className="max-w-6xl w-full mx-auto relative z-10">
             {children}

@@ -9,9 +9,16 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export function EventList() {
-  const { data: events, isLoading } = useListEvents();
+  const { data: rawEvents, isLoading } = useListEvents();
+
+  const events = Array.isArray(rawEvents)
+    ? rawEvents
+    : (rawEvents as any)?.events && Array.isArray((rawEvents as any).events)
+    ? (rawEvents as any).events
+    : [];
 
   if (isLoading) {
+
     return (
       <div className="space-y-6">
         <div>
@@ -57,7 +64,7 @@ export function EventList() {
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-8">
-          {events.map((event) => (
+          {events.map((event: any) => (
             <Card key={event.id} className="flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 border-white/5 glass rounded-2xl shadow-xl hover:shadow-[0_8px_30px_rgba(217,56,94,0.1)] relative">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[50px] rounded-full pointer-events-none" />
               <CardHeader className="pb-6 border-b border-white/5 bg-white/[0.02]">
