@@ -25,6 +25,12 @@ Optional env: `PADDLE_ENVIRONMENT` — `"sandbox"` (default) or `"production"`
 - After payment, webhook sets `users.status = "active"` and creates a `subscriptions` row
 - New DB tables: `subscriptions`, `payments` (in `lib/db/src/schema/`)
 
+## Stripe Payments
+
+Required server secret: `STRIPE_SECRET_KEY` — Stripe secret API key used only by the API server
+
+Optional env: `STRIPE_PUBLISHABLE_KEY` — returned by the API config endpoint for frontend Stripe configuration
+
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9

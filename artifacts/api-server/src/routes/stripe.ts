@@ -5,8 +5,14 @@ import { db, usersTable, subscriptionsTable, paymentsTable } from "@workspace/db
 
 const router: IRouter = Router();
 
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY || "";
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripePublishableKey = process.env.STRIPE_PUBLISHABLE_KEY || "";
+
+if (!stripeSecretKey) {
+  throw new Error(
+    "STRIPE_SECRET_KEY environment variable is required to initialize Stripe.",
+  );
+}
 
 const stripe = new Stripe(stripeSecretKey, {
   apiVersion: "2025-01-27.acacia" as any,
