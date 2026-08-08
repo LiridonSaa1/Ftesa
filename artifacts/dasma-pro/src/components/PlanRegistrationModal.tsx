@@ -909,17 +909,17 @@ export function PlanRegistrationModal({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
-                className="max-w-xl mx-auto space-y-5"
+                className="max-w-xl mx-auto space-y-4"
               >
                 <div className="text-center">
-                  <span className="inline-block px-3 py-1 bg-rose-100 text-[#7B1F3A] dark:bg-rose-950/50 dark:text-rose-300 rounded-full text-xs font-extrabold uppercase tracking-wider mb-2">
+                  <span className="inline-block px-3 py-1 bg-rose-100 text-[#7B1F3A] dark:bg-rose-950/50 dark:text-rose-300 rounded-full text-xs font-extrabold uppercase tracking-wider mb-1.5">
                     Hapi 3 me 5 — Pagesa Zyrtare me Paddle Billing
                   </span>
-                  <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">
-                    Forma Zyrtare e Pagesës — Paddle
+                  <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 dark:text-white">
+                    Konfirmimi i Abonimit në Paddle
                   </h2>
                   <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
-                    Transaksioni do të ruhet automatikisht te Paddle Sandbox dhe në bazën e të dhënave!
+                    Transaksioni do të regjistrohet automatikisht në serverët e Paddle dhe në bazën e të dhënave.
                   </p>
                 </div>
 
@@ -930,38 +930,44 @@ export function PlanRegistrationModal({
                   </div>
                 )}
 
-                {/* Plan Summary Row */}
-                <div className="flex items-center justify-between p-4 bg-rose-50/40 dark:bg-slate-800 rounded-2xl border border-rose-100 dark:border-slate-700 text-xs">
-                  <div>
-                    <span className="text-gray-500">Paketa: </span>
-                    <span className="font-extrabold text-[#7B1F3A] uppercase">{currentPlanObj.name}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Kapaciteti: </span>
-                    <span className="font-bold text-gray-800 dark:text-slate-200">{currentPlanObj.events}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Totali: </span>
-                    <span className="font-black text-base text-gray-900 dark:text-white">{currentPlanObj.price}</span>
-                  </div>
-                </div>
-
-                {/* REAL OFFICIAL PADDLE INLINE CHECKOUT CONTAINER */}
-                <div className="relative min-h-[380px] w-full rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 p-2 shadow-inner overflow-hidden flex flex-col justify-center">
-                  {isPaddleLoading && (
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm p-4 text-center">
-                      <Loader2 size={36} className="animate-spin text-[#7B1F3A] mb-3" />
-                      <span className="text-xs font-bold text-gray-700 dark:text-slate-300">
-                        Po lidhet me serverin zyrtar të Paddle Billing...
-                      </span>
+                {/* Plan & Billing Detail Card */}
+                <div className="bg-rose-50/50 dark:bg-slate-800/60 rounded-2xl p-4 border border-rose-100 dark:border-slate-700 space-y-3">
+                  <div className="flex items-center justify-between text-xs pb-3 border-b border-rose-100 dark:border-slate-700">
+                    <div>
+                      <span className="text-gray-500">Paketa e Zgjedhur: </span>
+                      <span className="font-extrabold text-[#7B1F3A] uppercase tracking-wide">{currentPlanObj.name}</span>
                     </div>
-                  )}
+                    <div>
+                      <span className="text-gray-500">Kapaciteti: </span>
+                      <span className="font-bold text-gray-800 dark:text-slate-200">{currentPlanObj.events}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Çmimi: </span>
+                      <span className="font-black text-base text-gray-900 dark:text-white">{currentPlanObj.price}</span>
+                    </div>
+                  </div>
 
-                  <div id="paddle-checkout-container" className="w-full min-h-[360px]" />
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-gray-100 dark:border-slate-800">
+                      <div className="text-[10px] text-gray-400 font-bold uppercase">Llogaria e Faturimit</div>
+                      <div className="font-semibold text-gray-800 dark:text-slate-200 truncate mt-0.5">
+                        {email || user?.primaryEmailAddress?.emailAddress || "përdoruesi@ftesa.com"}
+                      </div>
+                    </div>
+                    <div className="bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-gray-100 dark:border-slate-800">
+                      <div className="text-[10px] text-gray-400 font-bold uppercase">Gjendja e Transaksionit</div>
+                      <div className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
+                        <CheckCircle2 size={13} /> Gati për Paddle SSL
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Official Paddle Action Buttons */}
-                <div className="pt-2 text-center space-y-3">
+                {/* OFFICIAL PADDLE CONTAINER (expands naturally if iframe renders) */}
+                <div id="paddle-checkout-container" className="w-full empty:hidden" />
+
+                {/* Primary Action Button */}
+                <div className="pt-1 text-center space-y-2.5">
                   <button
                     type="button"
                     disabled={isPaddleLoading}
@@ -975,9 +981,9 @@ export function PlanRegistrationModal({
                           amount: selectedPlan === "basic" ? 1499 : selectedPlan === "pro" ? 2999 : 7999,
                         });
                         setIsPaddleLoading(false);
-                      }, 600);
+                      }, 500);
                     }}
-                    className="w-full py-4 bg-[#7B1F3A] hover:bg-[#5e1729] text-white rounded-xl font-black text-xs tracking-wider uppercase shadow-xl shadow-[#7B1F3A]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                    className="w-full py-3.5 bg-[#7B1F3A] hover:bg-[#5e1729] text-white rounded-xl font-black text-xs tracking-wider uppercase shadow-xl shadow-[#7B1F3A]/25 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                   >
                     {isPaddleLoading ? (
                       <>
@@ -990,29 +996,29 @@ export function PlanRegistrationModal({
                     )}
                   </button>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => handleOpenPaddleCheckout("overlay")}
                       disabled={isPaddleLoading}
-                      className="py-3 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200 rounded-xl font-extrabold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                      className="py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200 rounded-xl font-bold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                     >
-                      <Lock size={15} /> Hap me Paddle Overlay (Modal Pop-up)
+                      <Lock size={14} /> Hap me Paddle Overlay (Modal Pop-up)
                     </button>
 
                     <button
                       type="button"
                       onClick={() => initAndOpenPaddleInline()}
                       disabled={isPaddleLoading}
-                      className="py-3 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200 rounded-xl font-extrabold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                      className="py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200 rounded-xl font-bold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                     >
-                      <Sparkles size={15} className="text-[#7B1F3A]" /> Ririfresko Checkout-in e Paddle
+                      <Sparkles size={14} className="text-[#7B1F3A]" /> Ririfresko Formën e Paddle
                     </button>
                   </div>
 
-                  <div className="flex items-center justify-center gap-2 text-[11px] text-gray-400 pt-1">
+                  <div className="flex items-center justify-center gap-2 text-[11px] text-gray-400 pt-0.5">
                     <ShieldCheck size={14} className="text-emerald-500" />
-                    <span>Transaksioni realizohet dhe ruhet te Paddle Billing (SSL 256-bit)</span>
+                    <span>Enkriptim 256-bit SSL — Ruajtje direkte në Paddle Sandbox</span>
                   </div>
                 </div>
               </motion.div>

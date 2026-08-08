@@ -60,9 +60,9 @@ app.use("/api", router);
 const staticPath = path.resolve(__dirname, "../../dasma-pro/dist/public");
 app.use(express.static(staticPath));
 
-// SPA wildcard fallback for frontend routes
-app.get("*", (req, res, next) => {
-  if (req.path.startsWith("/api")) {
+// SPA fallback for non-API GET routes
+app.use((req, res, next) => {
+  if (req.method !== "GET" || req.path.startsWith("/api")) {
     return next();
   }
   res.sendFile(path.join(staticPath, "index.html"), (err) => {
