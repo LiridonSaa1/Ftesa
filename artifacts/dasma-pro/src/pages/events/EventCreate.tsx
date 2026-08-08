@@ -61,10 +61,11 @@ export function EventCreate() {
           queryClient.invalidateQueries({ queryKey: getListEventsQueryKey() });
           setLocation(`/events/${newEvent.id}`);
         },
-        onError: () => {
+        onError: (err: any) => {
+          const message = err?.data?.error || err?.message || "Pati një problem gjatë krijimit të eventit. Ju lutem provoni përsëri.";
           toast({
             title: "Gabim",
-            description: "Pati një problem gjatë krijimit të eventit. Ju lutem provoni përsëri.",
+            description: message,
             variant: "destructive",
           });
         },

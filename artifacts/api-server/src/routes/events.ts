@@ -17,38 +17,44 @@ router.get("/events", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.post("/events", requireAuth, async (req, res): Promise<void> => {
-  await ensureUser(req);
-  const userId = (req as any).userId as string;
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-  const limit = PLAN_LIMITS[user.subscriptionPlan];
-  if (limit !== null) {
-    const [{ value: eventCount }] = await db
-      .select({ value: count() })
-      .from(eventsTable)
-      .where(eq(eventsTable.userId, userId));
-    if (Number(eventCount) >= limit) {
-      res.status(403).json({ error: `Plan limit reached. Upgrade to create more events.` });
+  try {
+    await ensureUser(req);
+    const userId = (req as any).userId as string;
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+    const userPlan = user?.subscriptionPlan || "pro";
+    const limit = PLAN_LIMITS[userPlan] ?? null;
+    if (limit !== null) {
+      const [{ value: eventCount }] = await db
+        .select({ value: count() })
+        .from(eventsTable)
+        .where(eq(eventsTable.userId, userId));
+      if (Number(eventCount) >= limit) {
+        res.status(403).json({ error: `Keni arritur limitin e planit tuaj (${limit} event/e max). Kaloni në një plan më të lartë për të krijuar më shumë evente.` });
+        return;
+      }
+    }
+    const { name, date, time, venue, address, description, dressCode, phoneContact } = req.body;
+    if (!name || !date) {
+      res.status(400).json({ error: "Emri dhe data e eventit janë të detyrueshme." });
       return;
     }
+    const [event] = await db.insert(eventsTable).values({
+      userId,
+      name,
+      date,
+      time: time || null,
+      venue: venue || null,
+      address: address || null,
+      description: description || null,
+      dressCode: dressCode || null,
+      phoneContact: phoneContact || null,
+      status: "draft",
+    }).returning();
+    res.status(201).json(serializeEvent(event));
+  } catch (err: any) {
+    console.error("Error creating event:", err);
+    res.status(500).json({ error: "Ndodhi një gabim gjatë ruajtjes së eventit: " + (err?.message || "Gabim në server") });
   }
-  const { name, date, time, venue, address, description, dressCode, phoneContact } = req.body;
-  if (!name || !date) {
-    res.status(400).json({ error: "name and date are required" });
-    return;
-  }
-  const [event] = await db.insert(eventsTable).values({
-    userId,
-    name,
-    date,
-    time,
-    venue,
-    address,
-    description,
-    dressCode,
-    phoneContact,
-    status: "draft",
-  }).returning();
-  res.status(201).json(serializeEvent(event));
 });
 
 router.get("/events/:id", requireAuth, async (req, res): Promise<void> => {

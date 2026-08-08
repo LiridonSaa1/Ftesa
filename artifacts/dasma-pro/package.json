@@ -78,6 +78,8 @@
     "@clerk/react": "^6.12.10",
     "@clerk/themes": "^2.4.57",
     "@paddle/paddle-js": "^1.4.2",
+    "@stripe/react-stripe-js": "^6.8.0",
+    "@stripe/stripe-js": "^9.13.0",
     "html2canvas": "^1.4.1",
     "html5-qrcode": "^2.3.8",
     "jspdf": "^4.2.1",

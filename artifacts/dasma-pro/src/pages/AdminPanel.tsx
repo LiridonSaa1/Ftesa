@@ -998,7 +998,7 @@ function PlatformSettingsTab() {
           {/* Branding */}
           <div className="space-y-3">
             <h4 className="font-bold uppercase tracking-wider text-[11px] text-[#7B1F3A]">Branding</h4>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5"><Label>Emri i Platformës</Label><Input defaultValue={settings?.platformName || "NoaEvent"} onChange={e => setForm(f => ({ ...f, platformName: e.target.value }))} className="border-slate-200 text-xs rounded-xl" /></div>
               <div className="space-y-1.5"><Label>Logo URL</Label><Input defaultValue={settings?.logoUrl || ""} onChange={e => setForm(f => ({ ...f, logoUrl: e.target.value }))} className="border-slate-200 text-xs rounded-xl" /></div>
             </div>
@@ -1007,7 +1007,7 @@ function PlatformSettingsTab() {
           {/* Paddle */}
           <div className="space-y-3 border-t border-slate-100 pt-5">
             <h4 className="font-bold uppercase tracking-wider text-[11px] text-[#7B1F3A]">Paddle Billing</h4>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5"><Label>Mjedisi (Environment)</Label><Input defaultValue={settings?.paddleEnvironment || "sandbox"} onChange={e => setForm(f => ({ ...f, paddleEnvironment: e.target.value }))} className="border-slate-200 text-xs rounded-xl" /></div>
               <div className="space-y-1.5"><Label>Client Token</Label><Input defaultValue={settings?.paddleClientToken || ""} onChange={e => setForm(f => ({ ...f, paddleClientToken: e.target.value }))} className="border-slate-200 text-xs rounded-xl" /></div>
             </div>
@@ -1016,13 +1016,25 @@ function PlatformSettingsTab() {
           {/* Google Maps & WhatsApp */}
           <div className="space-y-3 border-t border-slate-100 pt-5">
             <h4 className="font-bold uppercase tracking-wider text-[11px] text-[#7B1F3A]">API & WhatsApp</h4>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5"><Label>Google Maps API Key</Label><Input defaultValue={settings?.googleMapsApiKey || ""} onChange={e => setForm(f => ({ ...f, googleMapsApiKey: e.target.value }))} className="border-slate-200 text-xs rounded-xl" /></div>
               <div className="space-y-1.5"><Label>WhatsApp Dërguesi (Phone)</Label><Input defaultValue={settings?.whatsappSenderNumber || ""} onChange={e => setForm(f => ({ ...f, whatsappSenderNumber: e.target.value }))} className="border-slate-200 text-xs rounded-xl" /></div>
             </div>
           </div>
 
-          <Button onClick={handleSave} className="bg-[#7B1F3A] hover:bg-[#5e1729] text-white text-xs font-serif uppercase tracking-wider h-11 px-8 rounded-xl">
+          {/* Language & Locality Settings */}
+          <div className="space-y-3 border-t border-slate-100 pt-5">
+            <h4 className="font-bold uppercase tracking-wider text-[11px] text-[#7B1F3A]">Gjuha e Platformës (Language)</h4>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+              <div>
+                <p className="font-bold text-xs text-slate-900">Ndrysho Gjuhën e Ndërfaqes</p>
+                <p className="text-[11px] text-slate-500 font-light">Zgjidhni gjuhën primare të panelit (Shqip, English, Deutsch, etj.)</p>
+              </div>
+              <LanguageSelector isDark={false} />
+            </div>
+          </div>
+
+          <Button onClick={handleSave} className="bg-[#7B1F3A] hover:bg-[#5e1729] text-white text-xs font-serif uppercase tracking-wider h-11 px-8 rounded-xl w-full sm:w-auto">
             Ruaj Cilësimet
           </Button>
         </CardContent>
@@ -1037,21 +1049,20 @@ export function AdminPanel() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-white -m-4 md:-m-8 lg:-m-12 p-4 md:p-8 lg:p-12 space-y-8 font-serif">
+    <div className="bg-white min-h-full space-y-6 sm:space-y-8 font-serif text-slate-900 pb-12 max-w-8xl max-w-[1440px] mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between pb-6 border-b border-slate-200 bg-white">
-        <div className="flex items-center gap-4">
-          <div className="rounded-2xl bg-[#7B1F3A] p-3.5 shadow-lg shadow-rose-950/20">
-            <ShieldCheck className="h-7 w-7 text-white" />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 bg-white">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="rounded-2xl bg-[#7B1F3A] p-3 sm:p-3.5 shadow-md shadow-rose-950/10 shrink-0">
+            <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-serif font-bold text-[#2d1a1f] tracking-tight">{t("admin.title", "Admin Panel")}</h1>
-            <p className="text-slate-500 text-sm font-light mt-0.5">{t("admin.subtitle", "Platforma e menaxhimit të plotë me sfond të bardhë dhe tipografi editoriale")}</p>
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#2d1a1f] tracking-tight">{t("admin.title", "Admin Panel")}</h1>
+            <p className="text-slate-500 text-xs sm:text-sm font-light mt-0.5">{t("admin.subtitle", "Platforma e menaxhimit të plotë me sfond të bardhë dhe tipografi editoriale")}</p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <LanguageSelector />
-          <Badge className="bg-rose-50 text-[#7B1F3A] border-rose-200 px-4 py-1.5 text-xs font-serif font-bold uppercase tracking-wider rounded-xl">
+        <div className="flex items-center gap-4 self-end sm:self-center">
+          <Badge className="bg-rose-50 text-[#7B1F3A] border-rose-200 px-3.5 py-1.5 text-xs font-serif font-bold uppercase tracking-wider rounded-xl">
             Admin Mode
           </Badge>
         </div>
@@ -1062,18 +1073,20 @@ export function AdminPanel() {
 
       {/* Main Tabs */}
       <Tabs defaultValue="users" className="space-y-6">
-        <TabsList className="bg-slate-50 border border-slate-200 p-1.5 rounded-2xl flex-wrap h-auto gap-1">
-          <TabsTrigger value="users"         className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-4 py-2.5 transition-all"><Users className="h-4 w-4" /> {t("admin.tabs.users", "Përdoruesit")}</TabsTrigger>
-          <TabsTrigger value="events"        className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-4 py-2.5 transition-all"><CalendarRange className="h-4 w-4" /> {t("admin.tabs.events", "Eventet")}</TabsTrigger>
-          <TabsTrigger value="subscriptions" className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-4 py-2.5 transition-all"><CreditCard className="h-4 w-4" /> {t("nav.subscription", "Abonimet")}</TabsTrigger>
-          <TabsTrigger value="payments"      className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-4 py-2.5 transition-all"><Receipt className="h-4 w-4" /> {t("admin.tabs.payments", "Pagesat")}</TabsTrigger>
-          <TabsTrigger value="templates"     className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-4 py-2.5 transition-all"><FileText className="h-4 w-4" /> {t("admin.tabs.templates", "Template-et")}</TabsTrigger>
-          <TabsTrigger value="categories"    className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-4 py-2.5 transition-all"><Tag className="h-4 w-4" /> Kategoritë</TabsTrigger>
-          <TabsTrigger value="custom_req"    className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-4 py-2.5 transition-all"><HelpCircle className="h-4 w-4" /> {t("admin.tabs.custom", "Custom Kërkesa")}</TabsTrigger>
-          <TabsTrigger value="notifications" className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-4 py-2.5 transition-all"><Mail className="h-4 w-4" /> Njoftime</TabsTrigger>
-          <TabsTrigger value="analytics"     className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-4 py-2.5 transition-all"><BarChart3 className="h-4 w-4" /> Raporte</TabsTrigger>
-          <TabsTrigger value="settings"      className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-4 py-2.5 transition-all"><SettingsIcon className="h-4 w-4" /> {t("admin.tabs.settings", "Cilësimet")}</TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto pb-1">
+          <TabsList className="bg-slate-50 border border-slate-200 p-1.5 rounded-2xl inline-flex min-w-full sm:w-full flex-nowrap sm:flex-wrap h-auto gap-1">
+            <TabsTrigger value="users"         className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-3.5 py-2 whitespace-nowrap transition-all"><Users className="h-4 w-4 shrink-0" /> {t("admin.tabs.users", "Përdoruesit")}</TabsTrigger>
+            <TabsTrigger value="events"        className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-3.5 py-2 whitespace-nowrap transition-all"><CalendarRange className="h-4 w-4 shrink-0" /> {t("admin.tabs.events", "Eventet")}</TabsTrigger>
+            <TabsTrigger value="subscriptions" className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-3.5 py-2 whitespace-nowrap transition-all"><CreditCard className="h-4 w-4 shrink-0" /> {t("nav.subscription", "Abonimet")}</TabsTrigger>
+            <TabsTrigger value="payments"      className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-3.5 py-2 whitespace-nowrap transition-all"><Receipt className="h-4 w-4 shrink-0" /> {t("admin.tabs.payments", "Pagesat")}</TabsTrigger>
+            <TabsTrigger value="templates"     className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-3.5 py-2 whitespace-nowrap transition-all"><FileText className="h-4 w-4 shrink-0" /> {t("admin.tabs.templates", "Template-et")}</TabsTrigger>
+            <TabsTrigger value="categories"    className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-3.5 py-2 whitespace-nowrap transition-all"><Tag className="h-4 w-4 shrink-0" /> Kategoritë</TabsTrigger>
+            <TabsTrigger value="custom_req"    className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-3.5 py-2 whitespace-nowrap transition-all"><HelpCircle className="h-4 w-4 shrink-0" /> {t("admin.tabs.custom", "Custom Kërkesa")}</TabsTrigger>
+            <TabsTrigger value="notifications" className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-3.5 py-2 whitespace-nowrap transition-all"><Mail className="h-4 w-4 shrink-0" /> Njoftime</TabsTrigger>
+            <TabsTrigger value="analytics"     className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-3.5 py-2 whitespace-nowrap transition-all"><BarChart3 className="h-4 w-4 shrink-0" /> Raporte</TabsTrigger>
+            <TabsTrigger value="settings"      className="data-[state=active]:bg-[#7B1F3A] data-[state=active]:text-white text-slate-700 gap-1.5 text-xs font-serif font-bold rounded-xl px-3.5 py-2 whitespace-nowrap transition-all"><SettingsIcon className="h-4 w-4 shrink-0" /> {t("admin.tabs.settings", "Cilësimet")}</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="users"><UsersTable /></TabsContent>
         <TabsContent value="events"><EventsTable /></TabsContent>

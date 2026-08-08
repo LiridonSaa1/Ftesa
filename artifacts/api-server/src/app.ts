@@ -61,8 +61,8 @@ const staticPath = path.resolve(__dirname, "../../dasma-pro/dist/public");
 app.use(express.static(staticPath));
 
 // SPA fallback for non-API GET routes
-app.use((req, res, next) => {
-  if (req.method !== "GET" || req.path.startsWith("/api")) {
+app.get("/{*splat}", (req, res, next) => {
+  if (req.path.startsWith("/api")) {
     return next();
   }
   res.sendFile(path.join(staticPath, "index.html"), (err) => {

@@ -60,44 +60,44 @@
   --color-chart-5: hsl(var(--chart-5));
 }
 
-/* Glassmorphism Dark Mode */
+/* Premium White Theme */
 :root {
-  --background: 220 15% 7%;
-  --foreground: 0 0% 95%;
+  --background: 0 0% 100%;
+  --foreground: 330 15% 15%;
   
-  --card: 220 15% 10%;
-  --card-foreground: 0 0% 95%;
+  --card: 0 0% 100%;
+  --card-foreground: 330 15% 15%;
   
-  --popover: 220 15% 9%;
-  --popover-foreground: 0 0% 95%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 330 15% 15%;
   
-  --primary: 345 70% 55%;
+  --primary: 343 58% 54%;
   --primary-foreground: 0 0% 100%;
   
-  --secondary: 38 60% 65%;
-  --secondary-foreground: 220 15% 7%;
+  --secondary: 35 20% 95%;
+  --secondary-foreground: 330 15% 20%;
   
-  --muted: 220 10% 16%;
-  --muted-foreground: 220 10% 65%;
+  --muted: 35 20% 95%;
+  --muted-foreground: 330 10% 40%;
   
-  --accent: 345 70% 55%;
-  --accent-foreground: 0 0% 100%;
+  --accent: 343 40% 95%;
+  --accent-foreground: 343 58% 40%;
   
-  --destructive: 0 62% 50%;
+  --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
   
-  --border: 220 10% 20%;
-  --input: 220 10% 20%;
-  --ring: 345 70% 55%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 343 58% 54%;
   
-  --sidebar: 220 15% 7%;
-  --sidebar-foreground: 0 0% 95%;
-  --sidebar-border: 220 10% 15%;
-  --sidebar-primary: 345 70% 55%;
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 330 15% 15%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-primary: 343 58% 54%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 220 10% 16%;
-  --sidebar-accent-foreground: 0 0% 95%;
-  --sidebar-ring: 345 70% 55%;
+  --sidebar-accent: 35 20% 95%;
+  --sidebar-accent-foreground: 330 15% 15%;
+  --sidebar-ring: 343 58% 54%;
 
   --chart-1: 345 70% 55%; 
   --chart-2: 173 58% 39%; 
@@ -111,8 +111,7 @@
 }
 
 .light {
-  /* Soft cream/blush background for RSVP page */
-  --background: 35 30% 96%;
+  --background: 0 0% 100%;
   --foreground: 330 15% 15%;
   
   --card: 0 0% 100%;
@@ -124,28 +123,28 @@
   --primary: 343 58% 54%;
   --primary-foreground: 0 0% 100%;
   
-  --secondary: 35 20% 90%;
+  --secondary: 35 20% 95%;
   --secondary-foreground: 330 15% 20%;
   
-  --muted: 35 20% 90%;
+  --muted: 35 20% 95%;
   --muted-foreground: 330 10% 40%;
   
-  --accent: 343 40% 90%;
+  --accent: 343 40% 95%;
   --accent-foreground: 343 58% 40%;
   
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
   
-  --border: 35 15% 85%;
-  --input: 35 15% 85%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
   --ring: 343 58% 54%;
   
-  --sidebar: 35 30% 96%;
+  --sidebar: 0 0% 100%;
   --sidebar-foreground: 330 15% 15%;
-  --sidebar-border: 35 15% 85%;
+  --sidebar-border: 220 13% 91%;
   --sidebar-primary: 343 58% 54%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 35 20% 90%;
+  --sidebar-accent: 35 20% 95%;
   --sidebar-accent-foreground: 330 15% 15%;
   --sidebar-ring: 343 58% 54%;
 }

@@ -84,9 +84,14 @@ router.post("/paddle/webhook", async (req: Request, res: Response): Promise<void
   }
 
   const { event_type, data } = event;
+  console.log("[Paddle Dev Log] Webhook event received:", event_type);
 
   try {
-    if (event_type === "subscription.activated" || event_type === "subscription.created") {
+    if (
+      event_type === "subscription.activated" ||
+      event_type === "subscription.created" ||
+      event_type === "subscription.updated"
+    ) {
       await handleSubscriptionActivated(data);
     } else if (event_type === "subscription.canceled") {
       await handleSubscriptionCanceled(data);
@@ -95,7 +100,7 @@ router.post("/paddle/webhook", async (req: Request, res: Response): Promise<void
     }
     // All other events are acknowledged but not acted upon
   } catch (err) {
-    console.error("[paddle webhook] error handling event", event_type, err);
+    console.error("[Paddle Dev Log] Error handling webhook event", event_type, err);
     res.status(500).json({ error: "Internal error" });
     return;
   }
@@ -115,13 +120,16 @@ async function handleSubscriptionActivated(data: any): Promise<void> {
   const paddleSubscriptionId: string = data?.id ?? "";
   const nextBilledAt: string | null = data?.next_billed_at ?? null;
 
-  // Activate user
+  console.log("[Paddle Dev Log] Selected price ID:", priceId);
+  console.log("[Paddle Dev Log] Subscription ID:", paddleSubscriptionId);
+
+  // Activate user (Idempotent)
   await db
     .update(usersTable)
     .set({ status: "active", subscriptionPlan: plan })
     .where(eq(usersTable.id, userId));
 
-  // Upsert subscription record
+  // Upsert subscription record (Idempotent)
   const existing = await db
     .select()
     .from(subscriptionsTable)
@@ -151,11 +159,15 @@ async function handleSubscriptionActivated(data: any): Promise<void> {
       nextBillingDate: nextBilledAt ? new Date(nextBilledAt) : null,
     });
   }
+
+  console.log("[Paddle Dev Log] Subscription status updated: active for user", userId);
 }
 
 async function handleSubscriptionCanceled(data: any): Promise<void> {
   const paddleSubscriptionId: string = data?.id ?? "";
   if (!paddleSubscriptionId) return;
+
+  console.log("[Paddle Dev Log] Subscription ID canceled:", paddleSubscriptionId);
 
   const [sub] = await db
     .select()
@@ -170,17 +182,21 @@ async function handleSubscriptionCanceled(data: any): Promise<void> {
     .set({ status: "canceled" })
     .where(eq(subscriptionsTable.id, sub.id));
 
-  // Downgrade user to basic (they can still access data, but limited)
+  // Downgrade user to basic
   await db
     .update(usersTable)
     .set({ subscriptionPlan: "basic" })
     .where(eq(usersTable.id, sub.userId));
+
+  console.log("[Paddle Dev Log] Subscription status updated: canceled for user", sub.userId);
 }
 
 async function handleTransactionCompleted(data: any): Promise<void> {
   const userId: string | undefined = data?.custom_data?.userId;
   const paddleTransactionId: string = data?.id ?? "";
   if (!userId || !paddleTransactionId) return;
+
+  console.log("[Paddle Dev Log] Transaction ID completed:", paddleTransactionId);
 
   // Find subscription for this user
   const [sub] = await db
@@ -194,14 +210,12 @@ async function handleTransactionCompleted(data: any): Promise<void> {
   );
   const currency = data?.currency_code ?? "EUR";
 
-  // Avoid duplicate transaction records
+  // Idempotency: Avoid duplicate transaction records
   const existing = await db
     .select()
     .from(paymentsTable)
     .where(eq(paymentsTable.paddleTransactionId, paddleTransactionId))
     .limit(1);
-
-  if (existing.length > 0) return;
 
   await db.insert(paymentsTable).values({
     userId,

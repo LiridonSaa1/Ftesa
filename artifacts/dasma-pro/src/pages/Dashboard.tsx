@@ -157,7 +157,7 @@ export function Dashboard() {
               title={`Refuzuar: ${(overview as any)?.totalDeclined}`}
             />
             <div
-              className="bg-secondary/80 rounded-full transition-all shadow-[0_0_10px_rgba(203,166,104,0.3)]"
+              className="bg-amber-500/80 rounded-full transition-all shadow-[0_0_10px_rgba(245,158,11,0.4)]"
               style={{ width: `${Math.round(((overview as any)?.totalPending / rsvpTotal) * 100)}%` }}
               title={`Në pritje: ${(overview as any)?.totalPending}`}
             />
@@ -165,7 +165,7 @@ export function Dashboard() {
           <div className="flex flex-wrap gap-6 text-xs text-muted-foreground">
             <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />Konfirmuar: {(overview as any)?.totalConfirmed ?? 0}</span>
             <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.4)]" />Refuzuar: {(overview as any)?.totalDeclined ?? 0}</span>
-            <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-secondary/80 shadow-[0_0_8px_rgba(203,166,104,0.4)]" />Në pritje: {(overview as any)?.totalPending ?? 0}</span>
+            <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />Në pritje: {(overview as any)?.totalPending ?? 0}</span>
           </div>
         </div>
       )}

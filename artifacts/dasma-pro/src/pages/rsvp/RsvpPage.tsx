@@ -59,10 +59,37 @@ function LoadingScreen() {
 export function RsvpPage() {
   const params = useParams<{ token: string }>();
   const token = params.token;
-  const { data: rsvp, isLoading, isError } = useGetRsvp(token);
+  const isDemo = token === "demo";
+
+  const { data: rsvpData, isLoading, isError } = useGetRsvp(isDemo ? "demo" : token, {
+    query: { enabled: !isDemo } as any
+  });
   const submitRsvp = useSubmitRsvp();
   const [submitted, setSubmitted] = useState(false);
   const [rsvpResponse, setRsvpResponse] = useState<"confirmed" | "declined" | null>(null);
+
+  const queryParams = new URLSearchParams(window.location.search);
+
+  const demoRsvp = {
+    guestName: queryParams.get("guestName") || "Mysafir i Nderuar",
+    eventName: queryParams.get("coupleName") || "Alban & Zana",
+    eventDate: queryParams.get("date") || "2026-08-15",
+    eventTime: queryParams.get("time") || "19:00",
+    venue: queryParams.get("venue") || "Salla e Dasmave 'Kështjella'",
+    address: queryParams.get("address") || "Prishtinë, Kosovë",
+    dressCode: queryParams.get("dressCode") || "Black Tie / Elegant",
+    phoneContact: queryParams.get("phone") || "+383 49 123 456",
+    invitation: {
+      coupleName: queryParams.get("coupleName") || "Alban & Zana",
+      message: queryParams.get("message") || "Me kënaqësi ju ftojmë të ndani gëzimin e kësaj dite të veçantë bashkë me ne!",
+      couplePhoto: queryParams.get("couplePhoto") || "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop",
+      showCountdown: queryParams.get("showCountdown") !== "false",
+      showMap: true,
+      template: queryParams.get("template") || "classic",
+    }
+  };
+
+  const rsvp = isDemo ? demoRsvp : rsvpData;
 
   const inv        = (rsvp as any)?.invitation;
   const eventDate  = (rsvp as any)?.eventDate;
@@ -80,12 +107,21 @@ export function RsvpPage() {
   const dressCode  = (rsvp as any)?.dressCode || "";
   const phone      = (rsvp as any)?.phoneContact || "";
 
-  /* wine/maroon palette matching the reference */
-  const WINE   = "#7B1F3A";
-  const WINE2  = "#9B2A4A";
-  const CREAM  = "#FDF8F3";
-  const WHITE  = "#FFFFFF";
-  const DARK   = "#1a1a1a";
+  /* Dynamic theme based on template parameter with high-contrast color palettes */
+  const templateKey = inv?.template || "classic";
+  const THEMES: Record<string, { wine: string; cream: string; white: string; dark: string; font: string; isDarkTheme?: boolean }> = {
+    classic: { wine: "#7B1F3A", cream: "#FDF8F3", white: "#FFFFFF", dark: "#1F191A", font: "Georgia, serif" },
+    modern:  { wine: "#2563EB", cream: "#F8FAFC", white: "#FFFFFF", dark: "#0F172A", font: "Inter, sans-serif" },
+    floral:  { wine: "#9D174D", cream: "#FFF1F2", white: "#FFFFFF", dark: "#4C0519", font: "Georgia, serif" },
+    minimal: { wine: "#EAB308", cream: "#121214", white: "#1C1C21", dark: "#F4F4F5", font: "Inter, sans-serif", isDarkTheme: true },
+    luxury:  { wine: "#D97706", cream: "#0A1326", white: "#111E38", dark: "#FDE68A", font: "Georgia, serif", isDarkTheme: true }
+  };
+  const theme = THEMES[templateKey] || THEMES.classic;
+  const WINE   = theme.wine;
+  const CREAM  = theme.cream;
+  const WHITE  = theme.white;
+  const DARK   = theme.dark;
+  const isDark = !!theme.isDarkTheme;
 
   const handleRsvp = (attending: boolean) => {
     const resp = attending ? "confirmed" : "declined";
@@ -103,7 +139,7 @@ export function RsvpPage() {
         <div className="text-center space-y-4 px-6">
           <div className="text-6xl">💌</div>
           <h2 className="font-serif text-3xl font-bold" style={{ color: DARK }}>Ftesa nuk u gjet</h2>
-          <p style={{ color: "#666" }}>Linku mund të jetë i pasaktë ose i skaduar.</p>
+          <p style={{ color: isDark ? "#A1A1AA" : "#666" }}>Linku mund të jetë i pasaktë ose i skaduar.</p>
         </div>
       </div>
     );
@@ -117,7 +153,7 @@ export function RsvpPage() {
             initial={{ scale: 0 }} animate={{ scale: 1 }}
             transition={{ type: "spring", bounce: 0.45, delay: 0.1 }}
             className="inline-flex items-center justify-center w-24 h-24 rounded-full mx-auto"
-            style={{ background: rsvpResponse === "confirmed" ? `${WINE}15` : "#f3f4f6", border: `2px solid ${rsvpResponse === "confirmed" ? WINE : "#d1d5db"}` }}
+            style={{ background: rsvpResponse === "confirmed" ? `${WINE}25` : (isDark ? "#27272A" : "#f3f4f6"), border: `2px solid ${rsvpResponse === "confirmed" ? WINE : "#d1d5db"}` }}
           >
             {rsvpResponse === "confirmed"
               ? <Heart className="h-10 w-10" style={{ color: WINE }} />
@@ -127,13 +163,13 @@ export function RsvpPage() {
             <h2 className="font-serif text-3xl font-bold" style={{ color: DARK }}>
               {rsvpResponse === "confirmed" ? "Faleminderit!" : "Mirëkuptojmë"}
             </h2>
-            <p className="mt-3 leading-relaxed" style={{ color: "#666" }}>
+            <p className="mt-3 leading-relaxed" style={{ color: isDark ? "#D4D4D8" : "#666" }}>
               {rsvpResponse === "confirmed"
                 ? "Konfirmimi juaj u regjistrua. Presim me padurim ditën tonë të veçantë bashkë me ju!"
                 : "Faleminderit për përgjigjen tuaj. Ju mbajmë gjithmonë në zemër!"}
             </p>
           </div>
-          <p className="text-xs" style={{ color: "#aaa" }}>Powered by <strong style={{ color: WINE }}>NoaEvent</strong></p>
+          <p className="text-xs" style={{ color: isDark ? "#71717A" : "#aaa" }}>Powered by <strong style={{ color: WINE }}>NoaEvent</strong></p>
         </motion.div>
       </div>
     );
@@ -144,25 +180,24 @@ export function RsvpPage() {
 
       {/* ═══════════════════════════════════════════════════
           SECTION 1 — Hero (full-width photo + overlay + name)
-          like: Gademan hero with dark red tint + bold white text
       ═══════════════════════════════════════════════════ */}
       <section className="relative w-full overflow-hidden" style={{ minHeight: "70vh" }}>
         {/* Photo or gradient fallback */}
         {couplePhoto ? (
           <img src={couplePhoto} alt="Couple" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
-          <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${WINE} 0%, #3d0f1d 100%)` }} />
+          <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${WINE} 0%, #111827 100%)` }} />
         )}
 
-        {/* Wine-red semi-transparent overlay — exactly like the Gademan hero */}
-        <div className="absolute inset-0" style={{ background: `${WINE}CC` }} />
+        {/* Semi-transparent overlay with fallback gradient */}
+        <div className="absolute inset-0" style={{ background: isDark ? "rgba(10, 15, 30, 0.75)" : `${WINE}C8` }} />
 
-        {/* Top nav bar — minimal, like Gademan */}
+        {/* Top nav bar */}
         <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-8 py-5">
           <div className="flex items-center gap-3">
             <Heart className="h-5 w-5 text-white opacity-80" />
           </div>
-          <div className="hidden md:flex items-center gap-10 text-xs uppercase tracking-[0.2em] text-white/70">
+          <div className="hidden md:flex items-center gap-10 text-xs uppercase tracking-[0.2em] text-white/80 font-medium">
             <a href="#details" className="hover:text-white transition-colors">Detajet</a>
             <a href="#rsvp" className="hover:text-white transition-colors">RSVP</a>
           </div>
@@ -177,20 +212,20 @@ export function RsvpPage() {
           className="relative z-10 flex flex-col items-start justify-end px-8 md:px-20 pb-16 pt-32"
           style={{ minHeight: "70vh" }}
         >
-          <p className="text-xs uppercase tracking-[0.3em] text-white/60 mb-3">Ftesë Personale</p>
-          <h1 className="font-bold text-white leading-tight mb-4" style={{ fontSize: "clamp(2.2rem, 7vw, 5rem)", fontFamily: "Georgia, serif" }}>
+          <p className="text-xs uppercase tracking-[0.3em] text-white/80 font-bold mb-3">Ftesë Personale</p>
+          <h1 className="font-bold text-white leading-tight mb-4 drop-shadow-md" style={{ fontSize: "clamp(2.2rem, 7vw, 5rem)", fontFamily: theme.font }}>
             {coupleName || "EMRI I ÇIFTIT"}
           </h1>
 
           {eventDate && (
-            <p className="text-white/80 text-sm md:text-base tracking-widest mb-8">
+            <p className="text-white/90 text-sm md:text-base tracking-widest mb-8 font-medium">
               {format(new Date(eventDate + "T00:00:00"), "dd · MM · yyyy").toUpperCase()}
             </p>
           )}
 
-          {/* Countdown — inside hero, like a "Become A Customer" area */}
+          {/* Countdown */}
           {showCountdown && eventDate && (
-            <div className="inline-flex items-center gap-6 px-8 py-5 border border-white/30 bg-white/10 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-6 px-8 py-5 border border-white/40 bg-black/40 backdrop-blur-md rounded-2xl">
               {[
                 { v: countdown.days,    l: "DITË"    },
                 { v: countdown.hours,   l: "ORË"     },
@@ -199,12 +234,12 @@ export function RsvpPage() {
               ].map(({ v, l }, i) => (
                 <div key={l} className="flex items-center gap-6">
                   <div className="text-center">
-                    <div className="text-2xl md:text-3xl font-bold text-white tabular-nums" style={{ fontFamily: "Georgia, serif" }}>
+                    <div className="text-2xl md:text-3xl font-bold text-white tabular-nums" style={{ fontFamily: theme.font }}>
                       {String(v).padStart(2, "0")}
                     </div>
-                    <div className="text-[9px] tracking-[0.2em] text-white/50 mt-0.5">{l}</div>
+                    <div className="text-[9px] tracking-[0.2em] text-white/70 font-semibold mt-0.5">{l}</div>
                   </div>
-                  {i < 3 && <span className="text-white/30 text-xl font-light">:</span>}
+                  {i < 3 && <span className="text-white/40 text-xl font-light">:</span>}
                 </div>
               ))}
             </div>
@@ -213,8 +248,7 @@ export function RsvpPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════
-          SECTION 2 — Welcome (white bg, photo LEFT + text RIGHT)
-          like: Gademan "Welkom bij" section
+          SECTION 2 — Welcome
       ═══════════════════════════════════════════════════ */}
       <section className="py-20" style={{ background: WHITE }}>
         <div className="max-w-6xl mx-auto px-6 md:px-12">
@@ -224,12 +258,11 @@ export function RsvpPage() {
             {couplePhoto && (
               <Reveal>
                 <div className="relative">
-                  {/* Offset shadow box — like Gademan stacked product shot */}
-                  <div className="absolute -bottom-4 -right-4 w-full h-full" style={{ background: `${WINE}20` }} />
+                  <div className="absolute -bottom-4 -right-4 w-full h-full rounded-2xl" style={{ background: `${WINE}25` }} />
                   <img
                     src={couplePhoto}
                     alt="Couple"
-                    className="relative w-full object-cover"
+                    className="relative w-full object-cover rounded-2xl shadow-lg"
                     style={{ maxHeight: 480, objectPosition: "top" }}
                   />
                 </div>
@@ -238,31 +271,30 @@ export function RsvpPage() {
 
             {/* Text right */}
             <Reveal className={couplePhoto ? "" : "md:col-span-2 text-center max-w-2xl mx-auto"}>
-              <p className="text-xs uppercase tracking-[0.25em] mb-4" style={{ color: WINE }}>FTESË SPECIALE</p>
-              <h2 className="font-bold leading-tight mb-6" style={{ fontFamily: "Georgia, serif", fontSize: "clamp(1.8rem, 4vw, 3rem)", color: DARK }}>
+              <p className="text-xs uppercase tracking-[0.25em] mb-4 font-bold" style={{ color: WINE }}>FTESË SPECIALE</p>
+              <h2 className="font-bold leading-tight mb-6" style={{ fontFamily: theme.font, fontSize: "clamp(1.8rem, 4vw, 3rem)", color: DARK }}>
                 Të nderuar<br />
                 <span style={{ color: WINE }}>{guestName || "Mysafir"}</span>
               </h2>
               {message && (
                 <>
-                  <p className="leading-relaxed mb-4" style={{ color: "#555", fontSize: "1.05rem" }}>
+                  <p className="leading-relaxed mb-4" style={{ color: isDark ? "#D4D4D8" : "#4B5563", fontSize: "1.05rem" }}>
                     {message}
                   </p>
-                  <p className="leading-relaxed" style={{ color: "#555", fontSize: "1.05rem" }}>
+                  <p className="leading-relaxed" style={{ color: isDark ? "#A1A1AA" : "#4B5563", fontSize: "1.05rem" }}>
                     Ju ftojmë të ndani gëzimin e kësaj dite të veçantë bashkë me ne.
                   </p>
                 </>
               )}
               {!message && (
-                <p className="leading-relaxed" style={{ color: "#555", fontSize: "1.05rem" }}>
+                <p className="leading-relaxed" style={{ color: isDark ? "#D4D4D8" : "#4B5563", fontSize: "1.05rem" }}>
                   Me kënaqësi të madhe ju ftojmë të ndani gëzimin e kësaj dite të veçantë bashkë me ne. Prania juaj do ta bëjë këtë moment edhe më të veçantë dhe të paharrueshëm.
                 </p>
               )}
 
-              {/* CTA-style button — like "Become A Customer?" */}
               <a
                 href="#rsvp"
-                className="inline-block mt-8 px-8 py-3 font-bold text-sm uppercase tracking-widest text-white transition-all hover:opacity-90"
+                className="inline-block mt-8 px-8 py-3.5 font-bold text-sm uppercase tracking-widest text-white rounded-xl shadow-md transition-all hover:opacity-90"
                 style={{ background: WINE }}
               >
                 Konfirmo Pjesëmarrjen →

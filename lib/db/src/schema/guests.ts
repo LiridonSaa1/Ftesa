@@ -35,7 +35,7 @@ export const guestsTable = pgTable("guests", {
   phone: text("phone"),
   email: text("email"),
   partySize: integer("party_size").notNull().default(1),
-  category: guestCategoryEnum("category").notNull().default("other"),
+  category: text("category").notNull().default("other"),
   status: guestStatusEnum("status").notNull().default("pending"),
   tableId: integer("table_id"), // assigned table
   seatNumber: integer("seat_number"),

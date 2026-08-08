@@ -12,6 +12,7 @@ import subscriptionRouter from "./subscription";
 import dashboardRouter from "./dashboard";
 import adminRouter from "./admin";
 import paddleRouter from "./paddle";
+import stripeRouter from "./stripe";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(subscriptionRouter);
 router.use(dashboardRouter);
 router.use(adminRouter);
 router.use(paddleRouter);
+router.use(stripeRouter);
 
 export default router;

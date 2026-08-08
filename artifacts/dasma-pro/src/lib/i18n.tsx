@@ -692,69 +692,53 @@ export function useLanguage() {
   return ctx;
 }
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+
 // Custom Language Selector Dropdown component
 export function LanguageSelector({ className = "", isDark = false }: { className?: string; isDark?: boolean }) {
   const { language, setLanguage, currentLangObj } = useLanguage();
-  const [open, setOpen] = useState(false);
 
   return (
-    <div className={`relative inline-block text-left z-50 ${className}`}>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border shadow-sm ${
-          isDark
-            ? "bg-slate-900/80 border-slate-700 text-slate-200 hover:bg-slate-800"
-            : "bg-white/90 border-slate-200 text-slate-800 hover:bg-slate-100"
-        }`}
-      >
-        <Globe className="h-3.5 w-3.5 text-primary" />
-        <span className="text-sm">{currentLangObj.flag}</span>
-        <span>{currentLangObj.nativeName}</span>
-        <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-      </button>
-
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div
-            className={`absolute right-0 mt-1 w-44 rounded-xl border shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 ${
-              isDark
-                ? "bg-slate-900 border-slate-700 text-slate-200"
-                : "bg-white border-slate-200 text-slate-800"
-            }`}
-          >
-            <div className="px-3 py-1 text-[10px] uppercase font-bold tracking-wider text-muted-foreground border-b border-border/50 mb-1">
-              Select Language
-            </div>
-            {LANGUAGES.map((lang) => (
-              <button
-                key={lang.code}
-                type="button"
-                onClick={() => {
-                  setLanguage(lang.code);
-                  setOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-colors ${
-                  language === lang.code
-                    ? isDark
-                      ? "bg-primary/20 text-primary font-bold"
-                      : "bg-primary/10 text-primary font-bold"
-                    : isDark
-                    ? "hover:bg-slate-800 text-slate-300"
-                    : "hover:bg-slate-50 text-slate-700"
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <span className="text-sm">{lang.flag}</span>
-                  <span>{lang.nativeName}</span>
-                </span>
-                {language === lang.code && <Check className="h-3.5 w-3.5 text-primary" />}
-              </button>
-            ))}
+    <div className={cn("relative inline-block", className)}>
+      <Select value={language} onValueChange={(val) => setLanguage(val as Language)}>
+        <SelectTrigger
+          className={cn(
+            "h-9 px-3 text-xs font-serif font-bold gap-2 rounded-xl border shadow-sm transition-all flex items-center justify-between min-w-[110px]",
+            isDark
+              ? "bg-slate-900 border-slate-700 text-slate-100 hover:bg-slate-800"
+              : "bg-white border-slate-200 text-slate-900 hover:bg-slate-50"
+          )}
+        >
+          <div className="flex items-center gap-1.5 truncate">
+            <Globe className="h-3.5 w-3.5 text-[#7B1F3A] shrink-0" />
+            <span className="text-sm leading-none">{currentLangObj.flag}</span>
+            <span className="font-bold text-xs text-slate-900 truncate">{currentLangObj.nativeName}</span>
           </div>
-        </>
-      )}
+        </SelectTrigger>
+        <SelectContent className="rounded-xl border border-slate-200 bg-white text-slate-900 shadow-2xl z-[99999] min-w-[150px] p-1 font-serif">
+          <div className="px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider text-slate-400 border-b border-slate-100 mb-1">
+            Gjuha / Language
+          </div>
+          {LANGUAGES.map((lang) => (
+            <SelectItem
+              key={lang.code}
+              value={lang.code}
+              className="text-xs font-serif font-medium cursor-pointer rounded-lg py-2 hover:bg-slate-100 text-slate-900 focus:bg-slate-100 focus:text-slate-900"
+            >
+              <span className="flex items-center gap-2">
+                <span className="text-base">{lang.flag}</span>
+                <span className="font-bold text-slate-900">{lang.nativeName}</span>
+              </span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

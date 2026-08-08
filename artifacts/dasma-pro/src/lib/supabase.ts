@@ -49,15 +49,23 @@ export interface ActivateSubParams {
   paddleCustomerId?: string;
   paddleSubscriptionId?: string;
   paddleTransactionId?: string;
+  paddlePriceId?: string;
   amount?: number;
 }
 
 export async function activateSubscriptionInSupabase(params: ActivateSubParams) {
   const plan = params.plan || "pro";
-  const amount = params.amount || (plan === "basic" ? 1000 : 5000);
+  const amount = params.amount || (plan === "basic" ? 1499 : plan === "pro" ? 2999 : 7999);
   const custId = params.paddleCustomerId || `cus_test_${Date.now()}`;
   const subId = params.paddleSubscriptionId || `sub_test_${Date.now()}`;
   const txnId = params.paddleTransactionId || `txn_test_${Date.now()}`;
+  const priceId = params.paddlePriceId || (plan === "basic" ? "pri_01kzgceydp22wy9c89a8j925av" : plan === "pro" ? "pri_01kzgcg3tjf7f7dqyxmen728y4" : "pri_01kzgch82209pbwc7cy3h4vtv4");
+  const startedAt = new Date().toISOString();
+  const nextBilledAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  console.log("[Paddle Dev Log] Selected price ID:", priceId);
+  console.log("[Paddle Dev Log] Transaction ID:", txnId);
+  console.log("[Paddle Dev Log] Subscription ID:", subId);
 
   try {
     // 1. Update user status in Supabase -> status = 'active'
@@ -67,7 +75,7 @@ export async function activateSubscriptionInSupabase(params: ActivateSubParams) 
       body: JSON.stringify({
         status: "active",
         subscription_plan: plan,
-        updated_at: new Date().toISOString(),
+        updated_at: startedAt,
       }),
     });
 
@@ -78,11 +86,18 @@ export async function activateSubscriptionInSupabase(params: ActivateSubParams) 
       body: JSON.stringify({
         user_id: params.userId,
         plan: plan,
+        plan_name: plan.toUpperCase(),
+        billing_period: "monthly",
         paddle_customer_id: custId,
         paddle_subscription_id: subId,
+        paddle_price_id: priceId,
         status: "active",
-        start_date: new Date().toISOString(),
-        next_billing_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: startedAt,
+        start_date: startedAt,
+        next_billed_at: nextBilledAt,
+        next_billing_date: nextBilledAt,
+        created_at: startedAt,
+        updated_at: startedAt,
       }),
     });
     const subData = await subRes.json();
@@ -99,9 +114,12 @@ export async function activateSubscriptionInSupabase(params: ActivateSubParams) 
         amount: amount,
         currency: "EUR",
         status: "completed",
+        created_at: startedAt,
       }),
     });
     const payData = await payRes.json();
+
+    console.log("[Paddle Dev Log] Subscription status updated: active for user", params.userId);
 
     return {
       success: true,
@@ -109,7 +127,7 @@ export async function activateSubscriptionInSupabase(params: ActivateSubParams) 
       payment: Array.isArray(payData) ? payData[0] : payData,
     };
   } catch (err) {
-    console.error("Supabase direct activation error:", err);
+    console.error("[Paddle Dev Log] Supabase direct activation error:", err);
     return { success: false };
   }
 }

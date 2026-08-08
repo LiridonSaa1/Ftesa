@@ -61,8 +61,8 @@ export function Layout({ children }: { children: ReactNode }) {
     staleTime: 30_000,
   });
 
-  const isAdmin = user?.publicMetadata?.role === "admin" || me?.role === "admin"; 
-  
+  const isAdmin = user?.publicMetadata?.role === "admin" || me?.role === "admin";
+
   const navItems = [
     { href: "/dashboard", label: t("nav.dashboard", "Dashboard"), icon: <LayoutDashboard className="h-4 w-4" /> },
     { href: "/events", label: t("nav.events", "Eventet e mia"), icon: <CalendarDays className="h-4 w-4" /> },
@@ -75,47 +75,53 @@ export function Layout({ children }: { children: ReactNode }) {
   }
 
   const SidebarContent = () => (
-    <div className="flex h-full max-h-screen flex-col gap-2 relative overflow-hidden bg-background/40 backdrop-blur-xl border-r border-border/50">
-      {/* Decorative gradient blur */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/10 blur-[120px] rounded-full pointer-events-none" />
-      
-      <div className="flex h-20 items-center justify-between px-6 relative z-10 border-b border-white/5">
+    <div className="flex h-full max-h-screen flex-col gap-2 relative overflow-hidden bg-white border-r border-slate-200 text-slate-900 transition-colors">
+      <div className="flex h-20 items-center justify-between px-6 relative z-10 border-b border-slate-100">
         <Link href="/" className="flex items-center gap-2.5 no-underline">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-serif font-bold text-lg shadow-[0_0_15px_rgba(217,56,94,0.4)]" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)/0.6))" }}>N</div>
-          <span className="font-serif font-bold text-xl tracking-wide text-foreground">NoaEvent</span>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-serif font-bold text-lg shadow-sm" style={{ background: "linear-gradient(135deg, #7B1F3A, #a82e50)" }}>N</div>
+          <span className="font-serif font-bold text-xl tracking-wide text-[#2d1a1f]">NoaEvent</span>
         </Link>
-        <LanguageSelector isDark />
       </div>
       
       <div className="flex-1 overflow-auto py-6 relative z-10">
         <nav className="grid items-start px-4 text-sm font-medium space-y-2">
-          {navItems.map((item) => (
-            <NavItem 
-              key={item.href}
-              href={item.href}
-              label={item.label}
-              icon={item.icon}
-              active={location.startsWith(item.href) && (item.href !== "/events" || location === "/events" || location.startsWith("/events/"))}
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
-          ))}
+          {navItems.map((item) => {
+            const active = location.startsWith(item.href) && (item.href !== "/events" || location === "/events" || location.startsWith("/events/"));
+            return (
+              <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)}>
+                <span
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-all duration-300 border",
+                    active
+                      ? "text-white font-medium bg-[#7B1F3A] border-[#7B1F3A] shadow-sm relative after:absolute after:right-3 after:top-1/2 after:-translate-y-1/2 after:h-1.5 after:w-1.5 after:bg-white after:rounded-full"
+                      : "text-slate-600 border-transparent hover:bg-slate-100 hover:text-slate-900"
+                  )}
+                >
+                  {item.icon}
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
       
-      <div className="mt-auto p-4 border-t border-white/5 relative z-10 bg-black/20 backdrop-blur-md">
-        <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-xl bg-white/5 border border-white/5">
-          <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-medium text-sm shadow-[0_0_10px_rgba(217,56,94,0.2)]">
-            {user?.firstName?.charAt(0) || "U"}
+      <div className="mt-auto p-4 border-t border-slate-200 relative z-10 bg-slate-50 space-y-3">
+        <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 shadow-sm">
+          <div className="flex items-center gap-2 overflow-hidden flex-1">
+            <div className="w-8 h-8 rounded-full bg-[#7B1F3A]/10 border border-[#7B1F3A]/30 flex items-center justify-center text-[#7B1F3A] font-medium text-xs shrink-0">
+              {user?.firstName?.charAt(0) || "U"}
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-xs font-bold truncate text-slate-900">{user?.fullName || user?.firstName}</span>
+              <span className="text-[10px] truncate text-slate-500">{user?.primaryEmailAddress?.emailAddress}</span>
+            </div>
           </div>
-          <div className="flex flex-col overflow-hidden">
-            <span className="text-sm font-medium text-foreground truncate">{user?.fullName || user?.firstName}</span>
-            <span className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</span>
-          </div>
+          <LanguageSelector isDark={false} />
         </div>
         <Button 
           variant="ghost" 
-          className="w-full justify-start text-muted-foreground hover:text-white hover:bg-destructive/80 transition-colors rounded-xl h-10" 
+          className="w-full justify-start transition-colors rounded-xl h-10 text-slate-600 hover:text-rose-700 hover:bg-rose-50"
           onClick={() => signOut({ redirectUrl: import.meta.env.BASE_URL.replace(/\/$/, "") || "/" })}
         >
           <LogOut className="mr-2 h-4 w-4" />
@@ -126,34 +132,33 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="grid h-[100dvh] w-full md:grid-cols-[280px_1fr] overflow-hidden bg-background text-foreground dark">
-      <aside className="hidden md:block h-full overflow-hidden border-r border-border/50 sticky top-0">
+    <div className="grid h-[100dvh] w-full md:grid-cols-[280px_1fr] overflow-hidden bg-white text-slate-900 light">
+      <aside className="hidden md:block h-full overflow-hidden border-r border-slate-200 sticky top-0">
         <SidebarContent />
       </aside>
-      <div className="flex flex-col h-full overflow-hidden relative z-0">
-        <header className="flex h-16 items-center justify-between border-b border-border/50 bg-background/60 backdrop-blur-xl px-4 md:hidden shrink-0 z-50">
+      <div className="flex flex-col h-full overflow-hidden relative z-0 bg-white">
+        <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white text-slate-900 px-4 md:hidden shrink-0 z-50">
           <div className="flex items-center gap-2">
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="shrink-0 md:hidden hover:bg-white/5">
+                <Button variant="ghost" size="icon" className="shrink-0 md:hidden hover:bg-slate-100 text-slate-900">
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-72 border-r border-border/50 bg-background/80 backdrop-blur-2xl dark">
+              <SheetContent side="left" className="p-0 w-72 border-r border-slate-200 bg-white text-slate-900 light">
                 <SidebarContent />
               </SheetContent>
             </Sheet>
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-serif font-bold text-sm shadow-[0_0_10px_rgba(217,56,94,0.4)]" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)/0.6))" }}>N</div>
-              <span className="font-serif font-bold text-lg tracking-wide text-foreground">NoaEvent</span>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-serif font-bold text-sm shadow-sm" style={{ background: "linear-gradient(135deg, #7B1F3A, #a82e50)" }}>N</div>
+              <span className="font-serif font-bold text-lg tracking-wide text-slate-900">NoaEvent</span>
             </Link>
           </div>
-          <LanguageSelector isDark />
+          <LanguageSelector isDark={false} />
         </header>
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 relative">
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.03] pointer-events-none mix-blend-overlay"></div>
-          <div className="max-w-6xl w-full mx-auto relative z-10">
+        <main className="flex-1 overflow-y-auto relative bg-slate-50/50 p-4 md:p-8 lg:p-10">
+          <div className="w-full max-w-8xl max-w-[1440px] mx-auto relative z-10">
             {children}
           </div>
         </main>
@@ -161,3 +166,4 @@ export function Layout({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
