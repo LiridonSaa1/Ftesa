@@ -5,6 +5,7 @@ interface PaddleConfig {
   clientToken: string;
   priceIdBasic: string;
   priceIdPro: string;
+  priceIdCustom?: string;
   environment: "sandbox" | "production";
 }
 

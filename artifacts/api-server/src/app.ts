@@ -52,6 +52,24 @@ app.use(
   })),
 );
 
+import path from "node:path";
+
 app.use("/api", router);
+
+// Serve static frontend files from dasma-pro build
+const staticPath = path.resolve(__dirname, "../../dasma-pro/dist/public");
+app.use(express.static(staticPath));
+
+// SPA wildcard fallback for frontend routes
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api")) {
+    return next();
+  }
+  res.sendFile(path.join(staticPath, "index.html"), (err) => {
+    if (err) {
+      next();
+    }
+  });
+});
 
 export default app;

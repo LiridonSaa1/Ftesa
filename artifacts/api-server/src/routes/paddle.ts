@@ -40,10 +40,10 @@ function planFromPriceId(priceId: string): "basic" | "pro" | "custom" {
 
 router.get("/paddle/config", (_req: Request, res: Response): void => {
   res.json({
-    clientToken: process.env.PADDLE_CLIENT_TOKEN ?? "test_1d2d981b0be56b45f26cb550561",
-    priceIdBasic: process.env.PADDLE_PRICE_ID_BASIC ?? "pri_01kzf5pjvpgfcvhada26ncept1",
-    priceIdPro: process.env.PADDLE_PRICE_ID_PRO ?? "pri_01kzchac3d17z4a3bkr2wz0sph",
-    priceIdCustom: process.env.PADDLE_PRICE_ID_CUSTOM ?? "pri_01kzf6vrfc67pzxzrx9b4195gh",
+    clientToken: process.env.PADDLE_CLIENT_TOKEN ?? "test_434ea1d9975495522312268835a",
+    priceIdBasic: process.env.PADDLE_PRICE_ID_BASIC ?? "pri_01kzgceydp22wy9c89a8j925av",
+    priceIdPro: process.env.PADDLE_PRICE_ID_PRO ?? "pri_01kzgcg3tjf7f7dqyxmen728y4",
+    priceIdCustom: process.env.PADDLE_PRICE_ID_CUSTOM ?? "pri_01kzgch82209pbwc7cy3h4vtv4",
     environment: process.env.PADDLE_ENVIRONMENT ?? "sandbox",
   });
 });

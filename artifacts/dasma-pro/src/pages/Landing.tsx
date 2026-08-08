@@ -10,6 +10,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
   MapPin, Mail, Heart, Facebook, Instagram, Check,
   ChevronLeft, ChevronRight, Star, Play, Pause, Volume2, VolumeX, Film, Sparkles, Globe,
+  Phone, Clock, Send, MessageSquare,
 } from "lucide-react";
 import { PlanRegistrationModal, PlanKey } from "../components/PlanRegistrationModal";
 import { useLanguage, LanguageSelector } from "@/lib/i18n";
@@ -123,8 +124,8 @@ const NAV_LINKS = [
   { href: "#home",     label: "HOME"      },
   { href: "#services", label: "SHËRBIMET" },
   { href: "#hall",     label: "SALLA"     },
-  { href: "#contact",  label: "KONTAKT"   },
   { href: "#order",    label: "ÇMIMET"    },
+  { href: "#contact",  label: "KONTAKT"   },
 ];
 
 /* Logo */
@@ -147,8 +148,8 @@ function Navbar({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => void }) {
     { href: "#home",     label: t("nav.home", "HOME").toUpperCase()      },
     { href: "#services", label: t("nav.services", "SHËRBIMET").toUpperCase() },
     { href: "#hall",     label: t("nav.events", "SALLA").toUpperCase()     },
-    { href: "#contact",  label: t("nav.contact", "KONTAKT").toUpperCase()   },
     { href: "#order",    label: t("nav.pricing", "ÇMIMET").toUpperCase()    },
+    { href: "#contact",  label: t("nav.contact", "KONTAKT").toUpperCase()   },
   ];
 
   useEffect(() => {
@@ -570,6 +571,7 @@ const PILLARS = [
 ];
 
 function WelcomeSection() {
+  const { t } = useLanguage();
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, { once: false, margin: "-100px" });
   const [activePillarIndex, setActivePillarIndex] = useState(0);
@@ -1803,6 +1805,439 @@ function FaqSection() {
 
 
 /* ═══════════════════════════════════════════════════════════
+   CONTACT SECTION & FORM — luxury contact form at bottom
+═══════════════════════════════════════════════════════════ */
+function ContactSection() {
+  const { t } = useLanguage();
+  const [formState, setFormState] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    eventType: "wedding",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formState.name || !formState.email) return;
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setSubmitted(true);
+    }, 800);
+  };
+
+  return (
+    <section id="contact" style={{ background: CREAM, padding: "100px 0", borderTop: "1px solid #ede7e0" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
+        <FadeUp>
+          <div style={{ textAlign: "center", maxWidth: 720, margin: "0 auto 60px" }}>
+            <span
+              style={{
+                display: "inline-block",
+                background: "rgba(123, 31, 58, 0.08)",
+                color: WINE,
+                fontWeight: 700,
+                fontSize: 12,
+                letterSpacing: "0.15em",
+                padding: "6px 16px",
+                borderRadius: 20,
+                marginBottom: 16,
+                textTransform: "uppercase",
+              }}
+            >
+              {t("contact.badge", "FORMULAR KONTAKTI")}
+            </span>
+            <h2
+              style={{
+                fontSize: "clamp(2rem, 3.2vw, 2.75rem)",
+                fontWeight: 900,
+                color: DARK,
+                lineHeight: 1.2,
+                marginBottom: 16,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              {t("contact.title", "Keni Pyetje Apo dëshironi një Demoni?")}
+            </h2>
+            <p style={{ fontSize: 16, color: MUTED, lineHeight: 1.6 }}>
+              {t(
+                "contact.subtitle",
+                "Plotësoni formularin më poshtë dhe ekipi ynë do t'ju kontaktojë brenda pak minutave me të gjitha detajet."
+              )}
+            </p>
+          </div>
+        </FadeUp>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1.3fr",
+            gap: 48,
+            alignItems: "start",
+          }}
+        >
+          {/* Left Column: Contact info & card */}
+          <FadeUp delay={0.1}>
+            <div
+              style={{
+                background: WINE,
+                color: WHITE,
+                borderRadius: 24,
+                padding: "48px 40px",
+                boxShadow: "0 20px 40px rgba(123, 31, 58, 0.15)",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              {/* Subtle background glow circle */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: "-20%",
+                  right: "-20%",
+                  width: 260,
+                  height: 260,
+                  borderRadius: "50%",
+                  background: "radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 70%)",
+                  pointerEvents: "none",
+                }}
+              />
+
+              <h3 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>
+                {t("contact.info_title", "Informatat e Kontaktit")}
+              </h3>
+              <p style={{ fontSize: 14.5, color: "rgba(255,255,255,0.8)", marginBottom: 36, lineHeight: 1.6 }}>
+                Ekipi ynë është në dispozicion për t'ju ndihmuar të krijoni përvojën më të mirë për ngjarjen tuaj.
+              </p>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 12,
+                      background: "rgba(255,255,255,0.15)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <MapPin size={20} color={WHITE} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+                      Vendndodhja
+                    </h4>
+                    <p style={{ fontSize: 15, fontWeight: 600 }}>{t("contact.address", "Prishtinë 10000, Kosovë")}</p>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 12,
+                      background: "rgba(255,255,255,0.15)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Mail size={20} color={WHITE} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+                      Email
+                    </h4>
+                    <p style={{ fontSize: 15, fontWeight: 600 }}>info@noa-event.com</p>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 12,
+                      background: "rgba(255,255,255,0.15)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Phone size={20} color={WHITE} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+                      Telefon & WhatsApp
+                    </h4>
+                    <p style={{ fontSize: 15, fontWeight: 600 }}>+383 44 000 000</p>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 12,
+                      background: "rgba(255,255,255,0.15)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Clock size={20} color={WHITE} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+                      Orari i Punës
+                    </h4>
+                    <p style={{ fontSize: 15, fontWeight: 600 }}>{t("contact.working_hours", "E Hënë - E Shtunë: 08:00 - 20:00")}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </FadeUp>
+
+          {/* Right Column: Contact Form */}
+          <FadeUp delay={0.2}>
+            <div
+              style={{
+                background: WHITE,
+                borderRadius: 24,
+                padding: "48px 40px",
+                border: "1px solid #ede7e0",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
+              }}
+            >
+              {submitted ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  style={{
+                    textAlign: "center",
+                    padding: "40px 20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 64,
+                      height: 64,
+                      borderRadius: "50%",
+                      background: "#e6f4ea",
+                      color: "#137333",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 20,
+                    }}
+                  >
+                    <Check size={32} strokeWidth={2.5} />
+                  </div>
+                  <h3 style={{ fontSize: 22, fontWeight: 800, color: DARK, marginBottom: 12 }}>
+                    {t("contact.success_title", "Faleminderit!")}
+                  </h3>
+                  <p style={{ fontSize: 15, color: MUTED, lineHeight: 1.6, maxWidth: 440, marginBottom: 28 }}>
+                    {t(
+                      "contact.success",
+                      "Mesazhi juaj u dërgua me sukses! Ekipi ynë do t'ju kontaktojë brenda pak minutave."
+                    )}
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSubmitted(false);
+                      setFormState({ name: "", email: "", phone: "", eventType: "wedding", message: "" });
+                    }}
+                    style={{
+                      padding: "12px 24px",
+                      background: WINE,
+                      color: WHITE,
+                      borderRadius: 8,
+                      border: "none",
+                      fontWeight: 700,
+                      fontSize: 14,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Dërgo Mesazh Tjetër
+                  </button>
+                </motion.div>
+              ) : (
+                <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: DARK, marginBottom: 8 }}>
+                        {t("contact.name", "Emri dhe Mbiemri")} *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formState.name}
+                        onChange={(e) => setFormState({ ...formState, name: e.target.value })}
+                        placeholder={t("contact.name_placeholder", "n.sh. Agon Berisha")}
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px",
+                          borderRadius: 8,
+                          border: "1px solid #dcd7d0",
+                          fontSize: 14,
+                          outline: "none",
+                          background: CREAM,
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: DARK, marginBottom: 8 }}>
+                        {t("contact.email", "Adresa Email")} *
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={formState.email}
+                        onChange={(e) => setFormState({ ...formState, email: e.target.value })}
+                        placeholder={t("contact.email_placeholder", "emri@shembull.com")}
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px",
+                          borderRadius: 8,
+                          border: "1px solid #dcd7d0",
+                          fontSize: 14,
+                          outline: "none",
+                          background: CREAM,
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: DARK, marginBottom: 8 }}>
+                        {t("contact.phone", "Numri i Telefonit (WhatsApp)")}
+                      </label>
+                      <input
+                        type="tel"
+                        value={formState.phone}
+                        onChange={(e) => setFormState({ ...formState, phone: e.target.value })}
+                        placeholder={t("contact.phone_placeholder", "+383 44 123 456")}
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px",
+                          borderRadius: 8,
+                          border: "1px solid #dcd7d0",
+                          fontSize: 14,
+                          outline: "none",
+                          background: CREAM,
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: DARK, marginBottom: 8 }}>
+                        {t("contact.event_type", "Lloji i Eventit")}
+                      </label>
+                      <select
+                        value={formState.eventType}
+                        onChange={(e) => setFormState({ ...formState, eventType: e.target.value })}
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px",
+                          borderRadius: 8,
+                          border: "1px solid #dcd7d0",
+                          fontSize: 14,
+                          outline: "none",
+                          background: CREAM,
+                          boxSizing: "border-box",
+                        }}
+                      >
+                        <option value="wedding">{t("contact.event_wedding", "Dasmë")}</option>
+                        <option value="engagement">{t("contact.event_engagement", "Fejesë")}</option>
+                        <option value="birthday">{t("contact.event_birthday", "Ditëlindje")}</option>
+                        <option value="corporate">{t("contact.event_corporate", "Event Korporativ / Konferencë")}</option>
+                        <option value="other">{t("contact.event_other", "Tjetër")}</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: DARK, marginBottom: 8 }}>
+                      {t("contact.message", "Mesazhi apo Pyetja Juaj")} *
+                    </label>
+                    <textarea
+                      required
+                      rows={4}
+                      value={formState.message}
+                      onChange={(e) => setFormState({ ...formState, message: e.target.value })}
+                      placeholder={t(
+                        "contact.message_placeholder",
+                        "Përshkruani datën e parashikuar, numrin e mysafirëve apo ndonjë kërkesë të veçantë..."
+                      )}
+                      style={{
+                        width: "100%",
+                        padding: "12px 16px",
+                        borderRadius: 8,
+                        border: "1px solid #dcd7d0",
+                        fontSize: 14,
+                        outline: "none",
+                        background: CREAM,
+                        resize: "vertical",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    style={{
+                      padding: "16px 32px",
+                      background: WINE,
+                      color: WHITE,
+                      borderRadius: 8,
+                      border: "none",
+                      fontWeight: 700,
+                      fontSize: 15,
+                      cursor: isSubmitting ? "not-allowed" : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 10,
+                      opacity: isSubmitting ? 0.7 : 1,
+                      transition: "all .2s ease",
+                      marginTop: 8,
+                    }}
+                  >
+                    <Send size={16} />
+                    {isSubmitting
+                      ? t("contact.submitting", "Duke dërguar...")
+                      : t("contact.submit", "Dërgo Mesazhin")}
+                  </button>
+                </form>
+              )}
+            </div>
+          </FadeUp>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+/* ═══════════════════════════════════════════════════════════
    FOOTER — photo strip + wine subscribe box + white info grid
    (exact Gademan footer: 3-layer footer)
 ═══════════════════════════════════════════════════════════ */
@@ -1810,7 +2245,7 @@ function Footer() {
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
   return (
-    <footer id="contact">
+    <footer>
       {/* Layer 1: photo strip — like Gademan ice cream row */}
       <div style={{ height: 110, overflow: "hidden" }}>
         <img
@@ -1997,6 +2432,7 @@ export function Landing() {
       <Testimonials />
       <PricingSection onOpenModal={handleOpenModal} />
       <FaqSection />
+      <ContactSection />
       <Footer />
 
       <FloatingCtaBar onOpenModal={handleOpenModal} />

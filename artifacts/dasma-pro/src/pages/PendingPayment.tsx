@@ -13,8 +13,8 @@ const MUTED = "#6b6b6b";
 const PLAN_DATA = {
   basic: {
     key: "basic",
-    name: "Basic",
-    price: "€10",
+    name: "Starter",
+    price: "€14.99",
     period: "/muaj",
     icon: <Sparkles size={22} color={WINE} />,
     features: [
@@ -28,7 +28,7 @@ const PLAN_DATA = {
   pro: {
     key: "pro",
     name: "Pro",
-    price: "€50",
+    price: "€29.99",
     period: "/muaj",
     icon: <Crown size={22} color={WINE} />,
     features: [
@@ -38,6 +38,19 @@ const PLAN_DATA = {
       "QR check-in avancuar",
       "Import CSV / Eksport PDF",
       "Seat Planner",
+    ],
+  },
+  custom: {
+    key: "custom",
+    name: "Advanced",
+    price: "€79.99",
+    period: "/muaj",
+    icon: <Crown size={22} color={WINE} />,
+    features: [
+      "Organizime të pakufizuara",
+      "Multi-user me role",
+      "White Label opsionale",
+      "Mbështetje prioritare 24/7",
     ],
   },
 };

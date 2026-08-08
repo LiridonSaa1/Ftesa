@@ -19,21 +19,21 @@ import { format } from "date-fns";
 
 const PLANS = [
   {
-    key: "basic", name: "Basic", price: "€10", period: "/muaj",
+    key: "basic", name: "Starter", price: "€14.99", period: "/muaj",
     description: "Perfekt për organizimet e para.",
     icon: <Sparkles className="h-6 w-6" />,
     features: ["1 organizim (1 event)", "Menaxhim mysafirësh", "Ftesa digjitale", "QR Code check-in", "Dashboard statistika"],
     color: "border-primary/40", badge: null,
   },
   {
-    key: "pro", name: "Pro", price: "€50", period: "/muaj",
+    key: "pro", name: "Pro", price: "€29.99", period: "/muaj",
     description: "Për organizatorë profesionistë.",
     icon: <Crown className="h-6 w-6" />,
     features: ["Deri në 11 organizime", "Të gjitha funksionet e platformës", "Hall Designer", "QR check-in", "Import nga CSV/Excel", "Eksport PDF", "Seat Planner"],
     color: "border-primary shadow-lg shadow-primary/10", badge: "Më i popullarizuar",
   },
   {
-    key: "custom", name: "Custom", price: "Me marrëveshje", period: "",
+    key: "custom", name: "Advanced", price: "€79.99", period: "/muaj",
     description: "Zgjidhje enterprise me opsione të personalizuara.",
     icon: <Building2 className="h-6 w-6" />,
     features: ["Organizime të pakufizuara", "Multi-user", "White Label (opsionale)", "Mbështetje prioritare", "Çmim sipas kërkesës"],
@@ -118,15 +118,11 @@ export function Subscription() {
   const [canceling, setCanceling] = useState(false);
 
   const handleUpgrade = (planKey: string) => {
-    if (planKey === "custom") {
-      toast({ title: "Kontaktoni ekipin tonë", description: "Për planin Custom, ju lutem na kontaktoni drejtpërdrejt për çmim dhe konfigurim." });
-      return;
-    }
     if (!paddle || !config) {
       toast({ title: "Gabim", description: "Sistemi i pagesës nuk u ngarkua. Provoni përsëri.", variant: "destructive" });
       return;
     }
-    const priceId = planKey === "pro" ? config.priceIdPro : config.priceIdBasic;
+    const priceId = planKey === "pro" ? config.priceIdPro : planKey === "custom" ? config.priceIdCustom : config.priceIdBasic;
     if (!priceId) {
       toast({ title: "Gabim konfigurimi", description: "Çmimi i planit nuk është konfiguruar. Kontaktoni mbështetjen.", variant: "destructive" });
       return;
@@ -224,7 +220,7 @@ export function Subscription() {
       <div className="grid gap-6 md:grid-cols-3">
         {PLANS.map((plan) => {
           const isCurrent = subscription?.plan === plan.key;
-          const isUpgradable = !isCurrent && plan.key !== "custom";
+          const isUpgradable = !isCurrent;
           return (
             <Card key={plan.key} className={cn("relative flex flex-col border-2 bg-card/60 backdrop-blur transition-all", plan.color, isCurrent && "ring-2 ring-primary ring-offset-2")}>
               {plan.badge && (
@@ -258,7 +254,7 @@ export function Subscription() {
                   disabled={isCurrent || (isUpgradable && (paddleLoading || !paddle))}
                   onClick={() => !isCurrent && handleUpgrade(plan.key)}
                 >
-                  {isCurrent ? "Plani aktual ✓" : plan.key === "custom" ? "Na kontaktoni" : paddleLoading && isUpgradable ? (
+                  {isCurrent ? "Plani aktual ✓" : paddleLoading && isUpgradable ? (
                     <span className="flex items-center gap-2"><span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> Duke ngarkuar...</span>
                   ) : (
                     <><CreditCard className="h-4 w-4" /> Kalo te {plan.name}</>

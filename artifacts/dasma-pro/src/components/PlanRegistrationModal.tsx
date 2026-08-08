@@ -104,13 +104,19 @@ export function PlanRegistrationModal({
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>(initialPlanKey);
 
+  // Step button loading states
+  const [step1LoadingPlan, setStep1LoadingPlan] = useState<PlanKey | null>(null);
+  const [step3Method, setStep3Method] = useState<"card" | "paddle">("card");
+  const [isProcessingCard, setIsProcessingCard] = useState(false);
+  const [step4Loading, setStep4Loading] = useState(false);
+  const [step5Loading, setStep5Loading] = useState(false);
+
   // Registration Form State
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [registeredUserId, setRegisteredUserId] = useState<string>("");
-
 
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -127,7 +133,6 @@ export function PlanRegistrationModal({
   const [cardCvc, setCardCvc] = useState("");
   const [cardName, setCardName] = useState("");
 
-
   // Sync initial plan when prop changes
   useEffect(() => {
     if (initialPlanKey) {
@@ -138,66 +143,131 @@ export function PlanRegistrationModal({
   // If user is already signed in, check their step
   useEffect(() => {
     if (isOpen && isSignedIn && currentStep === 1) {
-      // If already logged in, jump to step 3 (Payment) or step 4
       setCurrentStep(3);
     }
   }, [isOpen, isSignedIn]);
 
-  // Initialize Paddle JS client
+  // Initialize Paddle JS client inline form in Step 3
+  const initAndOpenPaddleInline = async () => {
+    setIsPaddleLoading(true);
+    setFormError("");
+
+    let token = "test_434ea1d9975495522312268835a";
+    let env: "sandbox" | "production" = "sandbox";
+    let priceId = "pri_01kzgcg3tjf7f7dqyxmen728y4";
+
+    if (selectedPlan === "basic") priceId = "pri_01kzgceydp22wy9c89a8j925av";
+    if (selectedPlan === "pro") priceId = "pri_01kzgcg3tjf7f7dqyxmen728y4";
+    if (selectedPlan === "custom") priceId = "pri_01kzgch82209pbwc7cy3h4vtv4";
+
+    try {
+      const configRes = await fetch("/api/paddle/config");
+      if (configRes.ok) {
+        const config = await configRes.json();
+        if (config?.clientToken) token = config.clientToken;
+        if (config?.environment) env = config.environment;
+        if (selectedPlan === "basic" && config?.priceIdBasic) priceId = config.priceIdBasic;
+        if (selectedPlan === "pro" && config?.priceIdPro) priceId = config.priceIdPro;
+        if (selectedPlan === "custom" && config?.priceIdCustom) priceId = config.priceIdCustom;
+      }
+    } catch (e) {
+      console.warn("Config fetch fallback", e);
+    }
+
+    const targetEmail = email.trim() || user?.primaryEmailAddress?.emailAddress || "client@noa-event.com";
+    const targetUserId = registeredUserId || localStorage.getItem("ftesa_user_id") || user?.id || "guest";
+
+    setTimeout(() => {
+      setIsPaddleLoading(false);
+    }, 1200);
+
+    const mountInlineCheckout = (paddleObj: any) => {
+      let attempts = 0;
+      const timer = setInterval(() => {
+        attempts++;
+        const container = document.getElementById("paddle-checkout-container");
+        if (container || attempts > 20) {
+          clearInterval(timer);
+          try {
+            paddleObj.Checkout.open({
+              items: [{ priceId, quantity: 1 }],
+              customer: { email: targetEmail },
+              customData: { userId: targetUserId },
+              settings: {
+                displayMode: "inline",
+                frameTarget: "paddle-checkout-container",
+                frameInitialHeight: 450,
+                frameStyle: "width: 100%; min-width: 100%; background: transparent; border: none;",
+                theme: "light",
+              },
+            });
+          } catch (e) {
+            console.error("Inline paddle checkout error", e);
+          } finally {
+            setIsPaddleLoading(false);
+          }
+        }
+      }, 100);
+    };
+
+    // 1. Try window.Paddle (CDN v2 script)
+    const winPaddle = (window as any).Paddle;
+    if (winPaddle) {
+      try {
+        winPaddle.Environment.set(env);
+        winPaddle.Initialize({
+          token,
+          eventCallback: (event: any) => {
+            if (event.name === "checkout.completed") {
+              const data = event.data;
+              handlePaymentCompleted({
+                paddleTransactionId: data?.id,
+                paddleCustomerId: data?.customer_id,
+                paddleSubscriptionId: data?.subscription_id,
+                amount: data?.totals?.total ? Math.round(Number(data.totals.total)) : undefined,
+              });
+            }
+          },
+        });
+        mountInlineCheckout(winPaddle);
+        return;
+      } catch (err) {
+        console.warn("window.Paddle init warning", err);
+      }
+    }
+
+    // 2. Try npm @paddle/paddle-js
+    try {
+      const paddleInstance = await initializePaddle({
+        token,
+        environment: env,
+        eventCallback: (event) => {
+          if (event.name === "checkout.completed") {
+            const data: any = event.data;
+            handlePaymentCompleted({
+              paddleTransactionId: data?.id,
+              paddleCustomerId: data?.customer_id,
+              paddleSubscriptionId: data?.subscription_id,
+              amount: data?.totals?.total ? Math.round(Number(data.totals.total)) : undefined,
+            });
+          }
+        },
+      });
+      if (paddleInstance) {
+        setPaddle(paddleInstance);
+        mountInlineCheckout(paddleInstance);
+      } else {
+        setIsPaddleLoading(false);
+      }
+    } catch (err) {
+      console.error("Paddle JS initialize error", err);
+      setIsPaddleLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen && currentStep === 3) {
-      setIsPaddleLoading(true);
-      fetch("/api/paddle/config")
-        .then((res) => res.json())
-        .then(async (config) => {
-          const clientToken = config?.clientToken || "test_1d2d981b0be56b45f26cb550561";
-
-          if (clientToken) {
-            const paddleInstance = await initializePaddle({
-              token: clientToken,
-              environment: (config?.environment === "production") ? "production" : "sandbox",
-              eventCallback: (event) => {
-                if (event.name === "checkout.completed") {
-                  const data: any = event.data;
-                  handlePaymentCompleted({
-                    paddleTransactionId: data?.id,
-                    paddleCustomerId: data?.customer_id,
-                    paddleSubscriptionId: data?.subscription_id,
-                    amount: data?.totals?.total ? Math.round(Number(data.totals.total)) : undefined,
-                  });
-                }
-              },
-            });
-            if (paddleInstance) {
-              setPaddle(paddleInstance);
-            }
-          }
-          setIsPaddleLoading(false);
-        })
-        .catch(async (err) => {
-          console.warn("Failed to fetch /api/paddle/config, using client token fallback", err);
-          try {
-            const paddleInstance = await initializePaddle({
-              token: "test_1d2d981b0be56b45f26cb550561",
-              environment: "sandbox",
-              eventCallback: (event) => {
-                if (event.name === "checkout.completed") {
-                  const data: any = event.data;
-                  handlePaymentCompleted({
-                    paddleTransactionId: data?.id,
-                    paddleCustomerId: data?.customer_id,
-                    paddleSubscriptionId: data?.subscription_id,
-                    amount: data?.totals?.total ? Math.round(Number(data.totals.total)) : undefined,
-                  });
-                }
-              },
-            });
-            if (paddleInstance) setPaddle(paddleInstance);
-          } catch (e) {
-            console.error("Paddle fallback init error", e);
-          }
-          setIsPaddleLoading(false);
-        });
+      initAndOpenPaddleInline();
     }
   }, [isOpen, currentStep, selectedPlan]);
 
@@ -208,9 +278,13 @@ export function PlanRegistrationModal({
   // ── Handlers ─────────────────────────────────────────────────────────────
 
   const handleSelectPlan = (planKey: PlanKey) => {
+    setStep1LoadingPlan(planKey);
     setSelectedPlan(planKey);
     localStorage.setItem("ftesa_selected_plan", planKey);
-    setCurrentStep(2);
+    setTimeout(() => {
+      setCurrentStep(2);
+      setStep1LoadingPlan(null);
+    }, 450);
   };
 
   const handleRegisterUser = async (e: React.FormEvent) => {
@@ -234,16 +308,16 @@ export function PlanRegistrationModal({
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       const nameParts = fullName.trim().split(" ");
       const firstName = nameParts[0] || "";
       const lastName = nameParts.slice(1).join(" ") || "";
 
-      // Save plan choice and user registration flags
       localStorage.setItem("ftesa_selected_plan", selectedPlan);
       localStorage.setItem("ftesa_user_registered", "true");
 
-      // 1. Direct Supabase PostgREST User Insertion
       try {
         const createdUser = await registerUserInSupabase({
           email,
@@ -259,7 +333,6 @@ export function PlanRegistrationModal({
         console.warn("Direct Supabase user insertion warning", err);
       }
 
-      // Also attempt API server endpoint if proxied
       try {
         fetch("/api/auth/register", {
           method: "POST",
@@ -268,7 +341,6 @@ export function PlanRegistrationModal({
         });
       } catch {}
 
-      // 2. Clerk Registration if Clerk is active
       if (isSignUpLoaded && signUp) {
         try {
           const result: any = await signUp.create({
@@ -286,8 +358,10 @@ export function PlanRegistrationModal({
         }
       }
 
-      setIsSubmitting(false);
-      setCurrentStep(3); // Proceed to Paddle Payment
+      setTimeout(() => {
+        setIsSubmitting(false);
+        setCurrentStep(3);
+      }, 450);
     } catch (err: any) {
       console.error("Registration error:", err);
       const msg = err?.errors?.[0]?.message || err?.message || "Ndodhi një gabim gjatë regjistrimit.";
@@ -296,40 +370,138 @@ export function PlanRegistrationModal({
     }
   };
 
-  const handleOpenPaddleCheckout = async () => {
+  const handleOpenPaddleCheckout = async (mode: "overlay" | "inline" = "overlay") => {
     setIsPaddleLoading(true);
+    setFormError("");
+
+    let priceId = "pri_01kzgcg3tjf7f7dqyxmen728y4";
+    if (selectedPlan === "basic") priceId = "pri_01kzgceydp22wy9c89a8j925av";
+    if (selectedPlan === "custom") priceId = "pri_01kzgch82209pbwc7cy3h4vtv4";
+
+    let token = "test_434ea1d9975495522312268835a";
+    let env: "sandbox" | "production" = "sandbox";
+
     try {
-      let priceId = "pri_01kzchac3d17z4a3bkr2wz0sph";
-      if (selectedPlan === "basic") priceId = "pri_01kzf5pjvpgfcvhada26ncept1";
-      if (selectedPlan === "custom") priceId = "pri_01kzf6vrfc67pzxzrx9b4195gh";
-
-      try {
-        const configRes = await fetch("/api/paddle/config");
-        if (configRes.ok) {
-          const config = await configRes.json();
-          if (selectedPlan === "basic" && config.priceIdBasic) priceId = config.priceIdBasic;
-          if (selectedPlan === "pro" && config.priceIdPro) priceId = config.priceIdPro;
-          if (selectedPlan === "custom" && config.priceIdCustom) priceId = config.priceIdCustom;
-        }
-      } catch {}
-
-
-
-
-
-      if (paddle && priceId) {
-        paddle.Checkout.open({
-          items: [{ priceId, quantity: 1 }],
-          customer: { email: email || user?.primaryEmailAddress?.emailAddress || "client@noa-event.com" },
-          customData: { userId: registeredUserId || localStorage.getItem("ftesa_user_id") || user?.id || "guest" },
-        });
-        // Real Paddle Checkout overlay is now open on screen!
-      } else {
-        handlePaymentCompleted();
+      const configRes = await fetch("/api/paddle/config");
+      if (configRes.ok) {
+        const config = await configRes.json();
+        if (config.clientToken) token = config.clientToken;
+        if (config.environment) env = config.environment;
+        if (selectedPlan === "basic" && config.priceIdBasic) priceId = config.priceIdBasic;
+        if (selectedPlan === "pro" && config.priceIdPro) priceId = config.priceIdPro;
+        if (selectedPlan === "custom" && config.priceIdCustom) priceId = config.priceIdCustom;
       }
-    } catch (err) {
+    } catch {}
+
+    const targetEmail = email.trim() || user?.primaryEmailAddress?.emailAddress || "client@noa-event.com";
+    const targetUserId = registeredUserId || localStorage.getItem("ftesa_user_id") || user?.id || "guest";
+
+    // Method 1: Try global window.Paddle directly (loaded from CDN in index.html)
+    const winPaddle = (window as any).Paddle;
+    if (winPaddle) {
+      try {
+        winPaddle.Environment.set(env);
+        winPaddle.Initialize({
+          token,
+          eventCallback: (event: any) => {
+            if (event.name === "checkout.completed") {
+              const data = event.data;
+              handlePaymentCompleted({
+                paddleTransactionId: data?.id,
+                paddleCustomerId: data?.customer_id,
+                paddleSubscriptionId: data?.subscription_id,
+                amount: data?.totals?.total ? Math.round(Number(data.totals.total)) : undefined,
+              });
+            }
+          },
+        });
+
+        const containerEl = document.getElementById("paddle-checkout-container");
+        if (mode === "inline" && containerEl) {
+          winPaddle.Checkout.open({
+            items: [{ priceId, quantity: 1 }],
+            customer: { email: targetEmail },
+            customData: { userId: targetUserId },
+            settings: {
+              displayMode: "inline",
+              frameTarget: "paddle-checkout-container",
+              frameInitialHeight: 450,
+              frameStyle: "width: 100%; min-width: 100%; background: transparent; border: none;",
+              theme: "light",
+            },
+          });
+        } else {
+          winPaddle.Checkout.open({
+            items: [{ priceId, quantity: 1 }],
+            customer: { email: targetEmail },
+            customData: { userId: targetUserId },
+            settings: {
+              displayMode: "overlay",
+              theme: "light",
+            },
+          });
+        }
+        setIsPaddleLoading(false);
+        return;
+      } catch (winErr) {
+        console.warn("window.Paddle execution warning, falling back to npm module", winErr);
+      }
+    }
+
+    // Method 2: NPM @paddle/paddle-js module fallback
+    try {
+      let pInstance: Paddle | undefined = paddle ?? undefined;
+      if (!pInstance) {
+        pInstance = await initializePaddle({
+          token,
+          environment: env,
+          eventCallback: (event) => {
+            if (event.name === "checkout.completed") {
+              const data: any = event.data;
+              handlePaymentCompleted({
+                paddleTransactionId: data?.id,
+                paddleCustomerId: data?.customer_id,
+                paddleSubscriptionId: data?.subscription_id,
+                amount: data?.totals?.total ? Math.round(Number(data.totals.total)) : undefined,
+              });
+            }
+          },
+        });
+        if (pInstance) setPaddle(pInstance);
+      }
+
+      if (pInstance && priceId) {
+        const containerEl = document.getElementById("paddle-checkout-container");
+        if (mode === "inline" && containerEl) {
+          pInstance.Checkout.open({
+            items: [{ priceId, quantity: 1 }],
+            customer: { email: targetEmail },
+            customData: { userId: targetUserId },
+            settings: {
+              displayMode: "inline",
+              frameTarget: "paddle-checkout-container",
+              frameInitialHeight: 450,
+              frameStyle: "width: 100%; min-width: 100%; background: transparent; border: none;",
+              theme: "light",
+            },
+          });
+        } else {
+          pInstance.Checkout.open({
+            items: [{ priceId, quantity: 1 }],
+            customer: { email: targetEmail },
+            customData: { userId: targetUserId },
+            settings: {
+              displayMode: "overlay",
+              theme: "light",
+            },
+          });
+        }
+      } else {
+        setFormError("Sistemi i pagesës Paddle nuk është gati. Ju lutem provoni përsëri.");
+      }
+    } catch (err: any) {
       console.error("Paddle checkout trigger error:", err);
-      handlePaymentCompleted();
+      setFormError("Ndodhi një gabim gjatë procesimit të pagesës me Paddle.");
     } finally {
       setIsPaddleLoading(false);
     }
@@ -567,17 +739,26 @@ export function PlanRegistrationModal({
                         </div>
 
                         <button
+                          disabled={step1LoadingPlan !== null}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleSelectPlan(plan.key);
                           }}
-                          className={`w-full py-3 px-4 rounded-xl font-bold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 ${
+                          className={`w-full py-3 px-4 rounded-xl font-bold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 disabled:opacity-75 ${
                             isSelected
                               ? "bg-[#7B1F3A] hover:bg-[#5e1729] text-white shadow-lg shadow-[#7B1F3A]/25"
                               : "bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200"
                           }`}
                         >
-                          Zgjidh {plan.name} <ChevronRight size={14} />
+                          {step1LoadingPlan === plan.key ? (
+                            <>
+                              <Loader2 size={16} className="animate-spin" /> Po ngarkohet Hapi 2...
+                            </>
+                          ) : (
+                            <>
+                              Zgjidh {plan.name} <ChevronRight size={14} />
+                            </>
+                          )}
                         </button>
                       </div>
                     );
@@ -701,11 +882,11 @@ export function PlanRegistrationModal({
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-2/3 py-3 bg-[#7B1F3A] hover:bg-[#5e1729] text-white rounded-xl font-bold text-xs tracking-wider uppercase shadow-lg shadow-[#7B1F3A]/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-2/3 py-3 bg-[#7B1F3A] hover:bg-[#5e1729] text-white rounded-xl font-bold text-xs tracking-wider uppercase shadow-lg shadow-[#7B1F3A]/25 transition-all flex items-center justify-center gap-2 disabled:opacity-75"
                     >
                       {isSubmitting ? (
                         <>
-                          <Loader2 size={16} className="animate-spin" /> Po regjistrohet...
+                          <Loader2 size={16} className="animate-spin" /> Po ruhen të dhënat & Po kalohet te pagesa...
                         </>
                       ) : (
                         <>
@@ -719,7 +900,7 @@ export function PlanRegistrationModal({
             )}
 
             {/* ══════════════════════════════════════════════════════════════
-               HAPI 3 – Forma e Pagesës me Kartë Bankare (Paddle Billing)
+               HAPI 3 – Forma Zyrtare e Pagesës me Paddle Billing (Official Real Checkout)
             ══════════════════════════════════════════════════════════════ */}
             {currentStep === 3 && (
               <motion.div
@@ -728,67 +909,29 @@ export function PlanRegistrationModal({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
-                className="max-w-lg mx-auto space-y-5"
+                className="max-w-xl mx-auto space-y-5"
               >
                 <div className="text-center">
                   <span className="inline-block px-3 py-1 bg-rose-100 text-[#7B1F3A] dark:bg-rose-950/50 dark:text-rose-300 rounded-full text-xs font-extrabold uppercase tracking-wider mb-2">
-                    Hapi 3 me 5 — Pagesa me Kartë
+                    Hapi 3 me 5 — Pagesa Zyrtare me Paddle Billing
                   </span>
                   <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">
-                    Forma e Pagesës — Shkruani Kartën Bankare
+                    Forma Zyrtare e Pagesës — Paddle
                   </h2>
                   <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
-                    Plotësoni të dhënat e kartës suaj bankare për të aktivizuar paketën {currentPlanObj.name}.
+                    Plotësoni të dhënat e kartelës suaj në formën zyrtare të enkriptuar të Paddle më poshtë. Transaksioni do të ruhet automatikisht te Paddle!
                   </p>
                 </div>
 
-                {/* Visual Credit Card Preview */}
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#7B1F3A] via-[#5e1729] to-[#2d1a1f] p-5 text-white shadow-xl">
-                  <div className="flex justify-between items-center mb-6">
-                    <span className="text-xs font-bold tracking-widest text-rose-200 uppercase">
-                      Bank Card — Paddle Billing
-                    </span>
-                    <div className="flex gap-1.5">
-                      <div className="h-6 w-9 rounded bg-white/20 backdrop-blur-sm flex items-center justify-center text-[10px] font-black italic">
-                        VISA
-                      </div>
-                      <div className="h-6 w-9 rounded bg-white/20 backdrop-blur-sm flex items-center justify-center text-[10px] font-black italic">
-                        MC
-                      </div>
-                    </div>
+                {formError && (
+                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center gap-2">
+                    <AlertCircle size={16} className="flex-shrink-0" />
+                    <span>{formError}</span>
                   </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <div className="text-[10px] text-rose-200 uppercase font-semibold tracking-wider">
-                        Numri i Kartës
-                      </div>
-                      <div className="font-mono text-lg tracking-widest font-bold">
-                        {cardNumber || "4532 •••• •••• ••••"}
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-end text-xs">
-                      <div>
-                        <div className="text-[9px] text-rose-200 uppercase font-semibold">
-                          Pronari i Kartës
-                        </div>
-                        <div className="font-bold tracking-wide uppercase truncate max-w-[180px]">
-                          {cardName || fullName || "EMRI MBIEMRI"}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[9px] text-rose-200 uppercase font-semibold">
-                          Skadon
-                        </div>
-                        <div className="font-mono font-bold">{cardExpiry || "12/28"}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                )}
 
                 {/* Plan Summary Row */}
-                <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 text-xs">
+                <div className="flex items-center justify-between p-4 bg-rose-50/40 dark:bg-slate-800 rounded-2xl border border-rose-100 dark:border-slate-700 text-xs">
                   <div>
                     <span className="text-gray-500">Paketa: </span>
                     <span className="font-extrabold text-[#7B1F3A] uppercase">{currentPlanObj.name}</span>
@@ -803,114 +946,68 @@ export function PlanRegistrationModal({
                   </div>
                 </div>
 
-                {/* Bank Card Input Form */}
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleOpenPaddleCheckout();
-                  }}
-                  className="space-y-3.5 text-left"
-                >
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                      Numri i Kartës Bankare
-                    </label>
-                    <div className="relative">
-                      <CreditCard size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input
-                        type="text"
-                        required
-                        value={cardNumber}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/\D/g, "").slice(0, 16);
-                          const formatted = val.replace(/(\d{4})/g, "$1 ").trim();
-                          setCardNumber(formatted);
-                        }}
-                        placeholder="4532 0000 0000 0000"
-                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#7B1F3A] dark:text-white"
-                      />
+                {/* REAL OFFICIAL PADDLE INLINE CHECKOUT CONTAINER */}
+                <div className="relative min-h-[460px] w-full rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 p-2 shadow-inner overflow-hidden flex flex-col justify-center">
+                  {isPaddleLoading && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm p-4 text-center">
+                      <Loader2 size={36} className="animate-spin text-[#7B1F3A] mb-3" />
+                      <span className="text-xs font-bold text-gray-700 dark:text-slate-300">
+                        Po ngarkohet forma zyrtare e enkriptuar e Paddle Checkout...
+                      </span>
+                      <span className="text-[11px] text-gray-400 mt-1">
+                        Ju lutem pritni pak momente gjersa të lidhet serveri i sigurt i Paddle.
+                      </span>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                        Data e Skadimit
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={cardExpiry}
-                        onChange={(e) => {
-                          let val = e.target.value.replace(/\D/g, "").slice(0, 4);
-                          if (val.length >= 3) {
-                            val = `${val.slice(0, 2)}/${val.slice(2)}`;
-                          }
-                          setCardExpiry(val);
-                        }}
-                        placeholder="MM/YY"
-                        className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#7B1F3A] dark:text-white"
-                      />
-                    </div>
+                  <div id="paddle-checkout-container" className="w-full min-h-[440px]" />
+                </div>
 
-                    <div>
-                      <label className="block text-[11px] font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                        CVC / CVV
-                      </label>
-                      <input
-                        type="password"
-                        required
-                        maxLength={4}
-                        value={cardCvc}
-                        onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                        placeholder="123"
-                        className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#7B1F3A] dark:text-white"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                      Emri në Kartë
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                      placeholder="Emri Mbiemri si në kartë"
-                      className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7B1F3A] dark:text-white"
-                    />
-                  </div>
-
-                  <div className="pt-2 space-y-2">
+                {/* Official Paddle Action Controls */}
+                <div className="pt-2 text-center space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <button
-                      type="submit"
+                      type="button"
+                      onClick={() => handleOpenPaddleCheckout("overlay")}
                       disabled={isPaddleLoading}
-                      className="w-full py-3.5 bg-[#7B1F3A] hover:bg-[#5e1729] text-white rounded-xl font-extrabold text-xs tracking-wider uppercase shadow-xl shadow-[#7B1F3A]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="py-3.5 bg-[#7B1F3A] hover:bg-[#5e1729] text-white rounded-xl font-extrabold text-xs tracking-wider uppercase shadow-lg shadow-[#7B1F3A]/25 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                     >
                       {isPaddleLoading ? (
                         <>
-                          <Loader2 size={16} className="animate-spin" /> Po verifikohet pagesa me Paddle...
+                          <Loader2 size={15} className="animate-spin" /> Po hapet Paddle Overlay...
                         </>
                       ) : (
                         <>
-                          <Lock size={15} /> Paguaj {currentPlanObj.price} me Kartë Bankare (Paddle Billing)
+                          <Lock size={15} /> Hap me Paddle Overlay (Dritare Pop-up)
                         </>
                       )}
                     </button>
 
-                    <div className="flex items-center justify-center gap-2 text-[11px] text-gray-400">
-                      <ShieldCheck size={14} className="text-emerald-500" />
-                      <span>Pagesa e sigurt me Paddle Billing (SSL 256-bit)</span>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => initAndOpenPaddleInline()}
+                      disabled={isPaddleLoading}
+                      className="py-3.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200 rounded-xl font-extrabold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                    >
+                      {isPaddleLoading ? (
+                        <>
+                          <Loader2 size={15} className="animate-spin" /> Po ringarkohet...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={15} className="text-[#7B1F3A]" /> Ririfresko Formën Zyrtare te Paddle
+                        </>
+                      )}
+                    </button>
                   </div>
-                </form>
+
+                  <div className="flex items-center justify-center gap-2 text-[11px] text-gray-400 pt-1">
+                    <ShieldCheck size={14} className="text-emerald-500" />
+                    <span>Transaksioni realizohet dhe ruhet direkt te Paddle Billing (SSL 256-bit)</span>
+                  </div>
+                </div>
               </motion.div>
             )}
-
-
-
 
             {/* ══════════════════════════════════════════════════════════════
                HAPI 4 – Aktivizimi i Llogarisë
@@ -969,10 +1066,25 @@ export function PlanRegistrationModal({
                 </div>
 
                 <button
-                  onClick={() => setCurrentStep(5)}
-                  className="w-full py-3.5 bg-[#7B1F3A] hover:bg-[#5e1729] text-white rounded-xl font-bold text-xs tracking-wider uppercase shadow-lg shadow-[#7B1F3A]/25 transition-all flex items-center justify-center gap-2"
+                  disabled={step4Loading}
+                  onClick={() => {
+                    setStep4Loading(true);
+                    setTimeout(() => {
+                      setCurrentStep(5);
+                      setStep4Loading(false);
+                    }, 400);
+                  }}
+                  className="w-full py-3.5 bg-[#7B1F3A] hover:bg-[#5e1729] text-white rounded-xl font-bold text-xs tracking-wider uppercase shadow-lg shadow-[#7B1F3A]/25 transition-all flex items-center justify-center gap-2 disabled:opacity-75"
                 >
-                  Vazhdo tek Hapi 5 (Akses në Dashboard) <ArrowRight size={16} />
+                  {step4Loading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" /> Po ngarkohet Hapi 5...
+                    </>
+                  ) : (
+                    <>
+                      Vazhdo tek Hapi 5 (Akses në Dashboard) <ArrowRight size={16} />
+                    </>
+                  )}
                 </button>
               </motion.div>
             )}
@@ -1027,10 +1139,24 @@ export function PlanRegistrationModal({
                 </div>
 
                 <button
-                  onClick={handleGoToDashboard}
-                  className="w-full py-4 bg-[#7B1F3A] hover:bg-[#5e1729] text-white rounded-xl font-extrabold text-sm tracking-widest uppercase shadow-xl shadow-[#7B1F3A]/35 transition-all flex items-center justify-center gap-3"
+                  disabled={step5Loading}
+                  onClick={() => {
+                    setStep5Loading(true);
+                    setTimeout(() => {
+                      handleGoToDashboard();
+                    }, 400);
+                  }}
+                  className="w-full py-4 bg-[#7B1F3A] hover:bg-[#5e1729] text-white rounded-xl font-extrabold text-sm tracking-widest uppercase shadow-xl shadow-[#7B1F3A]/35 transition-all flex items-center justify-center gap-3 disabled:opacity-75"
                 >
-                  Hyr në Dashboard Tani <ArrowRight size={18} />
+                  {step5Loading ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" /> Po hapet Dashboard...
+                    </>
+                  ) : (
+                    <>
+                      Hyr në Dashboard Tani <ArrowRight size={18} />
+                    </>
+                  )}
                 </button>
               </motion.div>
             )}
