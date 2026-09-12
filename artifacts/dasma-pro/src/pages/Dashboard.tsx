@@ -1,9 +1,10 @@
+import { useState, useEffect } from "react";
 import { useGetDashboardOverview, useGetSubscription } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   CalendarDays, Users, CheckCircle2, XCircle, Clock,
   UserCheck, LayoutGrid, Plus, ArrowRight, Crown, Sparkles, Building2,
-  TrendingUp,
+  TrendingUp, MapPin,
 } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,120 @@ const PLAN_META: Record<string, { label: string; icon: React.ReactNode; color: s
   pro:    { label: "Pro",    icon: <Crown className="h-4 w-4" />,       color: "text-primary" },
   custom: { label: "Custom", icon: <Building2 className="h-4 w-4" />,  color: "text-purple-500" },
 };
+
+function CountdownHero({ nextEvent }: { nextEvent?: { id: number; name: string; date: string; venue?: string | null } }) {
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+
+  useEffect(() => {
+    if (!nextEvent?.date) return;
+    const targetDate = new Date(nextEvent.date).getTime();
+
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const difference = targetDate - now;
+
+      if (difference <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      } else {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+        setTimeLeft({ days, hours, minutes, seconds });
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [nextEvent?.date]);
+
+  if (!nextEvent) {
+    return (
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#7B1F3A]/30 via-[#5e1729]/20 to-black/40 border border-[#7B1F3A]/30 p-8 shadow-2xl backdrop-blur-xl">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="space-y-2 text-center md:text-left">
+            <Badge className="bg-[#7B1F3A]/20 text-[#EAA88F] border-[#7B1F3A]/40 text-xs px-3 py-1 uppercase tracking-widest">
+              ✨ Mirë se vini në NoaEvent
+            </Badge>
+            <h2 className="text-3xl font-serif font-semibold text-white">Gati për të krijuar eventin tuaj?</h2>
+            <p className="text-muted-foreground text-sm max-w-lg">
+              Krijoni ftesa digjitale me countdown, menaxhoni listën e mysafirëve dhe planifikoni sallën e dasmës.
+            </p>
+          </div>
+          <Button asChild size="lg" className="bg-[#7B1F3A] hover:bg-[#5e1729] text-white rounded-xl px-8 shadow-lg shadow-[#7B1F3A]/30 transition-all hover:scale-105 shrink-0">
+            <Link href="/events/new">
+              <Plus className="mr-2 h-5 w-5" /> Krijo Event të Ri
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#7B1F3A]/35 via-[#2d1a1f]/80 to-black/80 border border-[#7B1F3A]/40 p-8 shadow-2xl backdrop-blur-xl group">
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[#7B1F3A]/20 rounded-full blur-[120px] pointer-events-none group-hover:bg-[#7B1F3A]/30 transition-all duration-700" />
+
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative z-10">
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#7B1F3A]/30 border border-[#7B1F3A]/50 text-xs font-semibold text-[#EAA88F] uppercase tracking-wider">
+              <Sparkles className="h-3.5 w-3.5 text-[#EAA88F]" /> Eventi i Ardhshëm
+            </span>
+            <span className="text-xs text-white/50">·</span>
+            <span className="text-xs text-white/70 font-medium">
+              {format(new Date(nextEvent.date), 'dd MMMM yyyy')}
+            </span>
+          </div>
+
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-white tracking-tight">
+            {nextEvent.name}
+          </h2>
+
+          {nextEvent.venue && (
+            <p className="text-sm text-white/70 flex items-center gap-1.5 font-light">
+              <MapPin className="h-4 w-4 text-[#7B1F3A]" /> {nextEvent.venue}
+            </p>
+          )}
+
+          <div className="pt-2 flex items-center gap-3">
+            <Button asChild size="sm" className="bg-[#7B1F3A] hover:bg-[#5e1729] text-white rounded-xl px-5 text-xs uppercase tracking-wider shadow-md">
+              <Link href={`/events/${nextEvent.id}`}>
+                Menaxho Eventin <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {timeLeft && (
+          <div className="flex flex-wrap items-center gap-3 md:gap-4 shrink-0 bg-black/40 p-4 md:p-6 rounded-2xl border border-white/10 shadow-inner backdrop-blur-md">
+            {[
+              { label: "Ditë", val: timeLeft.days },
+              { label: "Orë", val: timeLeft.hours },
+              { label: "Minuta", val: timeLeft.minutes },
+              { label: "Sekonda", val: timeLeft.seconds },
+            ].map((t, i) => (
+              <div key={t.label} className="flex items-center gap-3 md:gap-4">
+                <div className="text-center min-w-[64px]">
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-lg bg-gradient-to-b from-white/10 to-transparent">
+                    <span className="text-2xl md:text-3xl font-serif font-bold text-white tracking-tight">
+                      {String(t.val).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <span className="text-[10px] uppercase tracking-widest text-white/60 mt-2 block font-semibold">
+                    {t.label}
+                  </span>
+                </div>
+                {i < 3 && <span className="text-2xl font-serif text-white/20 pb-5">:</span>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function KpiCard({
   label, value, icon, sub, accent = false,
@@ -52,7 +167,6 @@ export function Dashboard() {
 
   const isLoading = ovLoading && !overview;
 
-
   const rsvpTotal = ((overview as any)?.totalConfirmed ?? 0) + ((overview as any)?.totalDeclined ?? 0) + ((overview as any)?.totalPending ?? 0);
   const confirmedPct = rsvpTotal > 0 ? Math.round((((overview as any)?.totalConfirmed ?? 0) / rsvpTotal) * 100) : 0;
 
@@ -61,6 +175,8 @@ export function Dashboard() {
   const eventLimit = subscription?.eventLimit ?? (overview as any)?.subscription?.eventLimit ?? 1;
   const eventCount = overview?.totalEvents ?? 0;
   const limitPct = eventLimit ? Math.min(100, Math.round((eventCount / eventLimit) * 100)) : 0;
+
+  const nextUpcomingEvent = overview?.upcomingEvents?.[0];
 
   if (isLoading) {
     return (
@@ -80,13 +196,18 @@ export function Dashboard() {
       <div className="flex justify-between items-end border-b border-white/10 pb-6 relative">
         <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary/10 blur-[100px] rounded-full pointer-events-none -translate-y-1/2" />
         <div className="relative z-10">
-          <h1 className="text-4xl font-serif font-medium tracking-tight text-foreground">{t("dashboard.welcome", "Pasqyra e Llogarisë")}</h1>
-          <p className="text-muted-foreground mt-2 font-light text-lg">NoaEvent Dashboard</p>
+          <h1 className="text-4xl font-serif font-medium tracking-tight text-foreground">
+            {t("dashboard.welcome", "Pasqyra e Llogarisë")} 👋
+          </h1>
+          <p className="text-muted-foreground mt-2 font-light text-lg">Mirë se vini në NoaEvent Dashboard</p>
         </div>
         <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-xl uppercase tracking-widest text-xs h-11 px-6 shadow-[0_0_20px_rgba(217,56,94,0.3)] transition-all hover:shadow-[0_0_30px_rgba(217,56,94,0.5)] relative z-10">
           <Link href="/events/new"><Plus className="mr-2 h-4 w-4" /> {t("dashboard.create_event", "Krijo Event")}</Link>
         </Button>
       </div>
+
+      {/* ── Countdown Hero Widget ── */}
+      <CountdownHero nextEvent={nextUpcomingEvent} />
 
       {/* ── Subscription banner ── */}
       <div className="flex items-center gap-4 rounded-2xl glass border-primary/20 bg-primary/5 px-6 py-5 relative overflow-hidden">

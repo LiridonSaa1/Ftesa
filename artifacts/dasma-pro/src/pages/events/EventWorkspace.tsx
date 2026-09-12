@@ -57,7 +57,7 @@ import {
   Plus, Trash2, Pencil, Search, Loader2, CheckCircle2,
   X, CircleDot, UserCheck, UserX, Clock, Send, Map,
   Download, Upload, Share2, Printer, FileSpreadsheet, FileText,
-  Copy, ExternalLink, MessageCircle, Eye, CalendarDays, MapPin, Sparkles, Wand2
+  Copy, ExternalLink, MessageCircle, Eye, CalendarDays, MapPin, Sparkles, Wand2, Phone
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "@/hooks/use-toast";
@@ -1047,10 +1047,16 @@ function GuestsTab({ eventId, eventName }: { eventId: number; eventName: string 
 
 /* ─── RSVP Tab ────────────────────────────────────────────── */
 
+/* ─── RSVP Tab ────────────────────────────────────────────── */
+
 function RsvpTab({ eventId }: { eventId: number }) {
   const { data: guests = [], isLoading } = useListGuests(eventId);
+  const { data: event } = useGetEvent(eventId);
+  const eventName = event?.name || "Dasma / Eventi";
   const updateGuest = useUpdateGuest();
   const qc = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
 
   const handleStatusChange = (guestId: number, status: string) => {
     updateGuest.mutate(
@@ -1066,80 +1072,420 @@ function RsvpTab({ eventId }: { eventId: number }) {
   const declined = guests.filter(g => g.status === "declined");
   const pending = guests.filter(g => g.status === "pending" || g.status === "invited");
 
+  const confirmedPersons = confirmed.reduce((acc, g) => acc + (Number(g.partySize) || 1), 0);
+  const declinedPersons = declined.reduce((acc, g) => acc + (Number(g.partySize) || 1), 0);
+  const pendingPersons = pending.reduce((acc, g) => acc + (Number(g.partySize) || 1), 0);
+  const totalPersons = guests.reduce((acc, g) => acc + (Number(g.partySize) || 1), 0);
+
+  const confirmedPercent = totalPersons > 0 ? Math.round((confirmedPersons / totalPersons) * 100) : 0;
+  const declinedPercent = totalPersons > 0 ? Math.round((declinedPersons / totalPersons) * 100) : 0;
+  const pendingPercent = totalPersons > 0 ? Math.round((pendingPersons / totalPersons) * 100) : 0;
+
+  const filteredByTab = activeTab === "confirmed"
+    ? confirmed
+    : activeTab === "declined"
+    ? declined
+    : activeTab === "pending"
+    ? pending
+    : guests;
+
+  const filteredGuests = filteredByTab.filter(g => {
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.toLowerCase();
+    const fullName = `${g.firstName || ''} ${g.lastName || ''}`.toLowerCase();
+    const phone = (g.phone || '').toLowerCase();
+    return fullName.includes(term) || phone.includes(term);
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Skeleton className="h-32 rounded-2xl" />
+          <Skeleton className="h-32 rounded-2xl" />
+          <Skeleton className="h-32 rounded-2xl" />
+        </div>
+        <Skeleton className="h-64 rounded-2xl" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* Metrics Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="glass border-green-500/20 bg-green-500/5 p-4 rounded-2xl">
-          <p className="text-xs uppercase font-medium text-green-400">Pranuar / Konfirmuar</p>
-          <p className="text-3xl font-serif font-bold text-foreground mt-1">{confirmed.length}</p>
+        {/* Pranuar / Konfirmuar */}
+        <Card className="relative overflow-hidden glass border-emerald-500/30 bg-emerald-500/5 p-5 rounded-2xl transition-all duration-300 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 group">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <p className="text-xs uppercase font-bold tracking-wider text-emerald-400 flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                Pranuar / Konfirmuar
+              </p>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-4xl font-serif font-bold text-foreground group-hover:scale-105 transition-transform duration-300">
+                  {confirmedPersons}
+                </span>
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                  persona
+                </span>
+              </div>
+              <p className="text-xs text-emerald-400/80 font-medium">
+                {confirmed.length} ftesa ({confirmedPercent}% e totalit)
+              </p>
+            </div>
+            <div className="h-12 w-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-inner group-hover:scale-110 transition-transform duration-300">
+              <CheckCircle2 className="h-6 w-6" />
+            </div>
+          </div>
+          <div className="mt-4 h-1.5 w-full bg-emerald-950/40 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
+              style={{ width: `${confirmedPercent}%` }}
+            />
+          </div>
         </Card>
-        <Card className="glass border-red-500/20 bg-red-500/5 p-4 rounded-2xl">
-          <p className="text-xs uppercase font-medium text-red-400">Refuzuar</p>
-          <p className="text-3xl font-serif font-bold text-foreground mt-1">{declined.length}</p>
+
+        {/* Refuzuar */}
+        <Card className="relative overflow-hidden glass border-rose-500/30 bg-rose-500/5 p-5 rounded-2xl transition-all duration-300 hover:border-rose-500/50 hover:shadow-lg hover:shadow-rose-500/10 group">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <p className="text-xs uppercase font-bold tracking-wider text-rose-400 flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-rose-400" />
+                Refuzuar
+              </p>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-4xl font-serif font-bold text-foreground group-hover:scale-105 transition-transform duration-300">
+                  {declinedPersons}
+                </span>
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                  persona
+                </span>
+              </div>
+              <p className="text-xs text-rose-400/80 font-medium">
+                {declined.length} ftesa ({declinedPercent}% e totalit)
+              </p>
+            </div>
+            <div className="h-12 w-12 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shadow-inner group-hover:scale-110 transition-transform duration-300">
+              <UserX className="h-6 w-6" />
+            </div>
+          </div>
+          <div className="mt-4 h-1.5 w-full bg-rose-950/40 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-rose-500 to-red-400 rounded-full transition-all duration-500"
+              style={{ width: `${declinedPercent}%` }}
+            />
+          </div>
         </Card>
-        <Card className="glass border-amber-500/20 bg-amber-500/5 p-4 rounded-2xl">
-          <p className="text-xs uppercase font-medium text-amber-400">Në Pritje</p>
-          <p className="text-3xl font-serif font-bold text-foreground mt-1">{pending.length}</p>
+
+        {/* Në Pritje */}
+        <Card className="relative overflow-hidden glass border-amber-500/30 bg-amber-500/5 p-5 rounded-2xl transition-all duration-300 hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/10 group">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <p className="text-xs uppercase font-bold tracking-wider text-amber-400 flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                Në Pritje
+              </p>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-4xl font-serif font-bold text-foreground group-hover:scale-105 transition-transform duration-300">
+                  {pendingPersons}
+                </span>
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                  persona
+                </span>
+              </div>
+              <p className="text-xs text-amber-400/80 font-medium">
+                {pending.length} ftesa ({pendingPercent}% e totalit)
+              </p>
+            </div>
+            <div className="h-12 w-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-inner group-hover:scale-110 transition-transform duration-300">
+              <Clock className="h-6 w-6" />
+            </div>
+          </div>
+          <div className="mt-4 h-1.5 w-full bg-amber-950/40 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all duration-500"
+              style={{ width: `${pendingPercent}%` }}
+            />
+          </div>
         </Card>
       </div>
 
-      <Tabs defaultValue="confirmed" className="space-y-4">
-        <TabsList className="bg-black/30">
-          <TabsTrigger value="confirmed" className="text-xs">Konfirmuar ({confirmed.length})</TabsTrigger>
-          <TabsTrigger value="declined" className="text-xs">Refuzuar ({declined.length})</TabsTrigger>
-          <TabsTrigger value="pending" className="text-xs">Në Pritje ({pending.length})</TabsTrigger>
-        </TabsList>
+      {/* Toolbar & Filter Tabs */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-black/20 p-3 rounded-2xl border border-white/10 glass">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            onClick={() => setActiveTab("all")}
+            className={cn(
+              "px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 cursor-pointer",
+              activeTab === "all"
+                ? "bg-white/15 text-white shadow-md border border-white/20"
+                : "text-muted-foreground hover:text-white hover:bg-white/5"
+            )}
+          >
+            <Users className="h-3.5 w-3.5" />
+            Të gjithë
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-white/10">
+              {guests.length}
+            </span>
+          </button>
 
-        <TabsContent value="confirmed">
-          <GuestSubList guests={confirmed} onStatusChange={handleStatusChange} />
-        </TabsContent>
-        <TabsContent value="declined">
-          <GuestSubList guests={declined} onStatusChange={handleStatusChange} />
-        </TabsContent>
-        <TabsContent value="pending">
-          <GuestSubList guests={pending} onStatusChange={handleStatusChange} />
-        </TabsContent>
-      </Tabs>
+          <button
+            onClick={() => setActiveTab("confirmed")}
+            className={cn(
+              "px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 cursor-pointer",
+              activeTab === "confirmed"
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-md shadow-emerald-500/10"
+                : "text-muted-foreground hover:text-emerald-400 hover:bg-emerald-500/10"
+            )}
+          >
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+            Konfirmuar
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300">
+              {confirmed.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("declined")}
+            className={cn(
+              "px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 cursor-pointer",
+              activeTab === "declined"
+                ? "bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-md shadow-rose-500/10"
+                : "text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10"
+            )}
+          >
+            <UserX className="h-3.5 w-3.5 text-rose-400" />
+            Refuzuar
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-rose-500/20 text-rose-300">
+              {declined.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("pending")}
+            className={cn(
+              "px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 cursor-pointer",
+              activeTab === "pending"
+                ? "bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-md shadow-amber-500/10"
+                : "text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10"
+            )}
+          >
+            <Clock className="h-3.5 w-3.5 text-amber-400" />
+            Në Pritje
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300">
+              {pending.length}
+            </span>
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="relative min-w-[220px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Kërko me emër ose telefon..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 pr-8 h-9 text-xs bg-white/5 border-white/10 rounded-xl focus:border-primary/50"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Guest Table */}
+      <GuestSubList
+        guests={filteredGuests}
+        eventName={eventName}
+        onStatusChange={handleStatusChange}
+      />
     </div>
   );
 }
 
-function GuestSubList({ guests, onStatusChange }: { guests: any[]; onStatusChange: (id: number, status: string) => void }) {
+function GuestSubList({
+  guests,
+  eventName,
+  onStatusChange,
+}: {
+  guests: any[];
+  eventName: string;
+  onStatusChange: (id: number, status: string) => void;
+}) {
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+
+  const copyRsvpLink = (guest: any) => {
+    const url = `${window.location.origin}/rsvp/${guest.rsvpToken}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(guest.id);
+    toast({
+      title: "Linku u kopjua",
+      description: `Linku i RSVP për ${guest.firstName} u kopjua në clipboard.`,
+    });
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   if (guests.length === 0) {
-    return <div className="p-8 text-center text-sm text-muted-foreground glass rounded-2xl">Nuk ka mysafirë në këtë kategori.</div>;
+    return (
+      <div className="p-12 text-center glass rounded-2xl border border-white/10 flex flex-col items-center justify-center space-y-3">
+        <div className="h-12 w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground">
+          <Users className="h-6 w-6 opacity-60" />
+        </div>
+        <p className="text-base font-semibold text-foreground">Nuk ka mysafirë në këtë listë</p>
+        <p className="text-xs text-muted-foreground max-w-sm">
+          Filtri i zgjedhur nuk përmban asnjë mysafir ose kërkimi juaj nuk dha rezultate.
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div className="rounded-2xl border border-white/5 overflow-hidden glass">
-      <table className="w-full text-sm">
-        <thead className="bg-white/[0.02] border-b border-white/5">
-          <tr>
-            <th className="text-left px-6 py-3 font-medium text-xs uppercase tracking-widest text-muted-foreground">Emri</th>
-            <th className="text-left px-6 py-3 font-medium text-xs uppercase tracking-widest text-muted-foreground">Telefon</th>
-            <th className="text-left px-6 py-3 font-medium text-xs uppercase tracking-widest text-muted-foreground">Personat</th>
-            <th className="text-left px-6 py-3 font-medium text-xs uppercase tracking-widest text-muted-foreground">Statusi</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-white/5">
-          {guests.map((g) => (
-            <tr key={g.id} className="hover:bg-white/[0.02]">
-              <td className="px-6 py-3 font-serif text-base">{g.firstName} {g.lastName}</td>
-              <td className="px-6 py-3 text-muted-foreground text-xs">{g.phone || "—"}</td>
-              <td className="px-6 py-3 text-muted-foreground text-xs">{g.partySize}</td>
-              <td className="px-6 py-3">
-                <Select value={g.status} onValueChange={(val) => onStatusChange(g.id, val)}>
-                  <SelectTrigger className="h-8 w-32 text-xs border-0 bg-transparent p-0">
-                    <span className={cn("text-[10px] uppercase px-2.5 py-1 rounded-md font-medium", STATUS_COLORS[g.status])}>
-                      {STATUS_LABELS[g.status]}
-                    </span>
-                  </SelectTrigger>
-                  <SelectContent>{Object.entries(STATUS_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent>
-                </Select>
-              </td>
+    <div className="rounded-2xl border border-white/10 overflow-hidden glass shadow-xl">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="bg-white/[0.04] border-b border-white/10">
+              <th className="text-left px-6 py-4 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground/80">
+                EMRI I MYSAFIRIT
+              </th>
+              <th className="text-left px-6 py-4 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground/80">
+                TELEFONI
+              </th>
+              <th className="text-left px-6 py-4 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground/80">
+                PERSONAT
+              </th>
+              <th className="text-left px-6 py-4 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground/80">
+                STATUSI RSVP
+              </th>
+              <th className="text-right px-6 py-4 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground/80">
+                VEPRIMET / FTESA
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {guests.map((g) => {
+              const fullName = `${g.firstName || ""} ${g.lastName || ""}`.trim() || "Mysafir i Paemëruar";
+              const initials = `${g.firstName?.[0] || ""}${g.lastName?.[0] || ""}`.toUpperCase() || "M";
+              const categoryLabel = CATEGORY_LABELS[g.category] || g.category;
+
+              return (
+                <tr key={g.id} className="hover:bg-white/[0.03] transition-colors duration-150 group">
+                  {/* Guest Name & Avatar */}
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/30 to-purple-600/30 border border-primary/30 flex items-center justify-center text-primary font-bold text-xs shadow-inner shrink-0">
+                        {initials}
+                      </div>
+                      <div>
+                        <div className="font-serif text-base font-medium text-foreground group-hover:text-primary transition-colors">
+                          {fullName}
+                        </div>
+                        {categoryLabel && (
+                          <span className="inline-block mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground">
+                            {categoryLabel}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Phone */}
+                  <td className="px-6 py-4">
+                    {g.phone ? (
+                      <div className="flex items-center gap-1.5 text-xs text-foreground font-mono">
+                        <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span>{g.phone}</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground/50 italic">—</span>
+                    )}
+                  </td>
+
+                  {/* Party Size */}
+                  <td className="px-6 py-4">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-foreground">
+                      <Users className="h-3.5 w-3.5 text-primary" />
+                      <span>{g.partySize || 1}</span>
+                    </div>
+                  </td>
+
+                  {/* Status Dropdown */}
+                  <td className="px-6 py-4">
+                    <Select value={g.status} onValueChange={(val) => onStatusChange(g.id, val)}>
+                      <SelectTrigger className="h-9 w-36 text-xs border border-white/10 bg-white/5 hover:bg-white/10 rounded-xl transition-all p-1.5">
+                        <span className={cn("text-[11px] uppercase px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 shadow-sm w-full justify-between", STATUS_COLORS[g.status])}>
+                          <span>{STATUS_LABELS[g.status]}</span>
+                        </span>
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border-white/15 rounded-xl">
+                        {Object.entries(STATUS_LABELS).map(([v, l]) => (
+                          <SelectItem key={v} value={v} className="text-xs font-medium py-2 rounded-lg cursor-pointer">
+                            <span className={cn("inline-block px-2 py-0.5 rounded text-[10px] uppercase font-bold", STATUS_COLORS[v])}>
+                              {l}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </td>
+
+                  {/* Actions / Share buttons */}
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copyRsvpLink(g)}
+                        title="Kopjo linkun e RSVP"
+                        className="h-8 w-8 p-0 rounded-xl hover:bg-white/10 text-muted-foreground hover:text-foreground"
+                      >
+                        {copiedId === g.id ? (
+                          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
+
+                      {g.phone && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => sendViaWhatsApp(g, eventName)}
+                            title="Dërgo ftesën me WhatsApp"
+                            className="h-8 px-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-medium flex items-center gap-1"
+                          >
+                            <WhatsAppIcon className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">WhatsApp</span>
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => sendViaViber(g, eventName)}
+                            title="Dërgo ftesën me Viber"
+                            className="h-8 px-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs font-medium flex items-center gap-1"
+                          >
+                            <ViberIcon className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">Viber</span>
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

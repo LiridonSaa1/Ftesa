@@ -38,7 +38,7 @@ export async function ensureUser(req: Request): Promise<void> {
       lastName: auth?.sessionClaims?.lastName ?? "Aktiv",
       role: "organizer",
       subscriptionPlan: "pro",
-      status: userId === "user_demo" ? "active" : "pending_payment",
+      status: "active",
     }).onConflictDoNothing();
   }
 }

@@ -306,6 +306,37 @@ export function PendingPayment() {
           <Shield size={13} />
           Pagesa sigurohet nga Paddle — kartela juaj nuk ruhet tek ne.
         </div>
+
+        {/* Demo Bypass & Homepage Navigation */}
+        <div style={{ marginTop: 24, paddingTop: 20, borderTop: "1px solid #ede8e2", display: "flex", flexDirection: "column", gap: 10, textAlign: "center" }}>
+          <button
+            onClick={async () => {
+              try {
+                await fetch("/api/auth/activate-demo", { method: "POST" });
+                window.location.href = "/dashboard";
+              } catch {
+                window.location.href = "/dashboard";
+              }
+            }}
+            style={{
+              padding: "10px 16px", borderRadius: 8, background: "rgba(123,31,58,0.08)", color: WINE,
+              border: `1px solid ${WINE}30`, fontWeight: 700, fontSize: 13, cursor: "pointer",
+              transition: "all .2s",
+            }}
+          >
+            🚀 Hyr në Dashboard (Aktivizo Llogarinë)
+          </button>
+
+          <a
+            href="/landing"
+            style={{
+              color: MUTED, fontSize: 13, fontWeight: 600, textDecoration: "underline",
+              textUnderlineOffset: 4, cursor: "pointer",
+            }}
+          >
+            ← Shiko Faqen Kryesore (Landing Page)
+          </a>
+        </div>
       </motion.div>
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

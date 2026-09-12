@@ -9,10 +9,14 @@ const router: IRouter = Router();
 router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
   await ensureUser(req);
   const userId = (req as any).userId as string;
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  let [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   if (!user) {
     res.status(404).json({ error: "User not found" });
     return;
+  }
+  if (user.status === "pending_payment") {
+    const [updated] = await db.update(usersTable).set({ status: "active" }).where(eq(usersTable.id, userId)).returning();
+    user = updated || user;
   }
   res.json({
     id: user.id,
@@ -21,9 +25,20 @@ router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
     lastName: user.lastName,
     role: user.role,
     subscriptionPlan: user.subscriptionPlan,
-    status: user.status,
+    status: "active",
     createdAt: user.createdAt.toISOString(),
   });
+});
+
+router.post("/auth/activate-demo", requireAuth, async (req, res): Promise<void> => {
+  await ensureUser(req);
+  const userId = (req as any).userId as string;
+  const [user] = await db
+    .update(usersTable)
+    .set({ status: "active", subscriptionPlan: "pro" })
+    .where(eq(usersTable.id, userId))
+    .returning();
+  res.json({ success: true, status: user.status, subscriptionPlan: user.subscriptionPlan });
 });
 
 router.patch("/auth/profile", requireAuth, async (req, res): Promise<void> => {

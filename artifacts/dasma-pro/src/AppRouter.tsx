@@ -51,10 +51,7 @@ function SubscriptionGuard({ children }: { children: ReactNode }) {
     );
   }
 
-  if (data?.status === "pending_payment") {
-    return <Redirect to="/checkout/pending" />;
-  }
-
+  // Allow direct access to dashboard & app routes without subscription lock
   return <>{children}</>;
 }
 
@@ -153,6 +150,7 @@ export function AppRouter() {
   return (
     <Switch>
       <Route path="/" component={HomeRedirect} />
+      <Route path="/landing" component={Landing} />
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?">
         <Redirect to="/sign-in" />
