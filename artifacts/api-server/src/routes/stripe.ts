@@ -8,15 +8,9 @@ const router: IRouter = Router();
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripePublishableKey = process.env.STRIPE_PUBLISHABLE_KEY || "";
 
-if (!stripeSecretKey) {
-  throw new Error(
-    "STRIPE_SECRET_KEY environment variable is required to initialize Stripe.",
-  );
-}
-
-const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: "2025-01-27.acacia" as any,
-});
+const stripe = stripeSecretKey
+  ? new Stripe(stripeSecretKey, { apiVersion: "2025-01-27.acacia" as any })
+  : null;
 
 // GET /api/stripe/config
 router.get("/stripe/config", (_req: Request, res: Response): void => {
@@ -27,6 +21,10 @@ router.get("/stripe/config", (_req: Request, res: Response): void => {
 
 // POST /api/stripe/create-payment-intent
 router.post("/stripe/create-payment-intent", async (req: Request, res: Response): Promise<void> => {
+  if (!stripe) {
+    res.status(400).json({ error: "Stripe is not configured. STRIPE_SECRET_KEY environment variable is missing." });
+    return;
+  }
   try {
     const { plan = "pro", userId, email = "client@noa-event.com" } = req.body;
     const amountMap: Record<string, number> = {
@@ -142,7 +140,11 @@ router.post("/stripe/create-payment-intent", async (req: Request, res: Response)
 
 // POST /api/stripe/webhook
 router.post("/stripe/webhook", async (req: Request, res: Response): Promise<void> => {
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "whsec_9LgyKIyR1Rtmm0iYehUdLvj9uHM1Cn65";
+  if (!stripe) {
+    res.status(400).send("Stripe is not configured");
+    return;
+  }
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   const signature = req.headers["stripe-signature"] as string;
 
   let event: Stripe.Event;
