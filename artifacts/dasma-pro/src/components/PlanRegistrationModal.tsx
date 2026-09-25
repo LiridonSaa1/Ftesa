@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Component, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -86,7 +86,7 @@ interface PlanRegistrationModalProps {
   initialPlanKey?: PlanKey;
 }
 
-export function PlanRegistrationModal({
+function PlanRegistrationModalInner({
   isOpen,
   onClose,
   initialPlanKey = "pro",
@@ -1294,5 +1294,82 @@ export function PlanRegistrationModal({
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Clerk's hooks throw synchronously during render when no <ClerkProvider>
+ * is mounted (e.g. VITE_CLERK_PUBLISHABLE_KEY missing in this environment).
+ * This boundary keeps that failure scoped to the modal instead of taking
+ * down the whole page.
+ */
+class ClerkBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.error(
+      "PlanRegistrationModal: authentication is not configured in this environment.",
+      error
+    );
+  }
+
+  render() {
+    return this.state.hasError ? this.props.fallback : this.props.children;
+  }
+}
+
+function PlanRegistrationUnavailable({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 200,
+        background: "rgba(20,10,15,0.55)",
+        display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: "#fff", borderRadius: 16, padding: "32px 28px",
+          maxWidth: 380, width: "100%", textAlign: "center",
+          boxShadow: "0 24px 60px rgba(0,0,0,0.3)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <AlertCircle size={32} color="#7B1F3A" style={{ margin: "0 auto 12px" }} />
+        <p style={{ fontWeight: 800, fontSize: 16, color: "#221619", marginBottom: 8 }}>
+          Regjistrimi nuk është gati
+        </p>
+        <p style={{ fontSize: 14, color: "#6b6b6b", lineHeight: 1.6, marginBottom: 22 }}>
+          Autentikimi nuk është konfiguruar në këtë mjedis. Provoni sërish më vonë.
+        </p>
+        <button
+          onClick={onClose}
+          style={{
+            padding: "10px 28px", borderRadius: 8, background: "#7B1F3A",
+            color: "#fff", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 14,
+          }}
+        >
+          Mbyll
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function PlanRegistrationModal(props: PlanRegistrationModalProps) {
+  return (
+    <ClerkBoundary
+      fallback={props.isOpen ? <PlanRegistrationUnavailable onClose={props.onClose} /> : null}
+    >
+      <PlanRegistrationModalInner {...props} />
+    </ClerkBoundary>
   );
 }
