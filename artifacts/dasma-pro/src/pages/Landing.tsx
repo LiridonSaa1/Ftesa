@@ -124,6 +124,7 @@ const NAV_LINKS = [
   { href: "#home",     label: "HOME"      },
   { href: "#services", label: "SHËRBIMET" },
   { href: "#hall",     label: "SALLA"     },
+  { href: "#how",       label: "SI FUNKSIONON" },
   { href: "#order",    label: "ÇMIMET"    },
   { href: "#contact",  label: "KONTAKT"   },
 ];
@@ -148,6 +149,7 @@ function Navbar({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => void }) {
     { href: "#home",     label: t("nav.home", "HOME").toUpperCase()      },
     { href: "#services", label: t("nav.services", "SHËRBIMET").toUpperCase() },
     { href: "#hall",     label: t("nav.events", "SALLA").toUpperCase()     },
+    { href: "#how",      label: t("nav.how", "SI FUNKSIONON").toUpperCase() },
     { href: "#order",    label: t("nav.pricing", "ÇMIMET").toUpperCase()    },
     { href: "#contact",  label: t("nav.contact", "KONTAKT").toUpperCase()   },
   ];
@@ -1302,6 +1304,89 @@ function HallSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   HOW IT WORKS — 3-step process, custom line-icon illustrations
+   (no stock photography)
+═══════════════════════════════════════════════════════════ */
+const HOW_STEPS = [
+  {
+    num: "01",
+    title: "Krijo Eventin",
+    desc: "Regjistrohu, zgjidh planin dhe konfiguro datën, sallën dhe stilin e ftesës në pak minuta.",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={WINE} strokeWidth="1.5">
+        <rect x="3" y="4" width="18" height="16" rx="3" /><path d="M3 9h18" /><path d="M8 3v3M16 3v3" />
+      </svg>
+    ),
+  },
+  {
+    num: "02",
+    title: "Dizajno Sallën & Ftesat",
+    desc: "Vendos tavolinat me Hall Designer, dërgo ftesa digjitale dhe ndiq RSVP-të në kohë reale.",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={WINE} strokeWidth="1.5">
+        <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
+        <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+      </svg>
+    ),
+  },
+  {
+    num: "03",
+    title: "Prit Mysafirët me QR",
+    desc: "Në ditën e eventit, skano QR-në e çdo mysafiri dhe gjej menjëherë tavolinën e tij.",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={WINE} strokeWidth="1.5">
+        <rect x="4" y="4" width="6" height="6" rx="1" /><rect x="14" y="4" width="6" height="6" rx="1" />
+        <rect x="4" y="14" width="6" height="6" rx="1" />
+        <path d="M15 15h2v2h-2zM19 15h2v2h-2zM15 19h2v2h-2zM19 19h2v2h-2z" />
+      </svg>
+    ),
+  },
+];
+
+function HowItWorks() {
+  const { t } = useLanguage();
+  return (
+    <section id="how" style={{ background: CREAM, padding: "120px 0" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
+        <FadeUp>
+          <div style={{ textAlign: "center", maxWidth: 640, margin: "0 auto 60px" }}>
+            <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: WINE, textTransform: "uppercase", marginBottom: 14 }}>
+              {t("how.badge", "SI FUNKSIONON")}
+            </p>
+            <h2 style={{ fontWeight: 900, fontSize: "clamp(1.9rem, 3.4vw, 2.7rem)", color: DARK, lineHeight: 1.2 }}>
+              {t("how.title", "Nga regjistrimi deri te dita e madhe, në 3 hapa")}
+            </h2>
+          </div>
+        </FadeUp>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 32 }}>
+          {HOW_STEPS.map((step, i) => (
+            <FadeUp key={step.num} delay={i * 0.12}>
+              <div style={{ position: "relative", background: WHITE, border: "1px solid #ede7e0", borderRadius: 20, padding: "32px 28px", height: "100%" }}>
+                <span
+                  style={{
+                    position: "absolute", top: -18, left: 28,
+                    width: 36, height: 36, borderRadius: "50%",
+                    background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`,
+                    color: WHITE, display: "flex", alignItems: "center", justifyContent: "center",
+                    fontWeight: 800, fontSize: 14, boxShadow: `0 10px 22px -6px ${WINE}99`,
+                  }}
+                >
+                  {step.num}
+                </span>
+                <div style={{ marginTop: 16 }}>{step.icon}</div>
+                <h3 style={{ fontWeight: 800, fontSize: 17, color: DARK, margin: "18px 0 10px" }}>{step.title}</h3>
+                <p style={{ color: MUTED, fontSize: 14, lineHeight: 1.75 }}>{step.desc}</p>
+              </div>
+            </FadeUp>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    INTERACTIVE SAVINGS CALCULATOR
 ═══════════════════════════════════════════════════════════ */
 function EventSavingsCalculator({ onOpenModal }: { onOpenModal: (plan?: PlanKey) => void }) {
@@ -1447,106 +1532,55 @@ function FloatingCtaBar({ onOpenModal }: { onOpenModal: (plan?: PlanKey) => void
 }
 
 /* ═══════════════════════════════════════════════════════════
-   TESTIMONIALS — auto-scrolling quote slider (Gademan "Ervaringen")
+   TESTIMONIALS — 3-card grid, initials-badge avatars
+   (no stock photography — brand-gradient badges instead)
 ═══════════════════════════════════════════════════════════ */
 const REVIEWS = [
-  { name: "Arta & Besniku",   role: "Prishtinë, 2024",   img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=120&q=80", q: "NoaEvent e bëri organizimin e dasmës tonë gjë të kënaqshme. QR check-in funksionoi pa asnjë problem dhe mysafirët ishin të mahnitur me ftesën digjitale!" },
-  { name: "Blerim Osmani",    role: "Wedding Planner",    img: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=120&q=80", q: "Kam organizuar mbi 40 dasma dhe NoaEvent është mjeti më i mirë që kam përdorur. Hall designer-i kursen orë pune dhe ndihmon të gjithë ekipin." },
-  { name: "Drita Hoxha",      role: "Menaxhere Sale",     img: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=120&q=80", q: "Klientët tanë janë jashtëzakonisht të kënaqur me ftesat digjitale. Platforma është intuitive dhe mbështetja teknike është fantastike." },
-  { name: "Arben Gashi",      role: "Tiranë, 2025",       img: "https://images.unsplash.com/photo-1429514513361-8a632ff5e384?w=120&q=80", q: "Nuk kam pasur kurrë ndonjë problem — çdo detaj ishte perfekt dhe profesionalizmi i skuadrës ishte i jashtëzakonshëm!" },
-  { name: "René & Mira",      role: "Dasma, 2025",        img: "https://images.unsplash.com/photo-1481833761820-0509d3217039?w=120&q=80", q: "Çdo shërbim i dorëzuar me kohë dhe profesionalizëm të lartë. Shërbimi me email ishte super i shpejtë dhe gjithmonë të gatshëm." },
+  { name: "Arta & Besniku", initials: "AB", role: "Prishtinë, 2025", grad: [WINE, WINE_DARK], q: "QR check-in funksionoi pa asnjë problem dhe mysafirët ishin të mahnitur me ftesën digjitale!" },
+  { name: "Blerim Osmani", initials: "BO", role: "Wedding Planner", grad: ["#8b6f47", WINE_DARK], q: "Kam organizuar mbi 40 dasma dhe Hall Designer kursen orë pune të vërteta për të gjithë ekipin." },
+  { name: "Drita Hoxha", initials: "DH", role: "Menaxhere Salle", grad: ["#e8b978", "#a67426"], q: "Klientët tanë janë jashtëzakonisht të kënaqur me ftesat digjitale. Mbështetja teknike është fantastike." },
 ];
 
 function Testimonials() {
-  const [idx, setIdx] = useState(0);
-  const total = REVIEWS.length;
-
-  // Auto-advance every 4.5 s
-  useEffect(() => {
-    const t = setInterval(() => setIdx(i => (i + 1) % total), 4500);
-    return () => clearInterval(t);
-  }, [total]);
-
   return (
-    <section style={{ position: "relative", padding: "96px 0", overflow: "hidden" }}>
-      {/* Background image */}
-      <img
-        src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1800&q=80"
-        alt=""
-        style={{
-          position: "absolute", inset: 0, width: "100%", height: "100%",
-          objectFit: "cover", objectPosition: "center 40%",
-        }}
-      />
-      {/* Dark overlay for readability */}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "linear-gradient(135deg, rgba(20,5,10,0.82) 0%, rgba(20,5,10,0.70) 100%)",
-      }} />
-
-      <div style={{ position: "relative", zIndex: 1, maxWidth: 860, margin: "0 auto", padding: "0 32px", textAlign: "center" }}>
+    <section style={{ background: WHITE, padding: "96px 0" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
         <FadeUp>
-          <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: "rgba(255,200,180,0.85)", textTransform: "uppercase", marginBottom: 14 }}>
-            ERVARINGEN
-          </p>
-          <h2 style={{ fontWeight: 900, fontSize: "clamp(1.5rem, 2.5vw, 2rem)", color: WHITE, marginBottom: 10 }}>
-            Ij që tregon histori. Klientët tanë e ndajnë me kënaqësi.
-          </h2>
-          {/* Stars row */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 4, marginBottom: 40 }}>
-            {[...Array(5)].map((_, i) => <Star key={i} size={16} fill={WINE} color={WINE} />)}
+          <div style={{ textAlign: "center", maxWidth: 640, margin: "0 auto 56px" }}>
+            <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: WINE, textTransform: "uppercase", marginBottom: 14 }}>
+              KLIENTËT TANË
+            </p>
+            <h2 style={{ fontWeight: 900, fontSize: "clamp(1.9rem, 3.4vw, 2.7rem)", color: DARK, lineHeight: 1.2 }}>
+              Histori nga organizatorë që punojnë me NoaEvent
+            </h2>
           </div>
         </FadeUp>
 
-        {/* Sliding quote */}
-        <div style={{ position: "relative", minHeight: 160 }}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.5 }}
-            >
-              <p style={{ fontSize: 17, color: "rgba(255,255,255,0.82)", lineHeight: 1.9, marginBottom: 32, fontStyle: "italic" }}>
-                "{REVIEWS[idx].q}"
-              </p>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14 }}>
-                <img
-                  src={REVIEWS[idx].img}
-                  alt={REVIEWS[idx].name}
-                  style={{
-                    width: 52, height: 52, borderRadius: "50%",
-                    objectFit: "cover",
-                    border: `2px solid ${WINE}`,
-                    flexShrink: 0,
-                  }}
-                />
-                <div style={{ textAlign: "left" }}>
-                  <p style={{ fontWeight: 800, fontSize: 13, color: WHITE, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 2 }}>
-                    {REVIEWS[idx].name}
-                  </p>
-                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{REVIEWS[idx].role}</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 26 }}>
+          {REVIEWS.map((r, i) => (
+            <FadeUp key={r.name} delay={i * 0.12}>
+              <div style={{ background: CREAM, border: "1px solid #ede7e0", borderRadius: 20, padding: "32px 28px", display: "flex", flexDirection: "column", gap: 18, height: "100%" }}>
+                <div style={{ display: "flex", gap: 4 }}>
+                  {[...Array(5)].map((_, s) => <Star key={s} size={15} fill={WINE} color={WINE} />)}
+                </div>
+                <p style={{ fontSize: 14.5, lineHeight: 1.8, color: DARK, flex: 1 }}>"{r.q}"</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{
+                    width: 44, height: 44, borderRadius: "50%",
+                    background: `linear-gradient(135deg, ${r.grad[0]}, ${r.grad[1]})`,
+                    color: WHITE, fontWeight: 800, fontSize: 15,
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}>
+                    {r.initials}
+                  </span>
+                  <div>
+                    <p style={{ fontSize: 13.5, fontWeight: 800, color: DARK }}>{r.name}</p>
+                    <p style={{ fontSize: 12, color: MUTED }}>{r.role}</p>
+                  </div>
                 </div>
               </div>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Prev / Next + Dots */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, marginTop: 36 }}>
-          <button onClick={() => setIdx((idx - 1 + total) % total)}
-            style={{ background: "rgba(255,255,255,0.12)", border: `1px solid rgba(255,255,255,0.30)`, borderRadius: "50%", width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ChevronLeft size={16} color={WHITE} />
-          </button>
-          {REVIEWS.map((_, i) => (
-            <button key={i} onClick={() => setIdx(i)}
-              style={{ width: i === idx ? 22 : 8, height: 8, borderRadius: 4, background: i === idx ? WINE : "rgba(255,255,255,0.30)", border: "none", cursor: "pointer", padding: 0, transition: "all .25s" }} />
+            </FadeUp>
           ))}
-          <button onClick={() => setIdx((idx + 1) % total)}
-            style={{ background: "rgba(255,255,255,0.12)", border: `1px solid rgba(255,255,255,0.30)`, borderRadius: "50%", width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ChevronRight size={16} color={WHITE} />
-          </button>
         </div>
       </div>
     </section>
@@ -2393,6 +2427,7 @@ export function Landing() {
       <WelcomeSection />
       <ServicesSection />
       <HallSection />
+      <HowItWorks />
       <EventSavingsCalculator onOpenModal={handleOpenModal} />
       <Testimonials />
       <PricingSection onOpenModal={handleOpenModal} />
