@@ -188,3 +188,29 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
   }
 }
+
+/* Marketing-page motion (Landing hero, product mock, pricing) */
+@keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+@keyframes drift { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(36px, -28px) scale(1.08); } }
+@keyframes pulse-ring { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(2.6); opacity: 0; } }
+@keyframes shine { to { background-position: 220% center; } }
+@keyframes marquee-x { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes bar-grow { from { transform: scaleY(.5); } to { transform: scaleY(1); } }
+
+.anim-float { animation: floaty 5.2s ease-in-out infinite; }
+.anim-float-delay-1 { animation: floaty 6s ease-in-out infinite .9s; }
+.anim-float-delay-2 { animation: floaty 5.6s ease-in-out infinite 1.7s; }
+.anim-drift { animation: drift 16s ease-in-out infinite; }
+.anim-drift-delay { animation: drift 16s ease-in-out infinite 2s; }
+.anim-marquee { animation: marquee-x 30s linear infinite; }
+.anim-bar { animation: bar-grow 2.4s cubic-bezier(.2, .8, .2, 1) infinite alternate; transform-origin: bottom; }
+.marquee-mask { -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.pulse-dot { position: relative; display: inline-flex; width: 7px; height: 7px; border-radius: 50%; }
+.pulse-dot::after { content: ''; position: absolute; inset: -5px; border-radius: 50%; background: inherit; opacity: .55; animation: pulse-ring 1.9s cubic-bezier(0, 0, .2, 1) infinite; }
+.shine-text { background-size: 220% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 3.2s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-float, .anim-float-delay-1, .anim-float-delay-2, .anim-drift, .anim-drift-delay, .anim-marquee, .anim-bar, .pulse-dot::after, .shine-text {
+    animation: none;
+  }
+}
