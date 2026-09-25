@@ -10,7 +10,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
   MapPin, Mail, Heart, Facebook, Instagram, Check,
   ChevronLeft, ChevronRight, Star, Play, Pause, Volume2, VolumeX, Film, Sparkles, Globe,
-  Phone, Clock, Send, MessageSquare,
+  Phone, Clock, Send, MessageSquare, Menu, X,
 } from "lucide-react";
 import { PlanRegistrationModal, PlanKey } from "../components/PlanRegistrationModal";
 import { useLanguage, LanguageSelector } from "@/lib/i18n";
@@ -53,11 +53,28 @@ function FadeUp({
   );
 }
 
+/* ─── Responsive breakpoint hook (mobile < 900px) ─────────── */
+function useIsMobile(breakpoint = 900) {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < breakpoint
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
+    const handler = () => setIsMobile(mq.matches);
+    handler();
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 /* ═══════════════════════════════════════════════════════════
    TOP BAR — exact Gademan dark info bar
 ═══════════════════════════════════════════════════════════ */
 function TopBar({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => void }) {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
+  if (isMobile) return null;
   return (
     <div
       style={{
@@ -143,7 +160,9 @@ function StampLogo() {
 function Navbar({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => void }) {
   const [active, setActive] = useState("#home");
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
 
   const navLinks = [
     { href: "#home",     label: t("nav.home", "HOME").toUpperCase()      },
@@ -175,6 +194,7 @@ function Navbar({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => void }) {
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     setActive(href);
+    setMenuOpen(false);
     const targetId = href.replace("#", "");
     const element = document.getElementById(targetId);
     if (element) {
@@ -190,6 +210,10 @@ function Navbar({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => void }) {
       });
     }
   };
+
+  useEffect(() => {
+    if (!isMobile) setMenuOpen(false);
+  }, [isMobile]);
 
   return (
     <div
@@ -207,8 +231,8 @@ function Navbar({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => void }) {
         style={{
           maxWidth: 1280,
           margin: "0 auto",
-          padding: "0 48px",
-          height: 90,
+          padding: isMobile ? "0 20px" : "0 48px",
+          height: isMobile ? 72 : 90,
           overflow: "visible",
           display: "flex",
           alignItems: "center",
@@ -218,70 +242,152 @@ function Navbar({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => void }) {
       >
         {/* ── Logo ── */}
         <div style={{ position: "relative", zIndex: 10 }}>
-          <StampLogo />
+          <img
+            src="/logo-full.png"
+            alt="NoaEvent"
+            style={{ height: isMobile ? 60 : 140, width: "auto", flexShrink: 0, objectFit: "contain", display: "block" }}
+          />
         </div>
 
-        {/* ── Nav links — centered ── */}
-        <nav
-          style={{
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 40,
-          }}
-        >
-          {navLinks.map(({ href, label }) => {
-            const isActive = active === href;
-            return (
-              <a
-                key={href}
-                href={href}
-                onClick={(e) => handleNavClick(e, href)}
+        {!isMobile && (
+          <>
+            {/* ── Nav links — centered ── */}
+            <nav
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 32,
+              }}
+            >
+              {navLinks.map(({ href, label }) => {
+                const isActive = active === href;
+                return (
+                  <a
+                    key={href}
+                    href={href}
+                    onClick={(e) => handleNavClick(e, href)}
+                    style={{
+                      fontSize: 13, fontWeight: 600, letterSpacing: "0.06em",
+                      color: isActive ? WINE : "#3a2020",
+                      textDecoration: isActive ? "underline" : "none",
+                      textUnderlineOffset: 6, textDecorationThickness: "2px",
+                      textDecorationColor: WINE,
+                      cursor: "pointer", whiteSpace: "nowrap", transition: "all .2s ease",
+                    }}
+                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = WINE)}
+                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = isActive ? WINE : "#3a2020")}
+                  >
+                    {label}
+                  </a>
+                );
+              })}
+            </nav>
+
+            {/* ── "Bëhu Klient?" — pill button ── */}
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <LanguageSelector />
+              <motion.button
+                onClick={() => onOpenModal?.("pro")}
+                whileHover={{ backgroundColor: WINE_DARK }}
+                whileTap={{ scale: 0.97 }}
                 style={{
-                  fontSize: 13.5, fontWeight: 600, letterSpacing: "0.07em",
-                  color: isActive ? WINE : "#3a2020",
-                  textDecoration: isActive ? "underline" : "none",
-                  textUnderlineOffset: 6, textDecorationThickness: "2px",
-                  textDecorationColor: WINE,
-                  cursor: "pointer", whiteSpace: "nowrap", transition: "all .2s ease",
+                  display: "inline-block",
+                  background: WINE,
+                  color: WHITE,
+                  padding: "12px 28px",
+                  borderRadius: 8,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  letterSpacing: "0.02em",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                  border: "none",
+                  transition: "background .18s",
                 }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = WINE)}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = isActive ? WINE : "#3a2020")}
               >
-                {label}
-              </a>
-            );
-          })}
-        </nav>
+                {t("nav.be_client", "Bëhu Klient?")}
+              </motion.button>
+            </div>
+          </>
+        )}
 
-        {/* ── "Bëhu Klient?" — pill button ── */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <LanguageSelector />
-          <motion.button
-            onClick={() => onOpenModal?.("pro")}
-            whileHover={{ backgroundColor: WINE_DARK }}
-            whileTap={{ scale: 0.97 }}
-            style={{
-              display: "inline-block",
-              background: WINE,
-              color: WHITE,
-              padding: "12px 28px",
-              borderRadius: 8,
-              fontSize: 14,
-              fontWeight: 700,
-              letterSpacing: "0.02em",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              flexShrink: 0,
-              border: "none",
-              transition: "background .18s",
-            }}
-          >
-            {t("nav.be_client", "Bëhu Klient?")}
-          </motion.button>
-        </div>
+        {isMobile && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <LanguageSelector />
+            <button
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label={menuOpen ? "Mbyll menynë" : "Hap menynë"}
+              style={{
+                width: 40, height: 40, borderRadius: 8,
+                background: menuOpen ? WINE : "rgba(123,31,58,0.08)",
+                color: menuOpen ? WHITE : WINE,
+                border: "none", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "background .18s, color .18s",
+                flexShrink: 0,
+              }}
+            >
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* ── Mobile slide-down menu ── */}
+      <AnimatePresence>
+        {isMobile && menuOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            style={{ overflow: "hidden", background: WHITE, borderTop: "1px solid #ede7e0" }}
+          >
+            <nav style={{ display: "flex", flexDirection: "column", padding: "12px 20px 20px" }}>
+              {navLinks.map(({ href, label }) => {
+                const isActive = active === href;
+                return (
+                  <a
+                    key={href}
+                    href={href}
+                    onClick={(e) => handleNavClick(e, href)}
+                    style={{
+                      padding: "13px 4px",
+                      fontSize: 14.5, fontWeight: 700, letterSpacing: "0.03em",
+                      color: isActive ? WINE : "#3a2020",
+                      borderBottom: "1px solid #f1ece5",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {label}
+                  </a>
+                );
+              })}
+              <button
+                onClick={() => { setMenuOpen(false); onOpenModal?.("pro"); }}
+                style={{
+                  marginTop: 18,
+                  background: WINE,
+                  color: WHITE,
+                  padding: "13px 0",
+                  borderRadius: 8,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  letterSpacing: "0.02em",
+                  cursor: "pointer",
+                  border: "none",
+                  width: "100%",
+                }}
+              >
+                {t("nav.be_client", "Bëhu Klient?")}
+              </button>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -296,6 +402,7 @@ const TRUSTED_BY = ["Grand Palace", "Villa Eden", "Emerald Hall", "Royal Gardens
 
 function Hero() {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
   return (
     <section
       id="home"
@@ -317,7 +424,7 @@ function Hero() {
         pointerEvents: "none",
       }} />
 
-      <div style={{ position: "relative", maxWidth: 1180, margin: "0 auto", padding: "128px 48px 0", textAlign: "center" }}>
+      <div style={{ position: "relative", maxWidth: 1180, margin: "0 auto", padding: isMobile ? "88px 20px 0" : "128px 48px 0", textAlign: "center" }}>
         <FadeUp>
           <span style={{
             display: "inline-flex", alignItems: "center", gap: 10,
@@ -412,28 +519,30 @@ function Hero() {
               <span style={{ width: 11, height: 11, borderRadius: "50%", background: "#66c37a" }} />
               <span style={{ margin: "0 auto", fontSize: 12, color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>app.noa-event.com/dashboard</span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", minHeight: 380 }}>
-              <div style={{ background: "#130e11", borderRight: "1px solid rgba(255,255,255,0.07)", padding: "24px 18px" }}>
-                <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "rgba(255,255,255,0.35)", marginBottom: 10 }}>MENU</p>
-                {[
-                  { label: t("hero.menu_overview", "Përmbledhje"), active: true },
-                  { label: t("hero.menu_guests", "Mysafirët") },
-                  { label: t("hero.menu_hall", "Hall Designer") },
-                  { label: t("hero.menu_invites", "Ftesat") },
-                  { label: t("hero.menu_checkin", "Check-in QR") },
-                ].map(item => (
-                  <div key={item.label} style={{
-                    padding: "10px 12px", borderRadius: 9, marginBottom: 4, fontSize: 13.5,
-                    fontWeight: item.active ? 700 : 400,
-                    color: item.active ? WHITE : "rgba(255,255,255,0.5)",
-                    background: item.active ? `linear-gradient(90deg, ${WINE}66, transparent)` : "transparent",
-                  }}>
-                    {item.label}
-                  </div>
-                ))}
-              </div>
-              <div style={{ padding: "26px 28px" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 22 }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "200px 1fr", minHeight: isMobile ? "auto" : 380 }}>
+              {!isMobile && (
+                <div style={{ background: "#130e11", borderRight: "1px solid rgba(255,255,255,0.07)", padding: "24px 18px" }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "rgba(255,255,255,0.35)", marginBottom: 10 }}>MENU</p>
+                  {[
+                    { label: t("hero.menu_overview", "Përmbledhje"), active: true },
+                    { label: t("hero.menu_guests", "Mysafirët") },
+                    { label: t("hero.menu_hall", "Hall Designer") },
+                    { label: t("hero.menu_invites", "Ftesat") },
+                    { label: t("hero.menu_checkin", "Check-in QR") },
+                  ].map(item => (
+                    <div key={item.label} style={{
+                      padding: "10px 12px", borderRadius: 9, marginBottom: 4, fontSize: 13.5,
+                      fontWeight: item.active ? 700 : 400,
+                      color: item.active ? WHITE : "rgba(255,255,255,0.5)",
+                      background: item.active ? `linear-gradient(90deg, ${WINE}66, transparent)` : "transparent",
+                    }}>
+                      {item.label}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{ padding: isMobile ? "18px 16px" : "26px 28px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: isMobile ? 8 : 14, marginBottom: 22 }}>
                   {[
                     { label: t("hero.stat_guests", "MYSAFIRË"), value: "284" },
                     { label: "RSVP", value: "92%" },
@@ -462,25 +571,29 @@ function Hero() {
             </div>
           </div>
 
-          {/* Floating stat chips */}
-          <div className="anim-float" style={{ position: "absolute", top: -6, left: -50, zIndex: 2, background: WHITE, borderRadius: 16, padding: "13px 18px", boxShadow: "0 24px 50px -12px rgba(0,0,0,0.35)", display: "flex", alignItems: "center", gap: 11 }}>
-            <span style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(123,31,58,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: WINE, fontWeight: 800, fontSize: 12.5 }}>200+</span>
-            <div><p style={{ fontSize: 12.5, fontWeight: 800, color: DARK }}>{t("hero.chip_events", "Evente")}</p><p style={{ fontSize: 10.5, color: MUTED }}>{t("hero.chip_events_sub", "Të organizuara")}</p></div>
-          </div>
-          <div className="anim-float-delay-1" style={{ position: "absolute", bottom: 48, right: -56, zIndex: 2, background: WHITE, borderRadius: 16, padding: "13px 18px", boxShadow: "0 24px 50px -12px rgba(0,0,0,0.35)", display: "flex", alignItems: "center", gap: 11 }}>
-            <span style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(232,185,120,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#a67426", fontWeight: 800, fontSize: 12.5 }}>99%</span>
-            <div><p style={{ fontSize: 12.5, fontWeight: 800, color: DARK }}>{t("hero.chip_satisfaction", "Kënaqësi")}</p><p style={{ fontSize: 10.5, color: MUTED }}>{t("hero.chip_satisfaction_sub", "E klientëve")}</p></div>
-          </div>
-          <div className="anim-float-delay-2" style={{ position: "absolute", top: "42%", left: -70, zIndex: 2, background: WHITE, borderRadius: 16, padding: "11px 16px", boxShadow: "0 24px 50px -12px rgba(0,0,0,0.35)", display: "flex", alignItems: "center", gap: 8 }}>
-            <Star size={15} fill="#e8b978" color="#e8b978" />
-            <span style={{ fontSize: 12.5, fontWeight: 800, color: DARK }}>5.0 {t("hero.chip_rating", "vlerësim")}</span>
-          </div>
+          {/* Floating stat chips — desktop only (avoid clipped overflow on narrow screens) */}
+          {!isMobile && (
+            <>
+              <div className="anim-float" style={{ position: "absolute", top: -6, left: -50, zIndex: 2, background: WHITE, borderRadius: 16, padding: "13px 18px", boxShadow: "0 24px 50px -12px rgba(0,0,0,0.35)", display: "flex", alignItems: "center", gap: 11 }}>
+                <span style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(123,31,58,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: WINE, fontWeight: 800, fontSize: 12.5 }}>200+</span>
+                <div><p style={{ fontSize: 12.5, fontWeight: 800, color: DARK }}>{t("hero.chip_events", "Evente")}</p><p style={{ fontSize: 10.5, color: MUTED }}>{t("hero.chip_events_sub", "Të organizuara")}</p></div>
+              </div>
+              <div className="anim-float-delay-1" style={{ position: "absolute", bottom: 48, right: -56, zIndex: 2, background: WHITE, borderRadius: 16, padding: "13px 18px", boxShadow: "0 24px 50px -12px rgba(0,0,0,0.35)", display: "flex", alignItems: "center", gap: 11 }}>
+                <span style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(232,185,120,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#a67426", fontWeight: 800, fontSize: 12.5 }}>99%</span>
+                <div><p style={{ fontSize: 12.5, fontWeight: 800, color: DARK }}>{t("hero.chip_satisfaction", "Kënaqësi")}</p><p style={{ fontSize: 10.5, color: MUTED }}>{t("hero.chip_satisfaction_sub", "E klientëve")}</p></div>
+              </div>
+              <div className="anim-float-delay-2" style={{ position: "absolute", top: "42%", left: -70, zIndex: 2, background: WHITE, borderRadius: 16, padding: "11px 16px", boxShadow: "0 24px 50px -12px rgba(0,0,0,0.35)", display: "flex", alignItems: "center", gap: 8 }}>
+                <Star size={15} fill="#e8b978" color="#e8b978" />
+                <span style={{ fontSize: 12.5, fontWeight: 800, color: DARK }}>5.0 {t("hero.chip_rating", "vlerësim")}</span>
+              </div>
+            </>
+          )}
         </motion.div>
       </div>
 
       {/* ── Trusted-by marquee ── */}
-      <div style={{ position: "relative", marginTop: 92, paddingBottom: 60 }}>
-        <p style={{ textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 11.5, fontWeight: 800, letterSpacing: "0.18em", marginBottom: 26 }}>
+      <div style={{ position: "relative", marginTop: isMobile ? 56 : 92, paddingBottom: isMobile ? 40 : 60 }}>
+        <p style={{ textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 11.5, fontWeight: 800, letterSpacing: "0.18em", marginBottom: 26, padding: "0 20px" }}>
           {t("hero.trusted_by", "BESUAR NGA SALLAT DHE ORGANIZATORËT MË TË MIRË NË KOSOVË")}
         </p>
         <div className="marquee-mask" style={{ overflow: "hidden" }}>
@@ -533,6 +646,7 @@ const PILLARS = [
 
 function WelcomeSection() {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, { once: false, margin: "-100px" });
   const [activePillarIndex, setActivePillarIndex] = useState(0);
@@ -578,12 +692,12 @@ function WelcomeSection() {
         maxWidth: 1280, margin: "0 auto",
         padding: "0 0 0 0",
         display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        minHeight: 720,
+        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+        minHeight: isMobile ? "auto" : 720,
       }}>
 
         {/* ── LEFT: Interactive Video Player composition ── */}
-        <div style={{ position: "relative", overflow: "hidden", minHeight: 720, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ position: "relative", overflow: "hidden", minHeight: isMobile ? 360 : 720, display: "flex", alignItems: "center", justifyContent: "center" }}>
           {/* Main video element with background container */}
           <motion.div
             initial={{ scale: 1.05 }}
@@ -614,10 +728,12 @@ function WelcomeSection() {
               position: "absolute", inset: 0,
               background: "linear-gradient(to bottom, rgba(26,10,16,0.4) 0%, transparent 35%, transparent 65%, rgba(26,10,16,0.6) 100%)",
             }} />
-            <div style={{
-              position: "absolute", inset: 0,
-              background: "linear-gradient(to right, transparent 55%, rgba(250,248,245,0.95) 100%)",
-            }} />
+            {!isMobile && (
+              <div style={{
+                position: "absolute", inset: 0,
+                background: "linear-gradient(to right, transparent 55%, rgba(250,248,245,0.95) 100%)",
+              }} />
+            )}
           </motion.div>
 
           {/* Top Video Indicator Badge */}
@@ -626,26 +742,27 @@ function WelcomeSection() {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.4, duration: 0.6 }}
             style={{
-              position: "absolute", top: 32, left: 32, zIndex: 10,
+              position: "absolute", top: isMobile ? 16 : 32, left: isMobile ? 16 : 32, zIndex: 10,
               display: "flex", alignItems: "center", gap: 10,
               background: "rgba(26, 10, 16, 0.65)",
               backdropFilter: "blur(12px)",
-              padding: "10px 18px", borderRadius: 30,
+              padding: isMobile ? "8px 14px" : "10px 18px", borderRadius: 30,
               border: "1px solid rgba(255,255,255,0.18)",
               boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+              maxWidth: isMobile ? "calc(100% - 32px)" : undefined,
             }}
           >
             <span style={{
               display: "inline-flex", width: 10, height: 10, borderRadius: "50%",
-              background: WINE, position: "relative",
+              background: WINE, position: "relative", flexShrink: 0,
             }}>
               <span style={{
                 position: "absolute", inset: -3, borderRadius: "50%",
                 background: WINE, opacity: 0.6, animation: "ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite"
               }} />
             </span>
-            <Film size={14} color="#EAA88F" />
-            <span style={{ fontSize: 12, fontWeight: 700, color: WHITE, letterSpacing: "0.04em" }}>
+            {!isMobile && <Film size={14} color="#EAA88F" />}
+            <span style={{ fontSize: 12, fontWeight: 700, color: WHITE, letterSpacing: "0.04em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {activePillar.num}. {activePillar.title}
             </span>
           </motion.div>
@@ -656,7 +773,7 @@ function WelcomeSection() {
             animate={inView ? { opacity: 1, scale: 1 } : {}}
             transition={{ delay: 0.5, duration: 0.6 }}
             style={{
-              position: "absolute", top: 32, right: 32, zIndex: 10,
+              position: "absolute", top: isMobile ? 16 : 32, right: isMobile ? 16 : 32, zIndex: 10,
               display: "flex", gap: 10,
             }}
           >
@@ -664,7 +781,7 @@ function WelcomeSection() {
               onClick={togglePlay}
               title={isPlaying ? "Pauzo videon" : "Luaj videon"}
               style={{
-                width: 42, height: 42, borderRadius: "50%",
+                width: isMobile ? 36 : 42, height: isMobile ? 36 : 42, borderRadius: "50%",
                 background: "rgba(255, 255, 255, 0.2)",
                 backdropFilter: "blur(12px)",
                 border: "1px solid rgba(255,255,255,0.3)",
@@ -672,13 +789,13 @@ function WelcomeSection() {
                 cursor: "pointer", transition: "all 0.2s ease",
               }}
             >
-              {isPlaying ? <Pause size={18} /> : <Play size={18} style={{ marginLeft: 2 }} />}
+              {isPlaying ? <Pause size={16} /> : <Play size={16} style={{ marginLeft: 2 }} />}
             </button>
             <button
               onClick={toggleMute}
               title={isMuted ? "Aktivizo zërin" : "Çaktivizo zërin"}
               style={{
-                width: 42, height: 42, borderRadius: "50%",
+                width: isMobile ? 36 : 42, height: isMobile ? 36 : 42, borderRadius: "50%",
                 background: "rgba(255, 255, 255, 0.2)",
                 backdropFilter: "blur(12px)",
                 border: "1px solid rgba(255,255,255,0.3)",
@@ -686,14 +803,14 @@ function WelcomeSection() {
                 cursor: "pointer", transition: "all 0.2s ease",
               }}
             >
-              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
             </button>
           </motion.div>
 
           {/* Video Switcher Tabs at Bottom of Video */}
           <div style={{
-            position: "absolute", bottom: 130, left: 40, zIndex: 10,
-            display: "flex", gap: 8,
+            position: "absolute", bottom: isMobile ? 16 : 130, left: isMobile ? 16 : 40, zIndex: 10,
+            display: "flex", gap: 8, flexWrap: "wrap", maxWidth: isMobile ? "calc(100% - 32px)" : undefined,
           }}>
             {PILLARS.map((p, i) => (
               <button
@@ -713,44 +830,46 @@ function WelcomeSection() {
             ))}
           </div>
 
-          {/* Floating stats badge — bottom left */}
-          <motion.div
-            initial={{ opacity: 0, y: 32, x: -20 }}
-            animate={inView ? { opacity: 1, y: 0, x: 0 } : {}}
-            transition={{ delay: 0.5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              position: "absolute", bottom: 44, left: 40, zIndex: 10,
-              background: WHITE,
-              borderRadius: 16,
-              padding: "16px 24px",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
-              border: `1px solid rgba(123,31,58,0.12)`,
-              backdropFilter: "blur(8px)",
-              display: "flex", gap: 28,
-            }}
-          >
-            {[
-              { val: "200+", label: "Dasma" },
-              { val: "99%", label: "Kënaqësi" },
-              { val: "5★", label: "Vlerësim" },
-            ].map((s, i) => (
-              <motion.div
-                key={s.label}
-                initial={{ opacity: 0, y: 12 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 0.65 + i * 0.1, duration: 0.5 }}
-                style={{ textAlign: "center" }}
-              >
-                <p style={{ fontSize: 20, fontWeight: 900, color: WINE, lineHeight: 1.1, letterSpacing: "-0.02em" }}>{s.val}</p>
-                <p style={{ fontSize: 10, color: MUTED, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>{s.label}</p>
-              </motion.div>
-            ))}
-          </motion.div>
+          {/* Floating stats badge — bottom left (desktop only) */}
+          {!isMobile && (
+            <motion.div
+              initial={{ opacity: 0, y: 32, x: -20 }}
+              animate={inView ? { opacity: 1, y: 0, x: 0 } : {}}
+              transition={{ delay: 0.5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                position: "absolute", bottom: 44, left: 40, zIndex: 10,
+                background: WHITE,
+                borderRadius: 16,
+                padding: "16px 24px",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+                border: `1px solid rgba(123,31,58,0.12)`,
+                backdropFilter: "blur(8px)",
+                display: "flex", gap: 28,
+              }}
+            >
+              {[
+                { val: "200+", label: "Dasma" },
+                { val: "99%", label: "Kënaqësi" },
+                { val: "5★", label: "Vlerësim" },
+              ].map((s, i) => (
+                <motion.div
+                  key={s.label}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={inView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ delay: 0.65 + i * 0.1, duration: 0.5 }}
+                  style={{ textAlign: "center" }}
+                >
+                  <p style={{ fontSize: 20, fontWeight: 900, color: WINE, lineHeight: 1.1, letterSpacing: "-0.02em" }}>{s.val}</p>
+                  <p style={{ fontSize: 10, color: MUTED, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>{s.label}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
         </div>
 
         {/* ── RIGHT: Text content & Interactive Pillars ── */}
         <div style={{
-          padding: "96px 72px 96px 64px",
+          padding: isMobile ? "48px 20px" : "96px 72px 96px 64px",
           display: "flex", flexDirection: "column", justifyContent: "center",
           background: CREAM,
         }}>
@@ -959,13 +1078,13 @@ const SERVICE_SLIDES = [
 ];
 
 /* ─── Slider card ─────────────────────────────────────── */
-function ServiceCard({ slide, isActive }: { slide: typeof SERVICE_SLIDES[0]; isActive: boolean }) {
+function ServiceCard({ slide, isActive, width = 420 }: { slide: typeof SERVICE_SLIDES[0]; isActive: boolean; width?: number }) {
   return (
     <motion.div
       animate={{ opacity: isActive ? 1 : 0.55, scale: isActive ? 1 : 0.96 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       style={{
-        width: 420,
+        width,
         flexShrink: 0,
         borderRadius: 16,
         overflow: "hidden",
@@ -979,7 +1098,7 @@ function ServiceCard({ slide, isActive }: { slide: typeof SERVICE_SLIDES[0]; isA
       }}
     >
       {/* Image */}
-      <div style={{ position: "relative", height: 280, overflow: "hidden" }}>
+      <div style={{ position: "relative", height: width < 340 ? 200 : 280, overflow: "hidden" }}>
         <motion.img
           src={slide.img}
           alt={slide.label}
@@ -1049,11 +1168,12 @@ function ServiceCard({ slide, isActive }: { slide: typeof SERVICE_SLIDES[0]; isA
 /* ─── Services Section with full-width drag slider ─────── */
 function ServicesSection() {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
   const [active, setActive] = useState(0);
   const total = SERVICE_SLIDES.length;
   const trackRef = useRef<HTMLDivElement>(null);
-  const CARD_W = 420;
-  const GAP = 28;
+  const CARD_W = isMobile ? 280 : 420;
+  const GAP = isMobile ? 16 : 28;
   const STEP = CARD_W + GAP;
 
   /* auto-advance */
@@ -1099,7 +1219,7 @@ function ServicesSection() {
       </FadeUp>
 
       {/* Slider track — clipped to content width */}
-      <div style={{ maxWidth: 1280, margin: "0 auto", overflow: "hidden", padding: "0 48px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", overflow: "hidden", padding: isMobile ? "0 20px" : "0 48px" }}>
         <div
           ref={trackRef}
           style={{ cursor: "grab", paddingBottom: 8, userSelect: "none" }}
@@ -1115,7 +1235,7 @@ function ServicesSection() {
           >
             {SERVICE_SLIDES.map((slide, i) => (
               <div key={slide.label} onClick={() => go(i)}>
-                <ServiceCard slide={slide} isActive={i === active} />
+                <ServiceCard slide={slide} isActive={i === active} width={CARD_W} />
               </div>
             ))}
           </motion.div>
@@ -1188,6 +1308,7 @@ function ServicesSection() {
 ═══════════════════════════════════════════════════════════ */
 function HallSection() {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
   const features = [
     t("services.s1_title", "Vizualizim 2D i sallës në kohë reale"),
     t("welcome.f1_title", "Menaxhim i kapacitetit dhe vendosjeve"),
@@ -1195,15 +1316,15 @@ function HallSection() {
     t("services.s4_title", "Eksport automatik i planit"),
   ];
   return (
-    <section id="hall" style={{ background: CREAM, padding: "96px 0" }}>
+    <section id="hall" style={{ background: CREAM, padding: isMobile ? "64px 0" : "96px 0" }}>
       <div
         style={{
           maxWidth: 1280,
           margin: "0 auto",
-          padding: "0 80px",
+          padding: isMobile ? "0 20px" : "0 80px",
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 80,
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+          gap: isMobile ? 36 : 80,
           alignItems: "center",
         }}
       >
@@ -1345,9 +1466,10 @@ const HOW_STEPS = [
 
 function HowItWorks() {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
   return (
-    <section id="how" style={{ background: CREAM, padding: "120px 0" }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
+    <section id="how" style={{ background: CREAM, padding: isMobile ? "64px 0" : "120px 0" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 48px" }}>
         <FadeUp>
           <div style={{ textAlign: "center", maxWidth: 640, margin: "0 auto 60px" }}>
             <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: WINE, textTransform: "uppercase", marginBottom: 14 }}>
@@ -1391,14 +1513,15 @@ function HowItWorks() {
 ═══════════════════════════════════════════════════════════ */
 function EventSavingsCalculator({ onOpenModal }: { onOpenModal: (plan?: PlanKey) => void }) {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
   const [guests, setGuests] = useState(250);
 
   const printSaved = Math.round(guests * 1.6);
   const hoursSaved = Math.round(guests * 0.12);
 
   return (
-    <section style={{ background: WHITE, padding: "80px 0", borderTop: "1px solid #ede8e2", borderBottom: "1px solid #ede8e2" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px" }}>
+    <section style={{ background: WHITE, padding: isMobile ? "56px 0" : "80px 0", borderTop: "1px solid #ede8e2", borderBottom: "1px solid #ede8e2" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: isMobile ? "0 20px" : "0 32px" }}>
         <FadeUp>
           <div style={{ textAlign: "center", marginBottom: 40 }}>
             <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: WINE, textTransform: "uppercase", marginBottom: 12 }}>
@@ -1413,7 +1536,7 @@ function EventSavingsCalculator({ onOpenModal }: { onOpenModal: (plan?: PlanKey)
           </div>
         </FadeUp>
 
-        <div style={{ background: CREAM, borderRadius: 16, padding: "40px 48px", border: "1px solid #eae3d9", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center" }}>
+        <div style={{ background: CREAM, borderRadius: 16, padding: isMobile ? "28px 22px" : "40px 48px", border: "1px solid #eae3d9", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 28 : 48, alignItems: "center" }}>
           <div>
             <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: DARK, marginBottom: 16, textTransform: "uppercase", letterSpacing: "0.05em" }}>
               {t("calc.guests", "Numri i Mysafirëve")}: <span style={{ color: WINE, fontSize: 24, fontWeight: 900, marginLeft: 8 }}>{guests}</span>
@@ -1468,6 +1591,7 @@ function EventSavingsCalculator({ onOpenModal }: { onOpenModal: (plan?: PlanKey)
 ═══════════════════════════════════════════════════════════ */
 function FloatingCtaBar({ onOpenModal }: { onOpenModal: (plan?: PlanKey) => void }) {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -1488,25 +1612,28 @@ function FloatingCtaBar({ onOpenModal }: { onOpenModal: (plan?: PlanKey) => void
       transition={{ duration: 0.3 }}
       style={{
         position: "fixed",
-        bottom: 24,
+        bottom: isMobile ? 16 : 24,
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 99,
+        maxWidth: isMobile ? "calc(100vw - 32px)" : undefined,
         background: DARK,
         color: WHITE,
-        padding: "12px 28px",
+        padding: isMobile ? "10px 14px" : "12px 28px",
         borderRadius: 50,
         boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
         display: "flex",
         alignItems: "center",
-        gap: 20,
+        gap: isMobile ? 10 : 20,
         border: "1px solid rgba(255,255,255,0.15)",
         backdropFilter: "blur(12px)",
       }}
     >
-      <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.02em" }}>
-        {t("float.title", "✨ Planifikoni Dasmën tuaj me NoaEvent")}
-      </span>
+      {!isMobile && (
+        <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.02em" }}>
+          {t("float.title", "✨ Planifikoni Dasmën tuaj me NoaEvent")}
+        </span>
+      )}
 
       <button
         onClick={() => onOpenModal("pro")}
@@ -1542,9 +1669,10 @@ const REVIEWS = [
 ];
 
 function Testimonials() {
+  const isMobile = useIsMobile();
   return (
-    <section style={{ background: WHITE, padding: "96px 0" }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
+    <section style={{ background: WHITE, padding: isMobile ? "64px 0" : "96px 0" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 48px" }}>
         <FadeUp>
           <div style={{ textAlign: "center", maxWidth: 640, margin: "0 auto 56px" }}>
             <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: WINE, textTransform: "uppercase", marginBottom: 14 }}>
@@ -1629,9 +1757,10 @@ const PLANS = [
 
 function PricingSection({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => void }) {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
   return (
-    <section id="order" style={{ background: CREAM, padding: "96px 0" }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
+    <section id="order" style={{ background: CREAM, padding: isMobile ? "64px 0" : "96px 0" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 48px" }}>
         <FadeUp>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <h2 style={{ fontWeight: 900, fontSize: "clamp(2rem, 3.5vw, 2.9rem)", color: DARK, marginBottom: 14 }}>{t("pricing.title", "Paketat & Çmimet")}</h2>
@@ -1640,7 +1769,7 @@ function PricingSection({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => voi
             </p>
           </div>
         </FadeUp>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 28, maxWidth: 1140, margin: "0 auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(300px, 1fr))", gap: 28, maxWidth: 1140, margin: "0 auto" }}>
           {PLANS.map((p, i) => (
             <FadeUp key={p.name} delay={i * 0.12}>
               <motion.div
@@ -1808,6 +1937,7 @@ function FaqSection() {
 ═══════════════════════════════════════════════════════════ */
 function ContactSection() {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
   const [formState, setFormState] = useState({
     name: "",
     email: "",
@@ -1829,8 +1959,8 @@ function ContactSection() {
   };
 
   return (
-    <section id="contact" style={{ background: CREAM, padding: "100px 0", borderTop: "1px solid #ede7e0" }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
+    <section id="contact" style={{ background: CREAM, padding: isMobile ? "64px 0" : "100px 0", borderTop: "1px solid #ede7e0" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 48px" }}>
         <FadeUp>
           <div style={{ textAlign: "center", maxWidth: 720, margin: "0 auto 60px" }}>
             <span
@@ -1873,8 +2003,8 @@ function ContactSection() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1.3fr",
-            gap: 48,
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1.3fr",
+            gap: isMobile ? 28 : 48,
             alignItems: "start",
           }}
         >
@@ -1885,7 +2015,7 @@ function ContactSection() {
                 background: WINE,
                 color: WHITE,
                 borderRadius: 24,
-                padding: "48px 40px",
+                padding: isMobile ? "36px 26px" : "48px 40px",
                 boxShadow: "0 20px 40px rgba(123, 31, 58, 0.15)",
                 position: "relative",
                 overflow: "hidden",
@@ -2014,7 +2144,7 @@ function ContactSection() {
               style={{
                 background: WHITE,
                 borderRadius: 24,
-                padding: "48px 40px",
+                padding: isMobile ? "32px 24px" : "48px 40px",
                 border: "1px solid #ede7e0",
                 boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
               }}
@@ -2076,7 +2206,7 @@ function ContactSection() {
                 </motion.div>
               ) : (
                 <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20 }}>
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: DARK, marginBottom: 8 }}>
                         {t("contact.name", "Emri dhe Mbiemri")} *
@@ -2123,7 +2253,7 @@ function ContactSection() {
                     </div>
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20 }}>
                     <div>
                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: DARK, marginBottom: 8 }}>
                         {t("contact.phone", "Numri i Telefonit (WhatsApp)")}
@@ -2242,11 +2372,12 @@ function ContactSection() {
 ═══════════════════════════════════════════════════════════ */
 function Footer() {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
   const [email, setEmail] = useState("");
   return (
     <footer>
       {/* Layer 1: photo strip — like Gademan ice cream row */}
-      <div style={{ height: 110, overflow: "hidden" }}>
+      <div style={{ height: isMobile ? 70 : 110, overflow: "hidden" }}>
         <img
           src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1800&q=60"
           alt=""
@@ -2255,34 +2386,36 @@ function Footer() {
       </div>
 
       {/* Layer 2: wine subscribe box — exact Gademan layout */}
-      <div style={{ background: WINE, padding: "56px 0" }}>
+      <div style={{ background: WINE, padding: isMobile ? "40px 0" : "56px 0" }}>
         <div
           style={{
             maxWidth: 1280,
             margin: "0 auto",
-            padding: "0 80px",
+            padding: isMobile ? "0 20px" : "0 80px",
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 60,
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: isMobile ? 24 : 60,
             alignItems: "center",
           }}
         >
           {/* Left: floating image + big italic text */}
           <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-            <div style={{ flexShrink: 0 }}>
-              <img
-                src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&q=60"
-                alt=""
-                style={{
-                  width: 110,
-                  height: 110,
-                  objectFit: "cover",
-                  borderRadius: "50%",
-                  opacity: 0.75,
-                  border: "3px solid rgba(255,255,255,0.25)",
-                }}
-              />
-            </div>
+            {!isMobile && (
+              <div style={{ flexShrink: 0 }}>
+                <img
+                  src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&q=60"
+                  alt=""
+                  style={{
+                    width: 110,
+                    height: 110,
+                    objectFit: "cover",
+                    borderRadius: "50%",
+                    opacity: 0.75,
+                    border: "3px solid rgba(255,255,255,0.25)",
+                  }}
+                />
+              </div>
+            )}
             <h3
               style={{
                 color: WHITE,
@@ -2336,15 +2469,15 @@ function Footer() {
       </div>
 
       {/* Layer 3: white info grid — exact Gademan 4-col footer */}
-      <div style={{ background: WHITE, padding: "56px 0 28px" }}>
+      <div style={{ background: WHITE, padding: isMobile ? "40px 0 24px" : "56px 0 28px" }}>
         <div
           style={{
             maxWidth: 1280,
             margin: "0 auto",
-            padding: "0 80px",
+            padding: isMobile ? "0 20px" : "0 80px",
             display: "grid",
-            gridTemplateColumns: "2fr 1fr 1fr 1fr",
-            gap: 40,
+            gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr 1fr",
+            gap: isMobile ? 28 : 40,
           }}
         >
           {/* Col 1: company */}
@@ -2352,7 +2485,7 @@ function Footer() {
             <img
               src="/logo-full.png"
               alt="NoaEvent"
-              style={{ height: 200, width: "auto", marginBottom: 20, objectFit: "contain" }}
+              style={{ height: isMobile ? 100 : 200, width: "auto", marginBottom: 20, objectFit: "contain" }}
             />
             <p style={{ fontSize: 13, color: MUTED, marginBottom: 4 }}>Adresa: Prishtinë 10000, Kosovë</p>
             <p style={{ fontSize: 13, color: MUTED, marginBottom: 4 }}>Tel: +383 44 000 000</p>
@@ -2393,7 +2526,7 @@ function Footer() {
           style={{
             maxWidth: 1280,
             margin: "28px auto 0",
-            padding: "16px 80px 0",
+            padding: isMobile ? "16px 20px 0" : "16px 80px 0",
             borderTop: "1px solid #ede8e2",
             fontSize: 12,
             color: MUTED,
