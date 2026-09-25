@@ -9,7 +9,7 @@ import { Link } from "wouter";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
   MapPin, Mail, Heart, Facebook, Instagram, Check,
-  ChevronLeft, ChevronRight, Star, Play, Pause, Volume2, VolumeX, Film, Sparkles, Globe,
+  ChevronLeft, ChevronRight, Star, Play, Sparkles, Globe,
   Phone, Clock, Send, MessageSquare, Menu, X,
 } from "lucide-react";
 import { PlanRegistrationModal, PlanKey } from "../components/PlanRegistrationModal";
@@ -611,36 +611,51 @@ function Hero() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PHILOSOPHY — super-designed split section with animations
+   PHILOSOPHY — split section, illustrated icon showcase
+   (no stock photography / video)
 ═══════════════════════════════════════════════════════════ */
 const PILLARS = [
   {
     num: "01",
     title: "Cilësi e Lartë & Shije Konstante",
     body: "Çdo detaj planifikohet me kujdes ekstrem — nga ftesat deri tek vendosja e mysafirëve.",
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-wedding-table-setup-with-flowers-and-candles-42291-large.mp4",
-    poster: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=90",
+    icon: (
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#e8b978" strokeWidth="1.5">
+        <path d="M12 2l2.9 6.3L22 9l-5 5 1.2 7L12 17.8 5.8 21 7 14 2 9l7.1-.7L12 2z" />
+      </svg>
+    ),
   },
   {
     num: "02",
     title: "Higjenë dhe Profesionalizëm",
     body: "Punojmë me standarde strikte dhe teknologji moderne për një event pa asnjë problem.",
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-decor-designer-arranging-wedding-flowers-42292-large.mp4",
-    poster: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=900&q=90",
+    icon: (
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#e8b978" strokeWidth="1.5">
+        <path d="M12 3l7 3.2v5.3c0 4.7-3 8.4-7 9.5-4-1.1-7-4.8-7-9.5V6.2L12 3z" />
+        <path d="M9 12l2 2 4-4" />
+      </svg>
+    ),
   },
   {
     num: "03",
     title: "Personalizim & Orientim kah Klienti",
     body: "Besojmë në transparencë dhe bashkëpunim — çdo organizator mund të mbështetet tek ne.",
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-newlyweds-slow-dancing-at-their-wedding-reception-42289-large.mp4",
-    poster: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=900&q=90",
+    icon: (
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#e8b978" strokeWidth="1.5">
+        <circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+        <circle cx="17" cy="9" r="2.6" /><path d="M15 20c0-2.6 1-4.6 3-5.3" />
+      </svg>
+    ),
   },
   {
     num: "04",
     title: "Pasion për Artin e Eventit",
     body: "Dashuria jonë për evente të veçanta pasqyrohet në çdo produkt — i sinqertë, artizanal dhe me histori.",
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-wedding-couple-walking-out-of-the-church-41584-large.mp4",
-    poster: "https://images.unsplash.com/photo-1519741497674-611481863552?w=900&q=90",
+    icon: (
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#e8b978" strokeWidth="1.5">
+        <path d="M12 21s-7.5-4.6-10-9.1C.4 8.2 2.2 4.8 5.4 4.1c2-.4 4 .5 5.1 2.2h3c1.1-1.7 3.1-2.6 5.1-2.2 3.2.7 5 4.1 3.4 7.8C19.5 16.4 12 21 12 21z" />
+      </svg>
+    ),
   },
 ];
 
@@ -650,30 +665,8 @@ function WelcomeSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, { once: false, margin: "-100px" });
   const [activePillarIndex, setActivePillarIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const activePillar = PILLARS[activePillarIndex];
-
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        videoRef.current.play();
-        setIsPlaying(true);
-      }
-    }
-  };
-
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
 
   return (
     <section
@@ -696,121 +689,73 @@ function WelcomeSection() {
         minHeight: isMobile ? "auto" : 720,
       }}>
 
-        {/* ── LEFT: Interactive Video Player composition ── */}
-        <div style={{ position: "relative", overflow: "hidden", minHeight: isMobile ? 360 : 720, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {/* Main video element with background container */}
-          <motion.div
-            initial={{ scale: 1.05 }}
-            animate={inView ? { scale: 1 } : { scale: 1.05 }}
-            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-            style={{ position: "absolute", inset: 0, background: "#110509" }}
-          >
-            <AnimatePresence mode="wait">
-              <motion.video
-                key={activePillar.videoUrl}
-                ref={videoRef}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6 }}
-                src={activePillar.videoUrl}
-                poster={activePillar.poster}
-                autoPlay
-                loop
-                muted={isMuted}
-                playsInline
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            </AnimatePresence>
+        {/* ── LEFT: Illustrated pillar showcase (dark, no photography) ── */}
+        <div style={{
+          position: "relative", overflow: "hidden", minHeight: isMobile ? 360 : 720,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: `linear-gradient(160deg, #1c1116 0%, ${TOPBG} 100%)`,
+        }}>
+          <div className="anim-drift" style={{ position: "absolute", top: -120, left: -100, width: 360, height: 360, borderRadius: "50%", background: WINE, opacity: 0.3, filter: "blur(80px)", pointerEvents: "none" }} />
+          <div className="anim-drift-delay" style={{ position: "absolute", bottom: -140, right: -100, width: 360, height: 360, borderRadius: "50%", background: "#e8b978", opacity: 0.16, filter: "blur(80px)", pointerEvents: "none" }} />
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)",
+            backgroundSize: "30px 30px",
+            pointerEvents: "none",
+          }} />
 
-            {/* Gradient overlays for aesthetic depth and contrast */}
-            <div style={{
-              position: "absolute", inset: 0,
-              background: "linear-gradient(to bottom, rgba(26,10,16,0.4) 0%, transparent 35%, transparent 65%, rgba(26,10,16,0.6) 100%)",
-            }} />
-            {!isMobile && (
-              <div style={{
-                position: "absolute", inset: 0,
-                background: "linear-gradient(to right, transparent 55%, rgba(250,248,245,0.95) 100%)",
-              }} />
-            )}
-          </motion.div>
-
-          {/* Top Video Indicator Badge */}
+          {/* Top eyebrow badge */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.4, duration: 0.6 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
             style={{
               position: "absolute", top: isMobile ? 16 : 32, left: isMobile ? 16 : 32, zIndex: 10,
               display: "flex", alignItems: "center", gap: 10,
-              background: "rgba(26, 10, 16, 0.65)",
-              backdropFilter: "blur(12px)",
-              padding: isMobile ? "8px 14px" : "10px 18px", borderRadius: 30,
-              border: "1px solid rgba(255,255,255,0.18)",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
-              maxWidth: isMobile ? "calc(100% - 32px)" : undefined,
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.14)",
+              padding: isMobile ? "8px 14px" : "9px 16px", borderRadius: 30,
             }}
           >
-            <span style={{
-              display: "inline-flex", width: 10, height: 10, borderRadius: "50%",
-              background: WINE, position: "relative", flexShrink: 0,
-            }}>
-              <span style={{
-                position: "absolute", inset: -3, borderRadius: "50%",
-                background: WINE, opacity: 0.6, animation: "ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite"
-              }} />
-            </span>
-            {!isMobile && <Film size={14} color="#EAA88F" />}
-            <span style={{ fontSize: 12, fontWeight: 700, color: WHITE, letterSpacing: "0.04em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {activePillar.num}. {activePillar.title}
+            <span className="pulse-dot" style={{ background: "#e8b978" }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+              {t("welcome.why_us", "PSE NOAEVENT")}
             </span>
           </motion.div>
 
-          {/* Video Control Buttons Overlay */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={inView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            style={{
-              position: "absolute", top: isMobile ? 16 : 32, right: isMobile ? 16 : 32, zIndex: 10,
-              display: "flex", gap: 10,
-            }}
-          >
-            <button
-              onClick={togglePlay}
-              title={isPlaying ? "Pauzo videon" : "Luaj videon"}
-              style={{
-                width: isMobile ? 36 : 42, height: isMobile ? 36 : 42, borderRadius: "50%",
-                background: "rgba(255, 255, 255, 0.2)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid rgba(255,255,255,0.3)",
-                color: WHITE, display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", transition: "all 0.2s ease",
-              }}
-            >
-              {isPlaying ? <Pause size={16} /> : <Play size={16} style={{ marginLeft: 2 }} />}
-            </button>
-            <button
-              onClick={toggleMute}
-              title={isMuted ? "Aktivizo zërin" : "Çaktivizo zërin"}
-              style={{
-                width: isMobile ? 36 : 42, height: isMobile ? 36 : 42, borderRadius: "50%",
-                background: "rgba(255, 255, 255, 0.2)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid rgba(255,255,255,0.3)",
-                color: WHITE, display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", transition: "all 0.2s ease",
-              }}
-            >
-              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-            </button>
-          </motion.div>
+          {/* Center: active pillar icon + title */}
+          <div style={{ position: "relative", zIndex: 5, textAlign: "center", padding: isMobile ? "0 32px" : "0 64px", maxWidth: 440 }}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activePillar.num}
+                initial={{ opacity: 0, y: 16, scale: 0.94 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -16, scale: 0.94 }}
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <div style={{
+                  width: 92, height: 92, borderRadius: "50%", margin: "0 auto 24px",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(232,185,120,0.35)",
+                  boxShadow: "0 20px 50px -12px rgba(0,0,0,0.5)",
+                }}>
+                  {activePillar.icon}
+                </div>
+                <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: "#e8b978", marginBottom: 10 }}>
+                  PIKA {activePillar.num}
+                </p>
+                <h3 style={{ color: WHITE, fontWeight: 800, fontSize: isMobile ? 19 : 22, lineHeight: 1.3 }}>
+                  {activePillar.title}
+                </h3>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-          {/* Video Switcher Tabs at Bottom of Video */}
+          {/* Switcher tabs */}
           <div style={{
-            position: "absolute", bottom: isMobile ? 16 : 130, left: isMobile ? 16 : 40, zIndex: 10,
-            display: "flex", gap: 8, flexWrap: "wrap", maxWidth: isMobile ? "calc(100% - 32px)" : undefined,
+            position: "absolute", bottom: isMobile ? 16 : 100, left: "50%", transform: "translateX(-50%)", zIndex: 10,
+            display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", maxWidth: isMobile ? "calc(100% - 32px)" : undefined,
           }}>
             {PILLARS.map((p, i) => (
               <button
@@ -819,7 +764,7 @@ function WelcomeSection() {
                 style={{
                   padding: "6px 12px", borderRadius: 20,
                   fontSize: 11, fontWeight: 700,
-                  background: activePillarIndex === i ? WINE : "rgba(255,255,255,0.25)",
+                  background: activePillarIndex === i ? WINE : "rgba(255,255,255,0.12)",
                   color: WHITE, border: "none", cursor: "pointer",
                   backdropFilter: "blur(8px)",
                   transition: "all 0.3s ease",
@@ -836,14 +781,14 @@ function WelcomeSection() {
               initial={{ opacity: 0, y: 32, x: -20 }}
               animate={inView ? { opacity: 1, y: 0, x: 0 } : {}}
               transition={{ delay: 0.5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="anim-float"
               style={{
-                position: "absolute", bottom: 44, left: 40, zIndex: 10,
+                position: "absolute", bottom: 32, left: 40, zIndex: 10,
                 background: WHITE,
                 borderRadius: 16,
                 padding: "16px 24px",
                 boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
                 border: `1px solid rgba(123,31,58,0.12)`,
-                backdropFilter: "blur(8px)",
                 display: "flex", gap: 28,
               }}
             >
@@ -969,7 +914,7 @@ function WelcomeSection() {
                           fontSize: 10, fontWeight: 700, color: WINE,
                           background: "rgba(123,31,58,0.1)", padding: "2px 8px", borderRadius: 10,
                         }}>
-                          <Play size={10} fill={WINE} /> Video
+                          <Check size={10} strokeWidth={3} /> Aktive
                         </span>
                       )}
                     </div>
@@ -1037,43 +982,55 @@ function WelcomeSection() {
    SERVICES / SMAKEN — centered title + desc + 2 large cards
    (Gademan "Smaken" section: Sorbetijs + Melkijs layout)
 ═══════════════════════════════════════════════════════════ */
-/* ─── Services slider data ─────────────────────────────── */
+/* ─── Services slider data — illustrated icons, no photography ── */
 const SERVICE_SLIDES = [
   {
     label: "Ftesa Digjitale",
     desc: "Krijoni ftesa elegante me foto çifti, countdown dhe RSVP automatik.",
-    img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=85",
     tag: "Popullar",
+    icon: (
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.4"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg>
+    ),
   },
   {
     label: "Hall Designer",
     desc: "Planifikoni sallën tuaj vizualisht — drag & drop, tavolina, VIP zona.",
-    img: "https://images.unsplash.com/photo-1481833761820-0509d3217039?w=900&q=85",
     tag: "Premium",
+    icon: (
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.4"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    ),
   },
   {
     label: "QR Check-in",
     desc: "Mysafirët skanojnë kodin QR dhe hyjnë në event pa asnjë pritje.",
-    img: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=900&q=85",
     tag: null,
+    icon: (
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.4"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M15 15h2v2h-2zM19 15h2v2h-2zM15 19h2v2h-2zM19 19h2v2h-2z"/></svg>
+    ),
   },
   {
     label: "RSVP Automatik",
     desc: "Çdo mysafir merr link unik — përgjigjet me një klik, ju shihni live.",
-    img: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=900&q=85",
     tag: null,
+    icon: (
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.4"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 12l2.5 2.5L16 9"/></svg>
+    ),
   },
   {
     label: "Menaxhimi i Mysafirëve",
     desc: "Lista e plotë, statuset, kategorizimi dhe filtrat — gjithçka në një vend.",
-    img: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=900&q=85",
     tag: null,
+    icon: (
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.4"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15 20c0-2.6 1-4.6 3-5.3"/></svg>
+    ),
   },
   {
     label: "Seat Planner",
     desc: "Cakto çdo mysafir tek tavolina dhe vendi i tij me drag & drop.",
-    img: "https://images.unsplash.com/photo-1429514513361-8a632ff5e384?w=900&q=85",
     tag: "I ri",
+    icon: (
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.4"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="6" r="1.4" fill="#fff" stroke="none"/><circle cx="17" cy="10" r="1.4" fill="#fff" stroke="none"/><circle cx="15" cy="16" r="1.4" fill="#fff" stroke="none"/><circle cx="9" cy="16" r="1.4" fill="#fff" stroke="none"/><circle cx="7" cy="10" r="1.4" fill="#fff" stroke="none"/></svg>
+    ),
   },
 ];
 
@@ -1097,21 +1054,28 @@ function ServiceCard({ slide, isActive, width = 420 }: { slide: typeof SERVICE_S
         cursor: "grab",
       }}
     >
-      {/* Image */}
-      <div style={{ position: "relative", height: width < 340 ? 200 : 280, overflow: "hidden" }}>
-        <motion.img
-          src={slide.img}
-          alt={slide.label}
-          whileHover={{ scale: 1.06 }}
-          transition={{ duration: 0.6 }}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          draggable={false}
-        />
-        {/* Gradient overlay */}
+      {/* Illustrated panel (no photography) */}
+      <div style={{
+        position: "relative", height: width < 340 ? 160 : 200, overflow: "hidden",
+        background: `linear-gradient(135deg, #1c1116 0%, ${WINE_DARK} 100%)`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(to top, rgba(20,5,10,0.55) 0%, transparent 55%)",
+          backgroundImage: "radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)",
+          backgroundSize: "22px 22px",
         }} />
+        <motion.div
+          whileHover={{ scale: 1.08 }}
+          transition={{ duration: 0.4 }}
+          style={{
+            position: "relative", width: 72, height: 72, borderRadius: "50%",
+            background: "rgba(255,255,255,0.08)", border: "1px solid rgba(232,185,120,0.35)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          {slide.icon}
+        </motion.div>
         {/* Tag */}
         {slide.tag && (
           <div style={{
@@ -1123,12 +1087,11 @@ function ServiceCard({ slide, isActive, width = 420 }: { slide: typeof SERVICE_S
             {slide.tag}
           </div>
         )}
-        {/* Label over image bottom */}
+        {/* Label over gradient bottom */}
         <h3 style={{
-          position: "absolute", bottom: 20, left: 24,
+          position: "absolute", bottom: 16, left: 24,
           color: WHITE, fontWeight: 900,
-          fontSize: 22, letterSpacing: "0.02em",
-          textShadow: "0 2px 12px rgba(0,0,0,0.4)",
+          fontSize: 20, letterSpacing: "0.02em",
           margin: 0,
         }}>
           {slide.label}
@@ -1398,7 +1361,7 @@ function HallSection() {
           </Link>
         </FadeUp>
 
-        {/* Right: image with wine accent shadow */}
+        {/* Right: illustrated floor-plan mock (no stock photography) */}
         <FadeUp delay={0.12}>
           <div style={{ position: "relative" }}>
             <div
@@ -1412,11 +1375,53 @@ function HallSection() {
                 borderRadius: 2,
               }}
             />
-            <img
-              src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=900&q=85"
-              alt="Hall planner"
-              style={{ width: "100%", maxHeight: 500, objectFit: "cover", position: "relative", display: "block" }}
-            />
+            <div
+              style={{
+                position: "relative",
+                background: "#1a1317",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 12,
+                padding: isMobile ? 18 : 26,
+                boxShadow: "0 30px 70px -20px rgba(0,0,0,0.5)",
+              }}
+            >
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gridAutoRows: isMobile ? 44 : 64, gap: 10, marginBottom: 10 }}>
+                <span style={{ gridColumn: "span 2", width: "100%", height: "100%", borderRadius: "50%", background: `radial-gradient(circle, ${WINE_DARK}, ${WINE})` }} />
+                <span style={{ width: "100%", height: "100%", borderRadius: 8, background: "rgba(232,185,120,0.75)" }} />
+                <span style={{ gridColumn: "span 2", width: "100%", height: "100%", borderRadius: "50%", background: `radial-gradient(circle, ${WINE_DARK}, ${WINE})` }} />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gridAutoRows: isMobile ? 44 : 64, gap: 10, marginBottom: 10 }}>
+                <span style={{ width: "100%", height: "100%", borderRadius: 8, background: "rgba(255,255,255,0.08)" }} />
+                <span style={{ gridColumn: "span 2", width: "100%", height: "100%", borderRadius: "50%", background: `radial-gradient(circle, ${WINE_DARK}, ${WINE})` }} />
+                <span style={{ width: "100%", height: "100%", borderRadius: 8, background: "rgba(255,255,255,0.08)" }} />
+                <span style={{ width: "100%", height: "100%", borderRadius: "50%", background: "radial-gradient(circle, #f3d9ac, #e8b978)" }} />
+              </div>
+              <div style={{
+                width: "100%", height: 56, borderRadius: 10, margin: "12px 0",
+                background: `linear-gradient(90deg, ${WINE}80, rgba(232,185,120,0.4))`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: WHITE, fontSize: 11, fontWeight: 800, letterSpacing: "0.12em",
+              }}>
+                PISTA E VALLËZIMIT
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gridAutoRows: isMobile ? 44 : 64, gap: 10 }}>
+                <span style={{ width: "100%", height: "100%", borderRadius: "50%", background: `radial-gradient(circle, ${WINE_DARK}, ${WINE})` }} />
+                <span style={{ gridColumn: "span 2", width: "100%", height: "100%", borderRadius: 8, background: "rgba(255,255,255,0.08)" }} />
+                <span style={{ width: "100%", height: "100%", borderRadius: "50%", background: `radial-gradient(circle, ${WINE_DARK}, ${WINE})` }} />
+                <span style={{ width: "100%", height: "100%", borderRadius: "50%", background: `radial-gradient(circle, ${WINE_DARK}, ${WINE})` }} />
+              </div>
+            </div>
+            {!isMobile && (
+              <div style={{
+                position: "absolute", bottom: -20, right: -18, zIndex: 2,
+                background: WHITE, borderRadius: 16, padding: "13px 18px",
+                boxShadow: "0 24px 50px -12px rgba(0,0,0,0.35)",
+                display: "flex", alignItems: "center", gap: 10,
+              }}>
+                <span className="pulse-dot" style={{ background: WINE }} />
+                <span style={{ fontSize: 12.5, fontWeight: 800, color: DARK }}>36 / 40 tavolina të caktuara</span>
+              </div>
+            )}
           </div>
         </FadeUp>
       </div>
