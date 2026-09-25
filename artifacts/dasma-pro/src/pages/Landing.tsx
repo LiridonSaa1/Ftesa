@@ -286,251 +286,210 @@ function Navbar({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => void }) {
 
 
 /* ═══════════════════════════════════════════════════════════
-   HERO CAROUSEL — wine bg, text LEFT, image RIGHT
-   Auto-advances every 5s, smooth slide + fade animation,
-   prev/next arrows, dot indicators
+   HERO — SaaS-style: dark gradient, centered headline, live
+   product-dashboard mock, floating stat chips, trust marquee
 ═══════════════════════════════════════════════════════════ */
-const HERO_SLIDES = [
-  {
-    title: "MIRË ERDHËT NË\nNOAEVENT",
-    sub: "Platforma Premium e Dasmave & Eventeve në Kosovë",
-    img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1800&q=90",
-    cta: "Bëhu Klient?",
-  },
-  {
-    title: "FTESA\nDIGJITALE",
-    sub: "Krijoni ftesa elegante me foto çifti, countdown dhe RSVP automatik",
-    img: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1800&q=90",
-    cta: "Shiko Shërbimin",
-  },
-  {
-    title: "HALL\nDESIGNER",
-    sub: "Planifikoni sallën tuaj vizualisht — drag & drop, tavolina, VIP zona",
-    img: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1800&q=90",
-    cta: "Krijo Planin",
-  },
-  {
-    title: "QR CHECK-IN\nAUTOMATIK",
-    sub: "Mysafirët skanojnë dhe hyjnë pa pritje — modern, i shpejtë, elegant",
-    img: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=1800&q=90",
-    cta: "Mëso Më Shumë",
-  },
-];
+const HERO_BARS = [52, 78, 38, 92, 64, 72, 50];
+const TRUSTED_BY = ["Grand Palace", "Villa Eden", "Emerald Hall", "Royal Gardens", "Casa Bella", "Sky Terrace"];
 
 function Hero() {
-  const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(1);
-  const total = HERO_SLIDES.length;
-
-  useEffect(() => {
-    const t = setInterval(() => {
-      setDirection(1);
-      setCurrent(c => (c + 1) % total);
-    }, 6000);
-    return () => clearInterval(t);
-  }, [total]);
-
-  const go = (next: number) => {
-    setDirection(next > current ? 1 : -1);
-    setCurrent((next + total) % total);
-  };
-
+  const { t } = useLanguage();
   return (
     <section
       id="home"
-      style={{ position: "relative", width: "100%", overflow: "hidden", height: "calc(100vh - 130px)", display: "flex", flexDirection: "column" }}
+      style={{
+        position: "relative",
+        background: `radial-gradient(120% 100% at 50% -10%, #241319 0%, ${TOPBG} 55%)`,
+        overflow: "hidden",
+      }}
     >
-      {/* ── Full-screen background images (Ken Burns zoom) ── */}
-      <AnimatePresence initial={false}>
-        <motion.div
-          key={`bg-${current}`}
-          initial={{ opacity: 0, scale: 1.08 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1 }}
-          transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 0,
-          }}
-        >
-          <img
-            src={HERO_SLIDES[current].img}
-            alt=""
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
-          />
-        </motion.div>
-      </AnimatePresence>
+      {/* Ambient gradient orbs */}
+      <div className="anim-drift" style={{ position: "absolute", top: -160, left: -120, width: 480, height: 480, borderRadius: "50%", background: WINE, opacity: 0.32, filter: "blur(90px)", pointerEvents: "none" }} />
+      <div className="anim-drift-delay" style={{ position: "absolute", top: 40, right: -140, width: 420, height: 420, borderRadius: "50%", background: "#e8b978", opacity: 0.18, filter: "blur(90px)", pointerEvents: "none" }} />
+      <div style={{
+        position: "absolute", inset: 0,
+        backgroundImage: "radial-gradient(rgba(255,255,255,0.055) 1px, transparent 1px)",
+        backgroundSize: "34px 34px",
+        WebkitMaskImage: "radial-gradient(60% 60% at 50% 20%, #000 0%, transparent 75%)",
+        maskImage: "radial-gradient(60% 60% at 50% 20%, #000 0%, transparent 75%)",
+        pointerEvents: "none",
+      }} />
 
-      {/* ── Dark gradient overlay — bottom-heavy for text readability ── */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 1,
-          background: "linear-gradient(to right, rgba(20,5,10,0.78) 0%, rgba(20,5,10,0.45) 60%, rgba(20,5,10,0.10) 100%)",
-        }}
-      />
-      {/* Extra bottom gradient */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 1,
-          background: "linear-gradient(to top, rgba(10,2,5,0.55) 0%, transparent 50%)",
-        }}
-      />
+      <div style={{ position: "relative", maxWidth: 1180, margin: "0 auto", padding: "128px 48px 0", textAlign: "center" }}>
+        <FadeUp>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 10,
+            background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)",
+            color: "#f1dfc9", padding: "9px 18px", borderRadius: 30,
+            fontSize: 11.5, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase",
+          }}>
+            <span className="pulse-dot" style={{ background: "#e8b978" }} />
+            <Sparkles size={13} />
+            {t("hero.eyebrow", "Platforma SaaS për Organizatorë Eventesh")}
+          </span>
+        </FadeUp>
 
-      {/* ── Slide text — left-aligned, vertically centered ── */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 2,
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          padding: "0 0 60px",
-        }}
-      >
-        <div style={{ width: "100%", maxWidth: 1280, margin: "0 auto", padding: "0 48px" }}>
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={`text-${current}`}
-            custom={direction}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -24 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            style={{ maxWidth: 640 }}
-          >
-            {/* Slide number indicator */}
-            <p style={{
-              color: "rgba(255,255,255,0.55)",
-              fontSize: 12,
-              fontWeight: 600,
-              letterSpacing: "0.25em",
-              textTransform: "uppercase",
-              marginBottom: 20,
-            }}>
-              0{current + 1} — 0{total}
-            </p>
+        <FadeUp delay={0.08}>
+          <h1 style={{
+            color: WHITE, fontWeight: 900, fontSize: "clamp(2.6rem, 5.4vw, 4.4rem)",
+            lineHeight: 1.1, letterSpacing: "-0.01em", maxWidth: 880, margin: "28px auto 0",
+          }}>
+            {t("hero.title_prefix", "Menaxho çdo dasmë")}{" "}
+            <em style={{ fontStyle: "italic", color: "#f0d3b0" }}>{t("hero.title_accent", "si një biznes modern.")}</em>
+          </h1>
+        </FadeUp>
 
-            <h1
-              style={{
-                color: WHITE,
-                fontWeight: 900,
-                fontSize: "clamp(2.6rem, 5vw, 4.4rem)",
-                letterSpacing: "0.03em",
-                lineHeight: 1.12,
-                textTransform: "uppercase",
-                marginBottom: 20,
-                whiteSpace: "pre-line",
-                textShadow: "0 2px 24px rgba(0,0,0,0.4)",
-              }}
-            >
-              {HERO_SLIDES[current].title}
-            </h1>
+        <FadeUp delay={0.16}>
+          <p style={{ color: "rgba(255,255,255,0.68)", fontSize: 18, lineHeight: 1.7, maxWidth: 620, margin: "24px auto 0" }}>
+            {t("hero.subtitle", "Ftesa digjitale, hartë interaktive e sallës, check-in me QR dhe RSVP automatik — të gjitha në një pult të vetëm, në kohë reale.")}
+          </p>
+        </FadeUp>
 
-            <p style={{
-              color: "rgba(255,255,255,0.80)",
-              fontSize: 17,
-              lineHeight: 1.65,
-              marginBottom: 40,
-              maxWidth: 480,
-              fontWeight: 400,
-            }}>
-              {HERO_SLIDES[current].sub}
-            </p>
-
+        <FadeUp delay={0.24}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginTop: 38, flexWrap: "wrap" }}>
             <Link href="/sign-in">
               <motion.span
-                whileHover={{ backgroundColor: WHITE, color: WINE }}
+                whileHover={{ y: -3, boxShadow: "0 20px 46px -10px rgba(123,31,58,0.65)" }}
                 whileTap={{ scale: 0.97 }}
                 style={{
-                  display: "inline-block",
-                  background: "transparent",
-                  color: WHITE,
-                  padding: "14px 36px",
-                  borderRadius: 6,
-                  border: `2px solid ${WHITE}`,
-                  fontSize: 14,
-                  fontWeight: 700,
-                  letterSpacing: "0.08em",
-                  cursor: "pointer",
-                  transition: "background .22s, color .22s",
-                  textTransform: "uppercase",
+                  display: "inline-flex", alignItems: "center", gap: 9,
+                  background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE,
+                  padding: "15px 30px", borderRadius: 11, fontSize: 14.5, fontWeight: 700,
+                  cursor: "pointer", boxShadow: "0 14px 34px -10px rgba(123,31,58,0.55)",
                 }}
               >
-                {HERO_SLIDES[current].cta}
+                {t("hero.cta_primary", "Fillo Falas — 14 Ditë →")}
               </motion.span>
             </Link>
-          </motion.div>
-        </AnimatePresence>
-        </div>
-      </div>
+            <a href="#services">
+              <motion.span
+                whileHover={{ y: -3, backgroundColor: "rgba(255,255,255,0.11)", borderColor: "rgba(255,255,255,0.34)" }}
+                whileTap={{ scale: 0.97 }}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 9,
+                  background: "rgba(255,255,255,0.055)", color: WHITE,
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  padding: "15px 30px", borderRadius: 11, fontSize: 14.5, fontWeight: 700, cursor: "pointer",
+                }}
+              >
+                <Play size={14} /> {t("hero.cta_secondary", "Shiko Demo")}
+              </motion.span>
+            </a>
+          </div>
+        </FadeUp>
 
-      {/* ── Prev arrow ── */}
-      <button
-        onClick={() => go(current - 1)}
-        style={{
-          position: "absolute", left: 28, top: "50%", transform: "translateY(-50%)",
-          background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.30)",
-          borderRadius: "50%", width: 48, height: 48,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          cursor: "pointer", color: WHITE, zIndex: 10, transition: "background .2s",
-        }}
-        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.24)")}
-        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.12)")}
-      >
-        <ChevronLeft size={22} />
-      </button>
+        <FadeUp delay={0.3}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 28, marginTop: 26, flexWrap: "wrap" }}>
+            {[t("hero.trust1", "Pa kartë krediti"), t("hero.trust2", "Konfigurim në 5 minuta"), t("hero.trust3", "Anulo kurdo")].map(item => (
+              <span key={item} style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,0.5)", fontSize: 12.5, fontWeight: 600 }}>
+                <Check size={14} color="#e8b978" strokeWidth={2.6} />
+                {item}
+              </span>
+            ))}
+          </div>
+        </FadeUp>
 
-      {/* ── Next arrow ── */}
-      <button
-        onClick={() => go(current + 1)}
-        style={{
-          position: "absolute", right: 28, top: "50%", transform: "translateY(-50%)",
-          background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.30)",
-          borderRadius: "50%", width: 48, height: 48,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          cursor: "pointer", color: WHITE, zIndex: 10, transition: "background .2s",
-        }}
-        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.24)")}
-        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.12)")}
-      >
-        <ChevronRight size={22} />
-      </button>
-
-      {/* ── Dot indicators — bottom center ── */}
-      <div style={{
-        position: "absolute", bottom: 36, left: "50%", transform: "translateX(-50%)",
-        display: "flex", gap: 10, zIndex: 10,
-      }}>
-        {HERO_SLIDES.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => go(i)}
-            style={{
-              width: i === current ? 32 : 10,
-              height: 10,
-              borderRadius: 5,
-              background: i === current ? WHITE : "rgba(255,255,255,0.35)",
-              border: "none", cursor: "pointer", padding: 0,
-              transition: "all .4s cubic-bezier(0.22,1,0.36,1)",
-            }}
-          />
-        ))}
-      </div>
-
-      {/* ── Thin progress bar ── */}
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "rgba(255,255,255,0.15)", zIndex: 10 }}>
+        {/* ── Product dashboard mock ── */}
         <motion.div
-          key={`prog-${current}`}
-          initial={{ width: "0%" }}
-          animate={{ width: "100%" }}
-          transition={{ duration: 6, ease: "linear" }}
-          style={{ height: "100%", background: WINE }}
-        />
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+          style={{ position: "relative", maxWidth: 960, margin: "72px auto 0" }}
+        >
+          <div style={{
+            position: "absolute", inset: -40, zIndex: 0,
+            background: `radial-gradient(60% 60% at 50% 30%, ${WINE}55, transparent 70%)`,
+            filter: "blur(50px)",
+          }} />
+
+          <div style={{ position: "relative", zIndex: 1, background: "#171016", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 18, boxShadow: "0 60px 120px -30px rgba(0,0,0,0.65)", overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "#1d1418" }}>
+              <span style={{ width: 11, height: 11, borderRadius: "50%", background: "#e5675f" }} />
+              <span style={{ width: 11, height: 11, borderRadius: "50%", background: "#e8b95f" }} />
+              <span style={{ width: 11, height: 11, borderRadius: "50%", background: "#66c37a" }} />
+              <span style={{ margin: "0 auto", fontSize: 12, color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>app.noa-event.com/dashboard</span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", minHeight: 380 }}>
+              <div style={{ background: "#130e11", borderRight: "1px solid rgba(255,255,255,0.07)", padding: "24px 18px" }}>
+                <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "rgba(255,255,255,0.35)", marginBottom: 10 }}>MENU</p>
+                {[
+                  { label: t("hero.menu_overview", "Përmbledhje"), active: true },
+                  { label: t("hero.menu_guests", "Mysafirët") },
+                  { label: t("hero.menu_hall", "Hall Designer") },
+                  { label: t("hero.menu_invites", "Ftesat") },
+                  { label: t("hero.menu_checkin", "Check-in QR") },
+                ].map(item => (
+                  <div key={item.label} style={{
+                    padding: "10px 12px", borderRadius: 9, marginBottom: 4, fontSize: 13.5,
+                    fontWeight: item.active ? 700 : 400,
+                    color: item.active ? WHITE : "rgba(255,255,255,0.5)",
+                    background: item.active ? `linear-gradient(90deg, ${WINE}66, transparent)` : "transparent",
+                  }}>
+                    {item.label}
+                  </div>
+                ))}
+              </div>
+              <div style={{ padding: "26px 28px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 22 }}>
+                  {[
+                    { label: t("hero.stat_guests", "MYSAFIRË"), value: "284" },
+                    { label: "RSVP", value: "92%" },
+                    { label: t("hero.stat_tables", "TAVOLINA"), value: "36 / 40" },
+                  ].map(s => (
+                    <div key={s.label} style={{ background: "#1a1216", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: 16 }}>
+                      <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 8 }}>{s.label}</p>
+                      <p style={{ color: WHITE, fontSize: 22, fontWeight: 800 }}>{s.value}</p>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ background: "#1a1216", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: 20, height: 170, display: "flex", alignItems: "flex-end", gap: 12 }}>
+                  {HERO_BARS.map((h, i) => (
+                    <div
+                      key={i}
+                      className="anim-bar"
+                      style={{
+                        flex: 1, height: `${h}%`, borderRadius: 6,
+                        background: i === 3 ? "linear-gradient(180deg, #e8b978, #8b2942)" : `linear-gradient(180deg, ${WINE_DARK}, ${WINE})`,
+                        animationDelay: `${i * 0.2}s`,
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Floating stat chips */}
+          <div className="anim-float" style={{ position: "absolute", top: -6, left: -50, zIndex: 2, background: WHITE, borderRadius: 16, padding: "13px 18px", boxShadow: "0 24px 50px -12px rgba(0,0,0,0.35)", display: "flex", alignItems: "center", gap: 11 }}>
+            <span style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(123,31,58,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: WINE, fontWeight: 800, fontSize: 12.5 }}>200+</span>
+            <div><p style={{ fontSize: 12.5, fontWeight: 800, color: DARK }}>{t("hero.chip_events", "Evente")}</p><p style={{ fontSize: 10.5, color: MUTED }}>{t("hero.chip_events_sub", "Të organizuara")}</p></div>
+          </div>
+          <div className="anim-float-delay-1" style={{ position: "absolute", bottom: 48, right: -56, zIndex: 2, background: WHITE, borderRadius: 16, padding: "13px 18px", boxShadow: "0 24px 50px -12px rgba(0,0,0,0.35)", display: "flex", alignItems: "center", gap: 11 }}>
+            <span style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(232,185,120,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#a67426", fontWeight: 800, fontSize: 12.5 }}>99%</span>
+            <div><p style={{ fontSize: 12.5, fontWeight: 800, color: DARK }}>{t("hero.chip_satisfaction", "Kënaqësi")}</p><p style={{ fontSize: 10.5, color: MUTED }}>{t("hero.chip_satisfaction_sub", "E klientëve")}</p></div>
+          </div>
+          <div className="anim-float-delay-2" style={{ position: "absolute", top: "42%", left: -70, zIndex: 2, background: WHITE, borderRadius: 16, padding: "11px 16px", boxShadow: "0 24px 50px -12px rgba(0,0,0,0.35)", display: "flex", alignItems: "center", gap: 8 }}>
+            <Star size={15} fill="#e8b978" color="#e8b978" />
+            <span style={{ fontSize: 12.5, fontWeight: 800, color: DARK }}>5.0 {t("hero.chip_rating", "vlerësim")}</span>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* ── Trusted-by marquee ── */}
+      <div style={{ position: "relative", marginTop: 92, paddingBottom: 60 }}>
+        <p style={{ textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 11.5, fontWeight: 800, letterSpacing: "0.18em", marginBottom: 26 }}>
+          {t("hero.trusted_by", "BESUAR NGA SALLAT DHE ORGANIZATORËT MË TË MIRË NË KOSOVË")}
+        </p>
+        <div className="marquee-mask" style={{ overflow: "hidden" }}>
+          <div className="anim-marquee" style={{ display: "flex", alignItems: "center", gap: 64, width: "max-content" }}>
+            {[...TRUSTED_BY, ...TRUSTED_BY].map((name, i) => (
+              <span key={`${name}-${i}`} style={{ fontFamily: "'Playfair Display', serif", fontSize: 21, color: "rgba(255,255,255,0.35)", fontWeight: 600, whiteSpace: "nowrap" }}>
+                {name}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -1650,49 +1609,54 @@ function PricingSection({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => voi
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 28, maxWidth: 1140, margin: "0 auto" }}>
           {PLANS.map((p, i) => (
             <FadeUp key={p.name} delay={i * 0.12}>
-              <div
+              <motion.div
+                whileHover={{ y: -6, boxShadow: p.featured ? "0 40px 80px -18px rgba(123,31,58,0.55)" : "0 14px 36px rgba(0,0,0,0.09)" }}
+                animate={p.featured ? { scale: 1.045 } : { scale: 1 }}
                 style={{
                   position: "relative",
-                  background: WHITE,
-                  border: `2px solid ${p.featured ? WINE : "#e5e0d8"}`,
-                  borderRadius: 12,
+                  background: p.featured ? `linear-gradient(185deg, #1c1116 0%, #0c0a0d 100%)` : WHITE,
+                  border: p.featured ? "1px solid rgba(232,185,120,0.3)" : "1px solid #e5e0d8",
+                  borderRadius: 16,
                   overflow: "hidden",
-                  transition: "transform .25s, box-shadow .25s",
+                  boxShadow: p.featured ? "0 36px 80px -20px rgba(123,31,58,0.5)" : "none",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
                   height: "100%",
                 }}
-                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(-6px)"; el.style.boxShadow = "0 14px 36px rgba(0,0,0,0.09)"; }}
-                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(0)"; el.style.boxShadow = "none"; }}
               >
                 {p.tag && (
                   <div style={{
-                    position: "absolute", top: 16, right: 16,
-                    background: WINE, color: WHITE, fontSize: 10, fontWeight: 700,
-                    letterSpacing: "0.1em", padding: "4px 12px", textTransform: "uppercase", borderRadius: 4, zIndex: 2,
+                    position: "absolute", top: 16, right: 16, zIndex: 2,
+                    ...(p.featured
+                      ? { fontSize: 10.5, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }
+                      : { background: WINE, color: WHITE, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", padding: "4px 12px", textTransform: "uppercase", borderRadius: 4 }),
                   }}>
-                    {p.featured ? t("pricing.popular", p.tag) : p.tag}
+                    {p.featured ? (
+                      <span className="shine-text" style={{ backgroundImage: "linear-gradient(90deg, #e8b978 0%, #fff 50%, #e8b978 100%)" }}>
+                        {t("pricing.popular", p.tag)}
+                      </span>
+                    ) : p.tag}
                   </div>
                 )}
-                <div style={{ height: 140, overflow: "hidden" }}>
+                <div style={{ height: 140, overflow: "hidden", opacity: p.featured ? 0.85 : 1 }}>
                   <img src={p.img} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <div style={{ padding: 32, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
 
                   <div>
-                    <h3 style={{ fontWeight: 900, fontSize: 22, color: DARK, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{p.name}</h3>
-                    <p style={{ fontSize: 11, color: MUTED, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 16 }}>
+                    <h3 style={{ fontWeight: 900, fontSize: 22, color: p.featured ? WHITE : DARK, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{p.name}</h3>
+                    <p style={{ fontSize: 11, color: p.featured ? "rgba(255,255,255,0.55)" : MUTED, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 16 }}>
                       {p.planKey === "basic" ? t("pricing.basic", p.events) : p.planKey === "pro" ? t("pricing.pro", p.events) : t("pricing.custom", p.events)}
                     </p>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 20 }}>
-                      <span style={{ fontSize: 38, fontWeight: 900, color: DARK, letterSpacing: "-0.02em" }}>{p.price}</span>
-                      <span style={{ fontSize: 13, color: MUTED }}>{p.period}</span>
+                      <span style={{ fontSize: 38, fontWeight: 900, color: p.featured ? WHITE : DARK, letterSpacing: "-0.02em" }}>{p.price}</span>
+                      <span style={{ fontSize: 13, color: p.featured ? "rgba(255,255,255,0.55)" : MUTED }}>{p.period}</span>
                     </div>
                     <ul style={{ listStyle: "none", padding: 0, marginBottom: 28 }}>
                       {p.perks.map(perk => (
-                        <li key={perk} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, fontSize: 13.5, color: DARK }}>
-                          <Check size={14} color={WINE} strokeWidth={2.5} /> {perk}
+                        <li key={perk} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, fontSize: 13.5, color: p.featured ? "rgba(255,255,255,0.88)" : DARK }}>
+                          <Check size={14} color={p.featured ? "#e8b978" : WINE} strokeWidth={2.5} /> {perk}
                         </li>
                       ))}
                     </ul>
@@ -1711,16 +1675,17 @@ function PricingSection({ onOpenModal }: { onOpenModal?: (plan?: PlanKey) => voi
                       textTransform: "uppercase",
                       cursor: "pointer",
                       borderRadius: 8,
-                      background: p.featured ? WINE : "transparent",
+                      background: p.featured ? `linear-gradient(135deg, ${WINE}, ${WINE_DARK})` : "transparent",
                       color: p.featured ? WHITE : WINE,
-                      border: `2px solid ${WINE}`,
+                      border: p.featured ? "none" : `2px solid ${WINE}`,
+                      boxShadow: p.featured ? "0 14px 34px -10px rgba(123,31,58,0.55)" : "none",
                       transition: "all .18s",
                     }}
                   >
                     {t("pricing.btn", "CHOOSE PLAN")}
                   </motion.button>
                 </div>
-              </div>
+              </motion.div>
             </FadeUp>
           ))}
         </div>
